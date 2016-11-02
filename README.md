@@ -1,2 +1,2 @@
 # ipmi
-Open Source ipmi library - COMING SOON
+Open Source IPMI library - COMING SOON
