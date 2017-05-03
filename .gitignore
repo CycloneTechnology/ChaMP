@@ -1,3 +1,7 @@
+# eclipse files
+.project
+
+# class files
 *.class
 
 # Mobile Tools for Java (J2ME)
