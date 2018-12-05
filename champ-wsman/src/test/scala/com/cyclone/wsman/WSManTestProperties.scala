@@ -18,26 +18,22 @@ trait WSManTestProperties {
   val user = config.getString("wsman.username")
   val password = config.getString("wsman.password")
 
-
   val hostAddress: String = InetAddress.getByName(host).getHostAddress
 
   def credentials = PasswordCredentials.fromStrings(user, password)
 
   val hostAndPort = HostAndPort.fromString(host)
 
-  val kerberosSecurityContext = PasswordSecurityContext(
-    PasswordCredentials.fromStrings(user, password),
-    AuthenticationMethod.Kerberos)
+  val kerberosSecurityContext =
+    PasswordSecurityContext(PasswordCredentials.fromStrings(user, password), AuthenticationMethod.Kerberos)
 
-  val basicAuthSecurityContext = PasswordSecurityContext(
-    credentials,
-    AuthenticationMethod.Basic)
+  val basicAuthSecurityContext = PasswordSecurityContext(credentials, AuthenticationMethod.Basic)
 }
 
 trait WSManTestFileCreation {
   self: WSManTestProperties =>
 
-  // NOTE host needs wsmantest share writable by us 
+  // NOTE host needs wsmantest share writable by us
   val directoryPart = "wsmantest"
   val directory = "c:\\" + directoryPart
 

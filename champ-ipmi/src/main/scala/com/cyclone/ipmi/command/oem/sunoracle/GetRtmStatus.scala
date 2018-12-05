@@ -25,13 +25,15 @@ object GetRtmStatus {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
         is.skip(3) // Skip 0x00 0x00 0x2a
 
-        /*val cpldVersion = */is.readByte
+        /*val cpldVersion = */
+        is.readByte
 
         val rtmPresenceDetected = is.readByte.bit0
 
@@ -39,16 +41,18 @@ object GetRtmStatus {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult] {
-      case CommandNotSupported.code  => CommandNotSupported
-      case InvalidDataInRequest.code => InvalidDataInRequest
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult] {
+        case CommandNotSupported.code  => CommandNotSupported
+        case InvalidDataInRequest.code => InvalidDataInRequest
+      }
   }
 
   case class CommandResult(rtmPresenceDetected: Boolean) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -62,7 +66,8 @@ object GetRtmStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command() extends IpmiStandardCommand {

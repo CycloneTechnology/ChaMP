@@ -7,6 +7,7 @@ import com.cyclone.util.kerberos.settings.ArtifactDeploymentResult
 import scala.concurrent.Future
 
 trait KerberosDeployment {
+
   /**
     * Gets the latest [[ArtifactDeploymentResult]] or, if a deployment is underway
     * and there is no deployment result, waits (up to the specified timeout)
@@ -23,7 +24,9 @@ trait DefaultKerberosDeploymentComponent extends KerberosDeploymentComponent {
   self: KerberosDeploymentActorComponent =>
 
   lazy val kerberosDeployment: KerberosDeployment = new KerberosDeployment {
+
     def latestArtifactDeploymentInfo(implicit timeout: Timeout): Future[ArtifactDeploymentInfo] =
-      (kerberosDeploymentActor ? KerberosDeploymentActor.GetDeploymentInfo).mapTo[ArtifactDeploymentInfo]
+      (kerberosDeploymentActor ? KerberosDeploymentActor.GetDeploymentInfo)
+        .mapTo[ArtifactDeploymentInfo]
   }
 }

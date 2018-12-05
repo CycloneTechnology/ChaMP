@@ -16,6 +16,7 @@ object GetPohCounter {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -29,7 +30,8 @@ object GetPohCounter {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(powerOnTime: FiniteDuration) extends IpmiCommandResult
@@ -39,7 +41,8 @@ object GetPohCounter {
       def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.ChassisRequest
     val commandCode = CommandCode(0x0F)

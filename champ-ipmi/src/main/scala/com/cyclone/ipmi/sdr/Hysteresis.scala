@@ -7,6 +7,7 @@ sealed trait Hysteresis
 
 object Hysteresis {
   implicit val decoder: Decoder[Hysteresis] = new Decoder[Hysteresis] {
+
     def decode(data: ByteString): Hysteresis = {
       val value = data(0).toUnsignedInt
 

@@ -15,7 +15,8 @@ trait AuthenticationType {
     password: Password,
     sessionId: ManagedSystemSessionId,
     sequenceNumber: SessionSequenceNumber,
-    payload: ByteString): ByteString
+    payload: ByteString
+  ): ByteString
 }
 
 object AuthenticationType {
@@ -24,7 +25,8 @@ object AuthenticationType {
     password: Password,
     sessionId: ManagedSystemSessionId,
     sequenceNumber: SessionSequenceNumber,
-    payload: ByteString) = {
+    payload: ByteString
+  ) = {
     val b = new ByteStringBuilder
 
     b ++= password.toBin
@@ -41,12 +43,17 @@ object AuthenticationType {
 
     lazy val md: MessageDigest = MessageDigest.getInstance(algorithmName)
 
-    def generateAuthCode(password: Password, sessionId: ManagedSystemSessionId,
-      sequenceNumber: SessionSequenceNumber, payload: ByteString) =
+    def generateAuthCode(
+      password: Password,
+      sessionId: ManagedSystemSessionId,
+      sequenceNumber: SessionSequenceNumber,
+      payload: ByteString
+    ) =
       ByteString(md.digest(digestBase(password, sessionId, sequenceNumber, payload).toArray))
   }
 
   implicit val codec: Codec[AuthenticationType] = new Codec[AuthenticationType] {
+
     def encode(a: AuthenticationType) =
       ByteString(a.code)
 
@@ -63,8 +70,12 @@ object AuthenticationType {
   case object NoAuth extends AuthenticationType {
     val code: Byte = 0.toByte
 
-    def generateAuthCode(password: Password, sessionId: ManagedSystemSessionId,
-      sequenceNumber: SessionSequenceNumber, payload: ByteString): ByteString =
+    def generateAuthCode(
+      password: Password,
+      sessionId: ManagedSystemSessionId,
+      sequenceNumber: SessionSequenceNumber,
+      payload: ByteString
+    ): ByteString =
       ByteString.empty
   }
 
@@ -83,16 +94,24 @@ object AuthenticationType {
   case object UsePassword extends AuthenticationType {
     val code: Byte = 4.toByte
 
-    def generateAuthCode(password: Password, sessionId: ManagedSystemSessionId,
-      sequenceNumber: SessionSequenceNumber, payload: ByteString): ByteString =
+    def generateAuthCode(
+      password: Password,
+      sessionId: ManagedSystemSessionId,
+      sequenceNumber: SessionSequenceNumber,
+      payload: ByteString
+    ): ByteString =
       password.toBin
   }
 
   case object RmcpPlus extends AuthenticationType {
     val code: Byte = 6.toByte
 
-    def generateAuthCode(password: Password, sessionId: ManagedSystemSessionId,
-      sequenceNumber: SessionSequenceNumber, payload: ByteString) =
+    def generateAuthCode(
+      password: Password,
+      sessionId: ManagedSystemSessionId,
+      sequenceNumber: SessionSequenceNumber,
+      payload: ByteString
+    ) =
       throw new IllegalStateException("N/A for RMCP+")
   }
 
@@ -116,6 +135,7 @@ case class AuthenticationTypes(types: Set[AuthenticationType])
 
 object AuthenticationTypes {
   implicit val decoder: Decoder[AuthenticationTypes] = new Decoder[AuthenticationTypes] {
+
     def decode(data: ByteString): AuthenticationTypes =
       fromBits(data(0).bits0To5)
   }

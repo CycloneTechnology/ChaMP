@@ -6,6 +6,7 @@ import scalaz.Scalaz._
   * String utilities
   */
 object StringUtils {
+
   /**
     * Determines whether the string has any non-whitespace characters
     */

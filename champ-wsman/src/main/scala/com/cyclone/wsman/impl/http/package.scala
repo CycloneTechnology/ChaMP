@@ -12,7 +12,9 @@ package object http {
   implicit def toJavaExecutor(execContext: ExecutionContext): Executor =
     (runnable: Runnable) => execContext.execute(runnable)
 
-  implicit def ningFutureToFuture[T](ningFuture: ListenableFuture[T])(implicit executionContext: ExecutionContext): Future[T] = {
+  implicit def ningFutureToFuture[T](
+    ningFuture: ListenableFuture[T]
+  )(implicit executionContext: ExecutionContext): Future[T] = {
     val p = Promise[T]
 
     ningFuture.addListener(() => {

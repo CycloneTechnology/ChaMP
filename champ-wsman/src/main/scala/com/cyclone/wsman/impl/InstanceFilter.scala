@@ -1,6 +1,5 @@
 package com.cyclone.wsman.impl
 
-
 import com.cyclone.command.{Selector, SelectorClause}
 
 import scala.xml.NodeSeq
@@ -15,6 +14,7 @@ trait InstanceFilter {
 }
 
 object InstanceFilter {
+
   def forSelectorClause(selectorClause: SelectorClause): InstanceFilter =
     if (selectorClause.isEmpty) All
     else ForSelectors(selectorClause.selectors)
@@ -27,7 +27,7 @@ object InstanceFilter {
     require(selectors.nonEmpty, "Selectors set must not be empty")
 
     def filterElements: NodeSeq =
-    // @formatter:off
+      // @formatter:off
       <w:Filter Dialect={FilterDialect.SELECTOR}>
         <w:SelectorSet>{for (
           selector <- selectors
@@ -38,8 +38,9 @@ object InstanceFilter {
   }
 
   case class ForWQL(queryString: String) extends InstanceFilter {
+
     def filterElements: NodeSeq =
-    // @formatter:off
+      // @formatter:off
       <w:Filter Dialect={ FilterDialect.WQL }>{ queryString }</w:Filter>
     // @formatter:on
 

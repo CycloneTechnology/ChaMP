@@ -13,15 +13,15 @@ import scala.concurrent.Future
 /**
   * [[DeliveryHandler]] for pulling notifications.
   */
-case class PullDeliveryHandler(enumerationParameters: EnumerationParameters)
-  extends DeliveryHandler with LazyLogging {
+case class PullDeliveryHandler(enumerationParameters: EnumerationParameters) extends DeliveryHandler with LazyLogging {
   type R = PullEventSubscriptionRegistration
 
   class PullEventSubscriptionRegistration(
     subscriptionRef: ManagedReference,
     subscriptionDescriptor: SubscriptionDescriptor,
-    ctx: String)(implicit context: WSManOperationContext)
-    extends EventSubscriptionRegistration(subscriptionRef, subscriptionDescriptor) {
+    ctx: String
+  )(implicit context: WSManOperationContext)
+      extends EventSubscriptionRegistration(subscriptionRef, subscriptionDescriptor) {
 
     val enumerator: WSManEnumerator =
       new WSManEnumerator(subscriptionRef, ctx) with WSManEnumeratorConfig {
@@ -41,10 +41,14 @@ case class PullDeliveryHandler(enumerationParameters: EnumerationParameters)
   def createRegistration(
     ref: ManagedReference,
     subscriptionDescriptor: SubscriptionDescriptor,
-    ctx: String)(implicit context: WSManOperationContext): PullEventSubscriptionRegistration =
+    ctx: String
+  )(implicit context: WSManOperationContext): PullEventSubscriptionRegistration =
     new PullEventSubscriptionRegistration(ref, subscriptionDescriptor, ctx)
 
-  def setupDelivery(context: WSManOperationContext, subscriptionRegistration: PullEventSubscriptionRegistration): Source[WSManEnumItem, NotUsed] = {
+  def setupDelivery(
+    context: WSManOperationContext,
+    subscriptionRegistration: PullEventSubscriptionRegistration
+  ): Source[WSManEnumItem, NotUsed] = {
     subscriptionRegistration.pullEnumerate
       .flatMapConcat { batch =>
         Source(batch.items)

@@ -5,6 +5,7 @@ import com.cyclone.ipmi.codec._
 import com.typesafe.scalalogging.LazyLogging
 
 object CipherSuite extends LazyLogging {
+
   // Does not include suites we don't support
   def decode(data: ByteString): List[CipherSuite] = {
 
@@ -24,10 +25,10 @@ object CipherSuite extends LazyLogging {
         authAlg <- AuthenticationAlgorithm.fromCode(is.readByte.bits0To5)
 
         integAlgId <- iterator.find(b => b.bit6).map(_.bits0To5)
-        integAlg <- IntegrityAlgorithm.fromCode(integAlgId)
+        integAlg   <- IntegrityAlgorithm.fromCode(integAlgId)
 
         confAlgId <- iterator.find(b => b.bit7).map(_.bits0To5)
-        confAlg <- ConfidentialityAlgorithm.fromCode(confAlgId)
+        confAlg   <- ConfidentialityAlgorithm.fromCode(confAlgId)
       } yield {
         CipherSuite(authAlg, confAlg, integAlg)
       }
@@ -37,8 +38,8 @@ object CipherSuite extends LazyLogging {
   }
 
   implicit val ordering: Ordering[CipherSuite] =
-    Ordering.by {
-      cs: CipherSuite => (cs.authenticationAlgorithm, cs.confidentialityAlgorithm, cs.integrityAlgorithm)
+    Ordering.by { cs: CipherSuite =>
+      (cs.authenticationAlgorithm, cs.confidentialityAlgorithm, cs.integrityAlgorithm)
     }
 
   def bestOf(cipherSuites: Seq[CipherSuite]): Option[CipherSuite] = {

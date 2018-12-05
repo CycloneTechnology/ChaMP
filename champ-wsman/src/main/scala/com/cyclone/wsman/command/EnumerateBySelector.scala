@@ -11,24 +11,27 @@ case class EnumerateBySelector(
   selectorClause: SelectorClause = SelectorClause.empty,
   maxElementsPerEnumeration: Int = 10,
   resolveReferences: Boolean = false,
-  cimNamespace: Option[String] = None)
-  extends WSManEnumerationQueryDefn
+  cimNamespace: Option[String] = None
+) extends WSManEnumerationQueryDefn
 
 object EnumerateBySelector {
 
-  def fromClassName(className: String,
+  def fromClassName(
+    className: String,
     propertyRestriction: PropertyRestriction = PropertyRestriction.NoRestriction,
     selectorClause: SelectorClause = SelectorClause.empty,
     maxElementsPerEnumeration: Int = 10,
     resolveReferences: Boolean = false,
-    cimNamespace: Option[String] = None): EnumerateBySelector =
+    cimNamespace: Option[String] = None
+  ): EnumerateBySelector =
     EnumerateBySelector(
       ResourceUri.defaultBase.applyRelative(className),
       propertyRestriction,
       selectorClause,
       maxElementsPerEnumeration,
       resolveReferences,
-      cimNamespace)
+      cimNamespace
+    )
 
   implicit object Executor extends WSManEnumerationQueryDefn.Executor[EnumerateBySelector] {
     protected def resolveReferences(query: EnumerateBySelector): Boolean =

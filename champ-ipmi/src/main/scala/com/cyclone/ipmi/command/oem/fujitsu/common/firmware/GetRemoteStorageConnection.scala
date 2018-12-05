@@ -14,6 +14,7 @@ object GetRemoteStorageConnection {
 
   object Connection {
     implicit val decoder: Decoder[Connection] = new Decoder[Connection] {
+
       def decode(data: ByteString): Connection = data(0).toUnsignedInt match {
         case 0x00 => Connection0
         case 0x01 => Connection1
@@ -21,6 +22,7 @@ object GetRemoteStorageConnection {
     }
 
     implicit val encoder: Coder[Connection] = new Coder[Connection] {
+
       def encode(a: Connection): ByteString = {
         a match {
           case Connection0 => ByteString(0x00)
@@ -39,6 +41,7 @@ object GetRemoteStorageConnection {
 
   object ConnectionState {
     implicit val decoder: Decoder[ConnectionState] = new Decoder[ConnectionState] {
+
       def decode(data: ByteString): ConnectionState = data(0).toUnsignedInt match {
         case 0x00 => InvalidOrUnknown
         case 0x01 => Idle
@@ -51,6 +54,7 @@ object GetRemoteStorageConnection {
     }
 
     implicit val encoder: Coder[ConnectionState] = new Coder[ConnectionState] {
+
       def encode(a: ConnectionState): ByteString = {
         a match {
           case InvalidOrUnknown                           => ByteString(0x00)
@@ -84,6 +88,7 @@ object GetRemoteStorageConnection {
 
   object StorageType {
     implicit val decoder: Decoder[StorageType] = new Decoder[StorageType] {
+
       def decode(data: ByteString): StorageType = data(0).toUnsignedInt match {
         case 0x00 => InvalidOrUnknown
         case 0x01 => StorageServerOrIpmi
@@ -93,6 +98,7 @@ object GetRemoteStorageConnection {
     }
 
     implicit val encoder: Coder[StorageType] = new Coder[StorageType] {
+
       def encode(a: StorageType): ByteString = {
         a match {
           case InvalidOrUnknown    => ByteString(0x00)
@@ -117,6 +123,7 @@ object GetRemoteStorageConnection {
 
   object Connected {
     implicit val decoder: Decoder[Connected] = new Decoder[Connected] {
+
       def decode(data: ByteString): Connected = data(0).toUnsignedInt match {
         case 0x00 => No
         case 0x01 => Yes
@@ -124,6 +131,7 @@ object GetRemoteStorageConnection {
     }
 
     implicit val encoder: Coder[Connected] = new Coder[Connected] {
+
       def encode(a: Connected): ByteString = {
         a match {
           case No  => ByteString(0x00)
@@ -140,13 +148,16 @@ object GetRemoteStorageConnection {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val requestType = */is.readByte // Should match the value in the request (0x02 in this case)
+        /*val requestType = */
+        is.readByte // Should match the value in the request (0x02 in this case)
 
-        /*val unused = */is.read(2)
+        /*val unused = */
+        is.read(2)
 
         val connectionState = is.readByte.as[ConnectionState]
         val storageType = is.readByte.as[StorageType]
@@ -155,13 +166,15 @@ object GetRemoteStorageConnection {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(connectionState: ConnectionState, storageType: StorageType) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -177,7 +190,8 @@ object GetRemoteStorageConnection {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

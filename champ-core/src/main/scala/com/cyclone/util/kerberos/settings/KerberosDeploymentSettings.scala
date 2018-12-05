@@ -26,6 +26,6 @@ trait KerberosDeploymentSettingsComponent {
 }
 
 trait ConfigKerberosDeploymentSettingsComponent extends KerberosDeploymentSettingsComponent {
-  lazy val kerberosDeploymentSettings: KerberosDeploymentSettings = KerberosDeploymentSettings.fromConfig
+  lazy val kerberosDeploymentSettings: KerberosDeploymentSettings =
+    KerberosDeploymentSettings.fromConfig
 }
-

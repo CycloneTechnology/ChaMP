@@ -33,15 +33,17 @@ trait IntegrityAlgorithm {
 object IntegrityAlgorithm {
   private val ConstKey1 = ByteString(Array.fill(20)(1.toByte))
 
-  implicit val ordering: Ordering[IntegrityAlgorithm] = Ordering.by { alg: IntegrityAlgorithm => alg.goodness }
+  implicit val ordering: Ordering[IntegrityAlgorithm] = Ordering.by { alg: IntegrityAlgorithm =>
+    alg.goodness
+  }
 
   implicit val codec: Codec[IntegrityAlgorithm] = new Codec[IntegrityAlgorithm] {
+
     def encode(a: IntegrityAlgorithm) =
       ByteString(a.code)
 
     def decode(data: ByteString): IntegrityAlgorithm = {
       val code = data(0)
-
 
       // We should have negotiated available algorithms:
       // if it is not available something unexpected has gone wrong
@@ -93,12 +95,10 @@ object IntegrityAlgorithm {
     protected val authCodeLength = 12
   }
 
-
   def fromCode(code: Byte): Option[IntegrityAlgorithm] = code match {
     case Open.code        => Some(Open)
     case HmacSha1_96.code => Some(HmacSha1_96)
     case _                => None
   }
-
 
 }

@@ -17,6 +17,7 @@ case class StandardFru(
 
 object StandardFru {
   implicit val decoder: Decoder[StandardFru] with LazyLogging = new Decoder[StandardFru] with LazyLogging {
+
     def decode(data: ByteString): StandardFru = {
       logger.debug(s"Decoding standard FRU from ${data.toHexString()}")
 
@@ -26,12 +27,14 @@ object StandardFru {
       val formatVersionNumber = is.readByte.bits0To3
       require(formatVersionNumber == 1, "Unsupported version number")
 
-      /* val internalUseAreaOffset = */ is.readByte.toUnsignedInt * 8
+      /* val internalUseAreaOffset = */
+      is.readByte.toUnsignedInt * 8
       val chassisInfoAreaOffset = is.readByte.toUnsignedInt * 8
       val boardInfoAreaOffset = is.readByte.toUnsignedInt * 8
       val productInfoAreaOffset = is.readByte.toUnsignedInt * 8
 
-      /* val multiRecordAreaOffset = */ is.readByte.toUnsignedInt * 8
+      /* val multiRecordAreaOffset = */
+      is.readByte.toUnsignedInt * 8
 
       // PAD
       is.skip(1)

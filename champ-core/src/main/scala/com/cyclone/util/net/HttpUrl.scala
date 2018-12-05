@@ -14,7 +14,12 @@ import scala.concurrent.Future
   * @param scheme      the scheme (default http)
   * @param resource    optional resource path
   */
-case class HttpUrl(hostAndPort: HostAndPort, scheme: String = "http", resource: Option[String] = None) {
+case class HttpUrl(
+  hostAndPort: HostAndPort,
+  scheme: String = "http",
+  resource: Option[String] = None
+) {
+
   /**
     * This will substitute the fully qualified host name for an IP address or host name.
     * If a domain is specified, the first host name that matches the domain is used.
@@ -22,7 +27,9 @@ case class HttpUrl(hostAndPort: HostAndPort, scheme: String = "http", resource: 
     * For requests involving Kerberos authentication, we need the host name in the
     * url.
     */
-  def withQualifiedHostNameIfInDomain(domain: Option[String])(implicit dnsLookup: DnsLookup): Future[HttpUrl] = {
+  def withQualifiedHostNameIfInDomain(
+    domain: Option[String]
+  )(implicit dnsLookup: DnsLookup): Future[HttpUrl] = {
     def isFqdn(host: String) = !isInetAddress(host) && host.contains(".")
 
     def isSameDomain(host: String): Boolean =
@@ -65,6 +72,7 @@ case class HttpUrl(hostAndPort: HostAndPort, scheme: String = "http", resource: 
 }
 
 object HttpUrl {
+
   def fromStrings(scheme: String = "http", hostAndPortString: String, resource: String): HttpUrl =
     fromParts(scheme, HostAndPort.fromString(hostAndPortString), resource)
 
@@ -89,10 +97,11 @@ object HttpUrl {
 
   def fromString(urlString: String): HttpUrl = {
     def fromURL(url: URL): HttpUrl = {
-      def hostAndPort = if (url.getPort == -1)
-        HostAndPort.fromHost(url.getHost)
-      else
-        HostAndPort.fromParts(url.getHost, url.getPort)
+      def hostAndPort =
+        if (url.getPort == -1)
+          HostAndPort.fromHost(url.getHost)
+        else
+          HostAndPort.fromParts(url.getHost, url.getPort)
 
       HttpUrl(hostAndPort, url.getProtocol, optionalPathFrom(url.getPath))
     }

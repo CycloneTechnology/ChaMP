@@ -8,9 +8,10 @@ import javax.naming.directory.{Attribute, InitialDirContext}
 import javax.naming.{Context, NameNotFoundException}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, blocking}
+import scala.concurrent.{blocking, Future}
 
 trait DnsLookup {
+
   /**
     * Looks up PTR (domain name) records for a host address
     */
@@ -41,8 +42,7 @@ trait JavaNamingDnsLookupComponent extends DnsLookupComponent {
 
     private lazy val idc = {
       val env = new Properties
-      env.put(Context.INITIAL_CONTEXT_FACTORY,
-        "com.sun.jndi.dns.DnsContextFactory")
+      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory")
       env.put("com.sun.jndi.ldap.read.timeout", "5000")
 
       new InitialDirContext(env)
@@ -52,7 +52,8 @@ trait JavaNamingDnsLookupComponent extends DnsLookupComponent {
     private val mx = "MX"
 
     def lookupPTRs(hostAddress: String): Future[Seq[DnsRecord.PTR]] = {
-      def arpaAddress(hostAddress: String) = hostAddress.split('.').reverse.mkString(".") + ".in-addr.arpa."
+      def arpaAddress(hostAddress: String) =
+        hostAddress.split('.').reverse.mkString(".") + ".in-addr.arpa."
 
       Future(blocking {
         try {
@@ -67,7 +68,7 @@ trait JavaNamingDnsLookupComponent extends DnsLookupComponent {
     def lookupAddressAndPTRs(hostOrAddress: String): Future[Seq[DnsRecord.PTR]] = {
       for {
         address <- addressFor(hostOrAddress)
-        ptrs <- lookupPTRs(address)
+        ptrs    <- lookupPTRs(address)
       } yield ptrs
     }
 
@@ -107,5 +108,3 @@ trait JavaNamingDnsLookupComponent extends DnsLookupComponent {
   }
 
 }
-
-

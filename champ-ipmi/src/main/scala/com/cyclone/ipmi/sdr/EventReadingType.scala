@@ -48,6 +48,7 @@ sealed trait EventReadingType {
 
 object EventReadingType {
   implicit val decoder: Decoder[EventReadingType] = new Decoder[EventReadingType] {
+
     def decode(data: ByteString): EventReadingType =
       data(0) match {
         case Threshold.code           => Threshold
@@ -290,7 +291,6 @@ object EventReadingType {
 
     }
 
-
     def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
       case 0x00 => Some(PresenceEventOffset.DeviceRemovedDeviceAbsent)
       case 0x01 => Some(PresenceEventOffset.DeviceInsertedDevicePresent)
@@ -349,7 +349,6 @@ object EventReadingType {
 
     }
 
-
     def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
       case 0x00 => Some(StatusEventOffset.TransitionToRunning)
       case 0x01 => Some(StatusEventOffset.TransitionToInTest)
@@ -396,7 +395,8 @@ object EventReadingType {
       case 0x01 => Some(RedundancyEventOffset.RedundancyLost)
       case 0x02 => Some(RedundancyEventOffset.RedundancyDegraded)
       case 0x03 => Some(RedundancyEventOffset.NonRedundantSufficientResourcesFromRedundant)
-      case 0x04 => Some(RedundancyEventOffset.NonRedundantSufficientResourcesFromInsufficientResources)
+      case 0x04 =>
+        Some(RedundancyEventOffset.NonRedundantSufficientResourcesFromInsufficientResources)
       case 0x05 => Some(RedundancyEventOffset.NonRedundantInsufficientResources)
       case 0x06 => Some(RedundancyEventOffset.RedundancyDegradedFromFullyRedundant)
       case 0x07 => Some(RedundancyEventOffset.RedundancyDegradedFromNonRedundant)

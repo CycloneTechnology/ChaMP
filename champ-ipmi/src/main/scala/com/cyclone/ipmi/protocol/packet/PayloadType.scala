@@ -10,6 +10,7 @@ sealed trait PayloadType {
 object PayloadType {
 
   implicit val codec: Codec[PayloadType] = new Codec[PayloadType] {
+
     def encode(a: PayloadType) =
       ByteString(PayloadType.Ipmi.code)
 

@@ -24,6 +24,7 @@ trait SdrKeyAndBody {
 }
 
 object SdrKeyAndBody {
+
   def decodeBody(record: SensorDataRecord): IpmiErrorOr[SdrKeyAndBody] = {
     val decoder = record.recordType match {
       case Full                            => FullSdrKeyAndBody.decoder
@@ -82,7 +83,6 @@ trait SharingSdrKeyAndBody extends SdrKeyAndBody {
   lazy val sensorIds: Seq[SensorId] =
     (0 until sensorRecordSharing.shareCount)
       .map { i =>
-
         val offset = i + sensorRecordSharing.sensorIdOffset
         val offsetString = sensorRecordSharing.sensorIdModifierType match {
           case SharingModifierType.Numeric => s"$offset"
@@ -101,6 +101,7 @@ trait SharingSdrKeyAndBody extends SdrKeyAndBody {
   * An SDR record that may reference FRU data
   */
 trait FruSdrKeyAndBody extends SdrKeyAndBody {
+
   /**
     * Gets the [[FruDescriptor]] to use to get the FRU record.
     */

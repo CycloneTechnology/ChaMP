@@ -12,7 +12,7 @@ import scala.concurrent.duration._
   * Tests for [[SeqNoManager]]
   */
 class SeqNoManagerTest
-  extends TestKitSupport
+    extends TestKitSupport
     with WordSpecLike
     with Matchers
     with ImplicitSender

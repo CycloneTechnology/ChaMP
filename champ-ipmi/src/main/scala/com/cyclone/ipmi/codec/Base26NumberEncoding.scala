@@ -6,6 +6,7 @@ import scala.annotation.tailrec
   * Encodes numbers  0 -> A, 25 -> Z, 26 -> AA and so on.
   */
 object Base26NumberEncoding {
+
   def encode(number: Int): String = {
     @tailrec
     def loop(acc: String, i: Int): String = {

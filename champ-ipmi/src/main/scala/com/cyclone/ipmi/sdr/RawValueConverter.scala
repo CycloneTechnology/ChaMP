@@ -12,39 +12,40 @@ trait RawValueConverter {
 object RawValueConverter {
 
   val NoConversion: RawValueConverter = new RawValueConverter {
+
     val converter: RawSensorValue => SensorValue = {
       case RawSensorValue(v) => SensorValue(v.toDouble, SensorUnits.NoUnits)
     }
   }
 
-  def fromReadingFactors(readingFactors: ReadingFactors,
+  def fromReadingFactors(
+    readingFactors: ReadingFactors,
     analogSignFormat: AnalogDataFormat,
     linearizable: Linearizable,
-    sensorUnits: SensorUnits): RawValueConverter = new RawValueConverter {
-    val converter: RawSensorValue => SensorValue = {
-      raw: RawSensorValue =>
-        val rawSigned = analogSignFormat match {
-          case AnalogDataFormat.Unsigned => raw.value
+    sensorUnits: SensorUnits
+  ): RawValueConverter = new RawValueConverter {
 
-          case AnalogDataFormat.OnesComplement =>
-            val unsigned = raw.value
-            if (unsigned < 128) unsigned else unsigned - 255
+    val converter: RawSensorValue => SensorValue = { raw: RawSensorValue =>
+      val rawSigned = analogSignFormat match {
+        case AnalogDataFormat.Unsigned => raw.value
 
-          case AnalogDataFormat.TwosComplement => raw.value.toByte.toInt
-          case AnalogDataFormat.NonAnalog      => raw.value
-        }
+        case AnalogDataFormat.OnesComplement =>
+          val unsigned = raw.value
+          if (unsigned < 128) unsigned else unsigned - 255
 
-        import Math._
+        case AnalogDataFormat.TwosComplement => raw.value.toByte.toInt
+        case AnalogDataFormat.NonAnalog      => raw.value
+      }
 
-        import readingFactors._
-        val preLinearized = (m * rawSigned + b * pow(10, bExp)) * pow(10, rExp)
+      import Math._
 
-        SensorValue(linearizable.evaluate(preLinearized), sensorUnits)
+      import readingFactors._
+      val preLinearized = (m * rawSigned + b * pow(10, bExp)) * pow(10, rExp)
+
+      SensorValue(linearizable.evaluate(preLinearized), sensorUnits)
     }
   }
 }
-
-
 //case class ToleranceFormula(
 //  m: Int, rExp: Int,
 //  linearization: Linearization

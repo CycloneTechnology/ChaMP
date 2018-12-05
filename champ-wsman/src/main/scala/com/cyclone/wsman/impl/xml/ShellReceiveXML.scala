@@ -5,8 +5,8 @@ import com.cyclone.wsman.impl.Namespace
 import com.cyclone.util.OperationDeadline
 import com.cyclone.wsman.impl.shell.{ShellCommandId, ShellId}
 
-case class ShellReceiveXML(shellId: ShellId, commandId: ShellCommandId,
-  deadline: OperationDeadline) extends RequestXMLWithDeadline {
+case class ShellReceiveXML(shellId: ShellId, commandId: ShellCommandId, deadline: OperationDeadline)
+    extends RequestXMLWithDeadline {
 
   import RequestXML._
 

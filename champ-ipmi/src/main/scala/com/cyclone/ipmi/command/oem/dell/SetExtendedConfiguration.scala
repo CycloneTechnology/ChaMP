@@ -14,6 +14,7 @@ object SetExtendedConfiguration {
 
   object Progress {
     implicit val encoder: Coder[Progress] = new Coder[Progress] {
+
       def encode(a: Progress): ByteString = {
         a match {
           case InProgress                                         => ByteString(0x00)
@@ -31,19 +32,22 @@ object SetExtendedConfiguration {
   // FIXME - Completion Code 01x == No More Data
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
 
         CommandResult()
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -61,18 +65,21 @@ object SetExtendedConfiguration {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   // Note attributeId = 0x00 means read entire configuration data and bytestoRead = 0xFF means read entire configuration or attribute.
   // Note index used by table object only
-  case class Command(reservationId: Byte,
+  case class Command(
+    reservationId: Byte,
     configurationId: Byte,
     attributeId: Byte = 0x00.toByte,
     index: Byte,
     dataOffsetLSB: Byte,
     dataOffsetMSB: Byte,
-    inProgress: Progress) extends IpmiStandardCommand {
+    inProgress: Progress
+  ) extends IpmiStandardCommand {
 
     val networkFunction: NetworkFunction = NetworkFunction.OemFree30hRequest
     val commandCode = CommandCode(0x03)

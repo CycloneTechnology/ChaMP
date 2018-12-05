@@ -13,6 +13,7 @@ object GetLanSource {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -23,7 +24,8 @@ object GetLanSource {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(lanSourceSetting: LanSource) extends IpmiCommandResult
@@ -33,7 +35,8 @@ object GetLanSource {
       def encode(request: Command): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   // Note assetTag max size is 10 (0x0a) bytes

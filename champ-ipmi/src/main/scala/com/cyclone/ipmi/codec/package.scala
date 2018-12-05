@@ -32,13 +32,11 @@ package object codec extends CodecSupport with DefaultCodecs {
 
     def bits6To7: Byte = ((byte.toUnsignedInt & 0xff) >> 6).toByte
 
-
     def bits0To6: Byte = ((byte.toUnsignedInt & 0x7f) >> 0).toByte
 
     def bits5To6: Byte = ((byte.toUnsignedInt & 0x7f) >> 5).toByte
 
     def bits4To6: Byte = ((byte.toUnsignedInt & 0x7f) >> 4).toByte
-
 
     def bits0To5: Byte = ((byte.toUnsignedInt & 0x3f) >> 0).toByte
 
@@ -46,24 +44,19 @@ package object codec extends CodecSupport with DefaultCodecs {
 
     def bits3To5: Byte = ((byte.toUnsignedInt & 0x3f) >> 3).toByte
 
-
     def bits0To4: Byte = ((byte.toUnsignedInt & 0x1f) >> 0).toByte
 
     def bits3To4: Byte = ((byte.toUnsignedInt & 0x1f) >> 3).toByte
-
 
     def bits0To3: Byte = ((byte.toUnsignedInt & 0x0f) >> 0).toByte
 
     def bits2To3: Byte = ((byte.toUnsignedInt & 0x0f) >> 2).toByte
 
-
     def bits0To2: Byte = ((byte.toUnsignedInt & 0x07) >> 0).toByte
 
     def bits1To2: Byte = ((byte.toUnsignedInt & 0x07) >> 1).toByte
 
-
     def bits0To1: Byte = ((byte.toUnsignedInt & 0x03) >> 0).toByte
-
 
     def bit0: Boolean = (byte.toUnsignedInt & 0x01) != 0
 
@@ -99,6 +92,7 @@ package object codec extends CodecSupport with DefaultCodecs {
   }
 
   implicit class RichOptByte(val ob: Option[Byte]) extends AnyVal {
+
     def as[A](implicit decoder: Decoder[A]): Option[A] =
       ob.map(b => decoder.decode(ByteString(b)))
   }
@@ -132,6 +126,7 @@ package object codec extends CodecSupport with DefaultCodecs {
   }
 
   implicit class RichInputStream(val inputStream: InputStream) extends AnyVal {
+
     def read(num: Int): ByteString = {
       val bs = Array.ofDim[Byte](num)
 
@@ -164,12 +159,12 @@ package object codec extends CodecSupport with DefaultCodecs {
       // Tail recursive version of http://stackoverflow.com/a/7293881
       @tailrec
       def loop(acc: List[ByteString], xs: ByteString): List[ByteString] =
-      xs match {
-        case bs if bs.isEmpty => acc
-        case bs               =>
-          val (ys, zs) = bs.tail.span(!p(_))
-          loop((ByteString(bs.head) ++ ys) :: acc, zs)
-      }
+        xs match {
+          case bs if bs.isEmpty => acc
+          case bs =>
+            val (ys, zs) = bs.tail.span(!p(_))
+            loop((ByteString(bs.head) ++ ys) :: acc, zs)
+        }
 
       loop(List.empty, data).reverse
     }

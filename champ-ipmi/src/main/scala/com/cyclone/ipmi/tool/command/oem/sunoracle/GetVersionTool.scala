@@ -20,18 +20,20 @@ import scala.concurrent.Future
 object GetVersionTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetVersion.Command()))
-        } yield Result(cmdResult.cpldVersion, cmdResult.ipmiFirmwareRev)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(connection.executeCommandOrError(GetVersion.Command()))
+          } yield Result(cmdResult.cpldVersion, cmdResult.ipmiFirmwareRev)
+
+          result.run
+        }
       }
-    }
 
     def description() = "sun get version"
   }

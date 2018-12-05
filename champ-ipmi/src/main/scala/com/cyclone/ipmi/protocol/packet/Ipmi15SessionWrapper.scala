@@ -16,6 +16,7 @@ object Ipmi15SessionWrapper {
 
   object Request {
     implicit def coder: Coder[Request] = new Coder[Request] {
+
       def encode(message: Request): ByteString = {
         import message._
 
@@ -38,10 +39,11 @@ object Ipmi15SessionWrapper {
       }
     }
 
-    def fromContext[P <: IpmiRequestPayload : Coder](
+    def fromContext[P <: IpmiRequestPayload: Coder](
       payload: P,
       sessionSequenceNumber: SessionSequenceNumber,
-      sessionContext: SessionContext): Request = {
+      sessionContext: SessionContext
+    ): Request = {
       val coder = implicitly[Coder[P]]
 
       Request(
@@ -59,12 +61,14 @@ object Ipmi15SessionWrapper {
     managedSystemSessionId: ManagedSystemSessionId,
     sessionSequenceNumber: SessionSequenceNumber,
     requestHashMaker: SessionContext.ReqHashMaker,
-    payload: ByteString) extends IpmiSessionWrapperRequest {
+    payload: ByteString
+  ) extends IpmiSessionWrapperRequest {
     val payloadType: PayloadType = PayloadType.Ipmi
   }
 
   object RawResponse {
     implicit def decoder: Decoder[RawResponse] = new Decoder[RawResponse] {
+
       def decode(data: ByteString): RawResponse = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -74,10 +78,11 @@ object Ipmi15SessionWrapper {
         val sessSeqNo = is.read(4).as[SessionSequenceNumber]
         val sessionId = is.read(4).as[ManagedSystemSessionId]
 
-        val authCode = if (authType != AuthenticationType.NoAuth)
-          is.read(16)
-        else
-          ByteString.empty
+        val authCode =
+          if (authType != AuthenticationType.NoAuth)
+            is.read(16)
+          else
+            ByteString.empty
 
         val payloadLen = is.readByte.toUnsignedInt
 
@@ -99,12 +104,17 @@ object Ipmi15SessionWrapper {
     managedSystemSessionId: ManagedSystemSessionId,
     sessionSequenceNumber: SessionSequenceNumber,
     payload: ByteString,
-    authCode: ByteString) extends IpmiSessionWrapperRawResponse {
+    authCode: ByteString
+  ) extends IpmiSessionWrapperRawResponse {
     val payloadType: PayloadType.Ipmi.type = PayloadType.Ipmi
 
     def authenticatedResponse(sessionContext: SessionContext): IntegrityCheckError \/ Response = {
       val optErrMsg = for {
-        hash <- sessionContext.responseHashMaker(managedSystemSessionId, sessionSequenceNumber, payload)
+        hash <- sessionContext.responseHashMaker(
+          managedSystemSessionId,
+          sessionSequenceNumber,
+          payload
+        )
 
         errorMsg <- (sessionContext.requireResponseAuthCheck(authenticationType) && hash != authCode)
           .option(s"Integrity check failed $hash != $authCode")
@@ -112,7 +122,7 @@ object Ipmi15SessionWrapper {
 
       optErrMsg match {
         case Some(msg) => IntegrityCheckError(msg).left
-        case None      =>
+        case None =>
           Response(
             authenticationType = authenticationType,
             managedSystemSessionId = managedSystemSessionId,
@@ -127,11 +137,9 @@ object Ipmi15SessionWrapper {
     authenticationType: AuthenticationType,
     managedSystemSessionId: ManagedSystemSessionId,
     sessionSequenceNumber: SessionSequenceNumber,
-    payload: ByteString) extends IpmiSessionWrapperResponse {
+    payload: ByteString
+  ) extends IpmiSessionWrapperResponse {
     val payloadType: PayloadType = PayloadType.Ipmi
   }
 
 }
-
-
-

@@ -13,12 +13,16 @@ object GetPowerOffInhibit {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /* val ianaNumber = */ is.read(3).as[IanaEnterpriseNumber] // IANA number LSB First (Should always be 80 28 00 for Fujitsu
-        /* val length = */ is.readByte // Should always be 1
+        /* val ianaNumber = */
+        is.read(3)
+          .as[IanaEnterpriseNumber] // IANA number LSB First (Should always be 80 28 00 for Fujitsu
+        /* val length = */
+        is.readByte // Should always be 1
 
         val inhibitFlag = is.readByte.as[InhibitFlag]
 
@@ -26,13 +30,15 @@ object GetPowerOffInhibit {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(inhibitFlag: InhibitFlag) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -46,7 +52,8 @@ object GetPowerOffInhibit {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

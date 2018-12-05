@@ -16,8 +16,9 @@ object Transport {
 
   case class SendIpmi[P <: IpmiRequestPayload](
     payload: P,
-    ipmiVersion: IpmiVersion, sessionContext: SessionContext)
-    (implicit val coder: Coder[P])
+    ipmiVersion: IpmiVersion,
+    sessionContext: SessionContext
+  )(implicit val coder: Coder[P])
 
   case class ReceivedIpmi(payloadOrError: IpmiErrorOr[IpmiResponsePayload], inSession: Boolean)
 
@@ -26,5 +27,3 @@ object Transport {
   case object SetSessionContextAck
 
 }
-
-

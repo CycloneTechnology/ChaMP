@@ -36,8 +36,7 @@ class StringDecoderTest extends WordSpec with Matchers {
 
   "a bcd encoding" must {
     "decode" in {
-      BcdDecoder.decode(
-        ByteString(0xb, 1, 2, 3, 0xc, 0)) shouldBe "-123.0"
+      BcdDecoder.decode(ByteString(0xb, 1, 2, 3, 0xc, 0)) shouldBe "-123.0"
     }
   }
 }

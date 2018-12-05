@@ -15,6 +15,7 @@ object GetSensorReading {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -46,9 +47,9 @@ object GetSensorReading {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
-
 
   /**
     * @param rawValue reading (undefined unless an analog reading is provided by the sensor)
@@ -63,6 +64,7 @@ object GetSensorReading {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -74,7 +76,8 @@ object GetSensorReading {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command(sensorNumber: SensorNumber) extends IpmiStandardCommand {

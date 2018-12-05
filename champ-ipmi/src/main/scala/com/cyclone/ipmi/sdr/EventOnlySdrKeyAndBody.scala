@@ -26,6 +26,7 @@ case class EventOnlySdrKeyAndBody(
 // TODO ?not used (when reading) - only for 'events'
 object EventOnlySdrKeyAndBody {
   implicit val decoder: Decoder[EventOnlySdrKeyAndBody] = new Decoder[EventOnlySdrKeyAndBody] {
+
     def decode(data: ByteString): EventOnlySdrKeyAndBody = {
       val iterator = data.iterator
       val is = iterator.asInputStream

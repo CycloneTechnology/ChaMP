@@ -9,6 +9,7 @@ object StandardCommandWrapper {
 
   object RequestPayload {
     implicit def coder: Coder[RequestPayload] = new Coder[RequestPayload] {
+
       def encode(payload: RequestPayload): ByteString = {
         import payload._
 
@@ -29,12 +30,18 @@ object StandardCommandWrapper {
       }
     }
 
-    def fromCommand[Cmd <: IpmiStandardCommand : Coder](
+    def fromCommand[Cmd <: IpmiStandardCommand: Coder](
       command: Cmd,
       seqNo: SeqNo,
-      targetAddress: DeviceAddress = DeviceAddress.BmcAddress): RequestPayload = {
-      RequestPayload(command.networkFunction, command.commandCode, seqNo,
-        targetAddress, implicitly[Coder[Cmd]].encode(command))
+      targetAddress: DeviceAddress = DeviceAddress.BmcAddress
+    ): RequestPayload = {
+      RequestPayload(
+        command.networkFunction,
+        command.commandCode,
+        seqNo,
+        targetAddress,
+        implicitly[Coder[Cmd]].encode(command)
+      )
     }
   }
 
@@ -43,7 +50,8 @@ object StandardCommandWrapper {
     commandCode: CommandCode,
     seqNo: SeqNo,
     targetAddress: DeviceAddress,
-    commandData: ByteString) extends IpmiRequestPayload {
+    commandData: ByteString
+  ) extends IpmiRequestPayload {
     val requesterLun: Byte = 0.toByte
     val responderLun: Byte = 0.toByte
     val localAddress: DeviceAddress = DeviceAddress.RemoteConsoleAddress
@@ -52,6 +60,7 @@ object StandardCommandWrapper {
 
   object ResponsePayload {
     implicit def decoder: Decoder[ResponsePayload] = new Decoder[ResponsePayload] {
+
       def decode(data: ByteString): ResponsePayload = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -102,6 +111,7 @@ object StandardCommandWrapper {
     requesterLun: Byte = 0.toByte,
     responderLun: Byte = 0.toByte,
     requesterAddress: DeviceAddress,
-    responderAddress: DeviceAddress) extends IpmiResponsePayload
+    responderAddress: DeviceAddress
+  ) extends IpmiResponsePayload
 
 }

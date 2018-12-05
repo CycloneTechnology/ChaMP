@@ -17,6 +17,3 @@ trait IpmiSessionActivationCommand extends IpmiCommand {
 }
 
 trait IpmiCommandResult
-
-
-

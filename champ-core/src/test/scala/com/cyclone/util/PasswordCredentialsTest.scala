@@ -27,17 +27,20 @@ class PasswordCredentialsTest extends WordSpec with Matchers {
       }
 
       "support UPN format" in {
-        PasswordCredentials.fromStrings("userName", "password", "domain.com")
+        PasswordCredentials
+          .fromStrings("userName", "password", "domain.com")
           .fullyQualifiedUsername(UPN) shouldBe "userName@domain.com"
       }
 
       "support UPN upper format" in {
-        PasswordCredentials.fromStrings("userName", "password", "domain.com")
+        PasswordCredentials
+          .fromStrings("userName", "password", "domain.com")
           .fullyQualifiedUsername(UPNUpper) shouldBe "userName@DOMAIN.COM"
       }
 
       "down level upper format takes only first part of domain name" in {
-        PasswordCredentials.fromStrings("userName", "password", "domain.com")
+        PasswordCredentials
+          .fromStrings("userName", "password", "domain.com")
           .fullyQualifiedUsername(DownLevel) shouldBe "domain\\userName"
       }
     }
@@ -45,17 +48,17 @@ class PasswordCredentialsTest extends WordSpec with Matchers {
     "parsing credentials" must {
       "parse simple user" in {
         PasswordCredentials.parseFullyQualifiedUser("user", "password") shouldBe
-          PasswordCredentials("user", Password("password"))
+        PasswordCredentials("user", Password("password"))
       }
 
       "parse downlevel format" in {
         PasswordCredentials.parseFullyQualifiedUser("domain\\user", "password") shouldBe
-          PasswordCredentials("user", Password("password"), Some("domain"))
+        PasswordCredentials("user", Password("password"), Some("domain"))
       }
 
       "parse UPN formar" in {
         PasswordCredentials.parseFullyQualifiedUser("user@domain", "password") shouldBe
-          PasswordCredentials("user", Password("password"), Some("domain"))
+        PasswordCredentials("user", Password("password"), Some("domain"))
       }
     }
   }

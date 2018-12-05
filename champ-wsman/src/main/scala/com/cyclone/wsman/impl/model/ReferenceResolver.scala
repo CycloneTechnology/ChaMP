@@ -10,11 +10,13 @@ import scala.concurrent.Future
 // Primarily here to allow mocking of the get method to allow
 // testing of WSManContext reference resolution
 trait ReferenceResolver {
+
   /**
     * Gets the instance corresponding to a reference
     */
-  def get(ref: ManagedReference, deadline: OperationDeadline)
-    (implicit context: WSManOperationContext): Future[WSManErrorOr[ManagedInstance]]
+  def get(ref: ManagedReference, deadline: OperationDeadline)(
+    implicit context: WSManOperationContext
+  ): Future[WSManErrorOr[ManagedInstance]]
 }
 
 trait ReferenceResolveComponent {

@@ -10,6 +10,7 @@ sealed trait FieldPrefix
 
 object FieldPrefix {
   implicit val decoder: Decoder[FieldPrefix] = new Decoder[FieldPrefix] {
+
     def decode(data: ByteString): FieldPrefix = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -28,6 +29,7 @@ object FieldPrefix {
   }
 
   case class FixedLengthField(fieldType: FieldType, length: Int) extends FieldPrefix {
+
     def decodeField(data: ByteString): Field =
       fieldType.decode(data.take(length))
   }
@@ -37,4 +39,3 @@ object FieldPrefix {
   case object NoMoreFields extends FieldPrefix
 
 }
-

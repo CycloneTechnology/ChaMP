@@ -2,7 +2,6 @@ package com.cyclone.wsman
 
 import com.cyclone.util.net.{HttpUrl, SecurityContext}
 
-
 /**
   * Represents a target for a WSMan command
   */
@@ -11,7 +10,7 @@ case class WSManTarget(
   securityContext: SecurityContext
 )
 
-object WSManTarget{
+object WSManTarget {
   val defaultSslPort = 5986
   val defaultNonSslPort = 5985
 }

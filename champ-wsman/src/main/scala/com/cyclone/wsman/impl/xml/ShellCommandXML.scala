@@ -5,8 +5,11 @@ import com.cyclone.wsman.impl.Namespace
 import com.cyclone.util.OperationDeadline
 import com.cyclone.wsman.command.WSManRunShellCommand
 
-case class ShellCommandXML(commandQuery: WSManRunShellCommand, shellId: String,
-                           deadline: OperationDeadline) extends RequestXMLWithDeadline {
+case class ShellCommandXML(
+  commandQuery: WSManRunShellCommand,
+  shellId: String,
+  deadline: OperationDeadline
+) extends RequestXMLWithDeadline {
   import RequestXML._
 
   // @formatter:off

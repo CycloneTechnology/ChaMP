@@ -27,7 +27,6 @@ object RunShellCommandExample extends App {
   val username = config.getString("wsman.username") + "@" + config.getString("wsman.domain")
   val password = config.getString("wsman.password")
 
-
   val wsman = WSMan.create
 
   val futureResult: Future[WSManRunShellResult] =
@@ -36,9 +35,12 @@ object RunShellCommandExample extends App {
       _ <- KerberosDeployer.create.deploy(KerberosArtifacts.simpleFromConfig)
 
       commandResult <- wsman.executeCommand(
-        WSManTarget(WSMan.httpUrlFor(host, ssl = false),
-          PasswordSecurityContext(username, password, AuthenticationMethod.Kerberos)),
-        WSManRunShellCommand("dir", "c:\\"))
+        WSManTarget(
+          WSMan.httpUrlFor(host, ssl = false),
+          PasswordSecurityContext(username, password, AuthenticationMethod.Kerberos)
+        ),
+        WSManRunShellCommand("dir", "c:\\")
+      )
     } yield commandResult
 
   futureResult.onComplete {

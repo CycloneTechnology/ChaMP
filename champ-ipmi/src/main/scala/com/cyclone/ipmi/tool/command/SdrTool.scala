@@ -20,11 +20,12 @@ object SdrTool {
 
   object Command extends LazyLogging {
     implicit val executor: CommandExecutor[Command, Result] = new CommandExecutor[Command, Result] {
+
       def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ SdrTool.Result] = {
         implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
 
         val result = for {
-          sdrs <- eitherT(sdrReader.readAllSdrs)
+          sdrs     <- eitherT(sdrReader.readAllSdrs)
           filtered <- eitherT(sdrs.filter(command.sdrFilter.predicate).right.point[Future])
         } yield Result(filtered)
 
@@ -34,6 +35,7 @@ object SdrTool {
   }
 
   case class Command(sdrFilter: SdrFilter) extends IpmiToolCommand {
+
     def description(): String = {
       import SdrFilter._
       import SensorDataRecordType._
@@ -48,7 +50,8 @@ object SdrTool {
         case ByRecordTypes(Full, Compact)        => s"sdr list"
         case All                                 => s"sdr list all"
         case BySensorType(tpe)                   => s"sdr type $tpe"
-        case BySensorIds(sensorIds@_*)           => s"sdr get ${sensorIds.map(sid => s""""${sid.id}"""").mkString(" ")}"
+        case BySensorIds(sensorIds @ _*) =>
+          s"sdr get ${sensorIds.map(sid => s""""${sid.id}"""").mkString(" ")}"
 
         // There is no way to parse other filter types currently
         case _ => s"sdr list all"

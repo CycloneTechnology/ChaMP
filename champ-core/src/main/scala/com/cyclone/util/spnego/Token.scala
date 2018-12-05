@@ -30,16 +30,19 @@ class Tokens(tokenValidity: Long, signatureSecret: Array[Byte]) {
   def create(
     principal: String,
     maybeServerToken: Option[Array[Byte]],
-    gssContext: GSSContext): Token = Token(principal, newExpiration, maybeServerToken, gssContext)
+    gssContext: GSSContext
+  ): Token = Token(principal, newExpiration, maybeServerToken, gssContext)
 
-  def serialize(token: Token): String = List(token.principal, token.expiration, sign(token)).mkString("&")
+  def serialize(token: Token): String =
+    List(token.principal, token.expiration, sign(token)).mkString("&")
 }
 
-case class Token private[spnego](
+case class Token private[spnego] (
   principal: String,
   expiration: Long,
   maybeServerToken: Option[Array[Byte]],
-  context: GSSContext) {
+  context: GSSContext
+) {
 
   private lazy val subject: Subject = {
     val principals = new util.HashSet[KerberosPrincipal]

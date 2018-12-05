@@ -14,8 +14,7 @@ trait WSManConnectionFactoryComponent {
 }
 
 trait DefaultWSManConnectionFactoryComponent extends WSManConnectionFactoryComponent {
-  self: WSManNetworkingComponent
-    with DnsLookupComponent =>
+  self: WSManNetworkingComponent with DnsLookupComponent =>
 
   implicit lazy val dns: DnsLookup = dnsLookup
 

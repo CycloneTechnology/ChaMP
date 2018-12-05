@@ -10,27 +10,27 @@ object XmlUtils {
   def attributeValue(node: Node, namespace: String, name: String): Option[String] = {
     node \ ("@{" + namespace + "}" + name) match {
       case NodeSeq.Empty => None
-      case ns: NodeSeq => Some(ns.text)
+      case ns: NodeSeq   => Some(ns.text)
     }
   }
 
   def attributeValue(node: Node, name: String): Option[String] = {
     node \ ("@" + name) match {
       case NodeSeq.Empty => None
-      case ns: NodeSeq => Some(ns.text)
+      case ns: NodeSeq   => Some(ns.text)
     }
   }
 
   def elementText(nodes: NodeSeq): Option[String] = {
     nodes match {
       case NodeSeq.Empty => None
-      case ns: NodeSeq => Some(ns.text)
+      case ns: NodeSeq   => Some(ns.text)
     }
   }
 
   def elements(nodeSeq: NodeSeq): Seq[Elem] = nodeSeq.flatMap {
     case e: Elem => Some(e)
-    case _ => None
+    case _       => None
   }
 
   def singleElement(nodeSeq: NodeSeq): Elem = elements(nodeSeq).head

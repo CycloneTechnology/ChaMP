@@ -13,6 +13,7 @@ object GetExtraFirmwareInfo {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -24,21 +25,37 @@ object GetExtraFirmwareInfo {
         val hardwareId = is.readByte
         val firmwareTag = iterator.toByteString.decodeString(Charsets.US_ASCII.name())
 
-        CommandResult(firmwareMajorVersion, firmwareMinorVersion, firmwareSubVersion, firmwareBuildNumber, hardwareId, firmwareTag)
+        CommandResult(
+          firmwareMajorVersion,
+          firmwareMinorVersion,
+          firmwareSubVersion,
+          firmwareBuildNumber,
+          hardwareId,
+          firmwareTag
+        )
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
-  case class CommandResult(firmwareMajorVersion: Int, firmwareMinorVersion: Int, firmwareSubVersion: Int, firmwareBuildNumber: Int, hardwareId: Byte, firmwareTag: String) extends IpmiCommandResult
+  case class CommandResult(
+    firmwareMajorVersion: Int,
+    firmwareMinorVersion: Int,
+    firmwareSubVersion: Int,
+    firmwareBuildNumber: Int,
+    hardwareId: Byte,
+    firmwareTag: String
+  ) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
       def encode(request: Command): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command() extends IpmiStandardCommand {

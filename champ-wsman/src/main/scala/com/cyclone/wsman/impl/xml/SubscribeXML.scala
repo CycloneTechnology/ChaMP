@@ -7,11 +7,13 @@ import com.cyclone.wsman.subscription.SubscriptionId
 
 import scala.xml.Elem
 
-case class SubscribeXML(ref: ManagedReference,
+case class SubscribeXML(
+  ref: ManagedReference,
   selectors: SelectorClause,
   filter: InstanceFilter,
   deliveryHandler: DeliveryHandler,
-  localSubscriptionId: SubscriptionId) extends RequestXMLWithNoDeadline {
+  localSubscriptionId: SubscriptionId
+) extends RequestXMLWithNoDeadline {
 
   import RequestXML._
 

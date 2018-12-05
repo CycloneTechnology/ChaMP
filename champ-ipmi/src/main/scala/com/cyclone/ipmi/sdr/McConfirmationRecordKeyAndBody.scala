@@ -9,15 +9,16 @@ import com.cyclone.ipmi.command.oem.IanaEnterpriseNumber
   * Contains the key and body of an Management Controller Confirmation Record
   */
 case class McConfirmationRecordKeyAndBody(
-                                           deviceAccessAddress: DeviceAddress,
-                                           deviceId: DeviceId,
-                                           channelNumber: ChannelNumber,
-                                           deviceRevision: DeviceRevision,
-                                           firmwareRevision: FirmwareRevision,
-                                           ipmiVersion: IpmiVersion,
-                                           manufacturer: IanaEnterpriseNumber,
-                                           productId: Short,
-                                           guid: DeviceGuid) extends SdrKeyAndBody {
+  deviceAccessAddress: DeviceAddress,
+  deviceId: DeviceId,
+  channelNumber: ChannelNumber,
+  deviceRevision: DeviceRevision,
+  firmwareRevision: FirmwareRevision,
+  ipmiVersion: IpmiVersion,
+  manufacturer: IanaEnterpriseNumber,
+  productId: Short,
+  guid: DeviceGuid
+) extends SdrKeyAndBody {
   val sensorIds: Seq[SensorId] = Nil
   val sensorNumbers: Seq[SensorNumber] = Nil
   val recordType: SensorDataRecordType = SensorDataRecordType.McConfirmation
@@ -25,32 +26,42 @@ case class McConfirmationRecordKeyAndBody(
 }
 
 object McConfirmationRecordKeyAndBody {
-  implicit val decoder: Decoder[McConfirmationRecordKeyAndBody] = new Decoder[McConfirmationRecordKeyAndBody] {
-    def decode(data: ByteString): McConfirmationRecordKeyAndBody = {
-      val iterator = data.iterator
-      val is = iterator.asInputStream
+  implicit val decoder: Decoder[McConfirmationRecordKeyAndBody] =
+    new Decoder[McConfirmationRecordKeyAndBody] {
 
-      val deviceAccessAddress = is.readByte.as[DeviceAddress]
+      def decode(data: ByteString): McConfirmationRecordKeyAndBody = {
+        val iterator = data.iterator
+        val is = iterator.asInputStream
 
-      val deviceId = is.readByte.as[DeviceId]
+        val deviceAccessAddress = is.readByte.as[DeviceAddress]
 
-      val channelNumberByte = is.readByte
+        val deviceId = is.readByte.as[DeviceId]
 
-      val channelNumber = channelNumberByte.bits4To7.as[ChannelNumber]
-      val deviceRevision = channelNumberByte.as[DeviceRevision]
+        val channelNumberByte = is.readByte
 
-      val firmwareRevision = is.read(2).as[FirmwareRevision]
-      val ipmiVersion = is.readByte.as[IpmiVersion]
+        val channelNumber = channelNumberByte.bits4To7.as[ChannelNumber]
+        val deviceRevision = channelNumberByte.as[DeviceRevision]
 
-      val manufacturer = is.read(3).as[IanaEnterpriseNumber]
+        val firmwareRevision = is.read(2).as[FirmwareRevision]
+        val ipmiVersion = is.readByte.as[IpmiVersion]
 
-      val productId = is.read(2).as[Short]
+        val manufacturer = is.read(3).as[IanaEnterpriseNumber]
 
-      val guid = is.read(16).as[DeviceGuid]
+        val productId = is.read(2).as[Short]
 
-      McConfirmationRecordKeyAndBody(deviceAccessAddress, deviceId,
-        channelNumber, deviceRevision,
-        firmwareRevision, ipmiVersion, manufacturer, productId, guid)
+        val guid = is.read(16).as[DeviceGuid]
+
+        McConfirmationRecordKeyAndBody(
+          deviceAccessAddress,
+          deviceId,
+          channelNumber,
+          deviceRevision,
+          firmwareRevision,
+          ipmiVersion,
+          manufacturer,
+          productId,
+          guid
+        )
+      }
     }
-  }
 }

@@ -15,6 +15,7 @@ object GetErrorLed {
 
   object ErrorLedState {
     implicit val decoder: Decoder[ErrorLedState] = new Decoder[ErrorLedState] {
+
       def decode(data: ByteString): ErrorLedState = data(0).toUnsignedInt match {
         case 0x00 => OffOff
         case 0x01 => OffOn
@@ -29,6 +30,7 @@ object GetErrorLed {
     }
 
     implicit val encoder: Coder[ErrorLedState] = new Coder[ErrorLedState] {
+
       def encode(a: ErrorLedState): ByteString = {
         a match {
           case OffOff     => ByteString(0x00)
@@ -84,11 +86,14 @@ object GetErrorLed {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val requestType = */is.read(3).as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
+        /*val requestType = */
+        is.read(3)
+          .as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
 
         val ledState = is.readByte.as[ErrorLedState]
 
@@ -96,13 +101,15 @@ object GetErrorLed {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(ledState: ErrorLedState) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -116,7 +123,8 @@ object GetErrorLed {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

@@ -3,7 +3,6 @@ package com.cyclone.ipmi.protocol.rakp
 import com.cyclone.ipmi.StatusCodeError
 import com.cyclone.ipmi.command.StatusCode
 
-
 /**
   * RMCP+ and RAKP Message Status Codes
   */
@@ -76,6 +75,7 @@ object RmcpPlusAndRakpStatusCodeErrors {
 
   case object UnauthorizedGUID extends StatusCodeError {
     val code = StatusCode(0x0E)
+
     val message: String =
       """Unauthorized GUID.
         |(GUID that BMC submitted in RAKP Message 2 was not
@@ -104,24 +104,24 @@ object RmcpPlusAndRakpStatusCodeErrors {
 
   //noinspection ScalaStyle
   private val codeLookupMap = Map(
-    InsufficientResources.code -> InsufficientResources,
-    InvalidSessionId.code -> InvalidSessionId,
-    InvalidPayloadType.code -> InvalidPayloadType,
-    InvalidAuthenticationAlgorithm.code -> InvalidAuthenticationAlgorithm,
-    InvalidIntegrityAlgorithm.code -> InvalidIntegrityAlgorithm,
+    InsufficientResources.code           -> InsufficientResources,
+    InvalidSessionId.code                -> InvalidSessionId,
+    InvalidPayloadType.code              -> InvalidPayloadType,
+    InvalidAuthenticationAlgorithm.code  -> InvalidAuthenticationAlgorithm,
+    InvalidIntegrityAlgorithm.code       -> InvalidIntegrityAlgorithm,
     NoMatchingAuthenticationPayload.code -> NoMatchingAuthenticationPayload,
-    NoMatchingIntegrityPayload.code -> NoMatchingIntegrityPayload,
-    InactiveSessionId.code -> InactiveSessionId,
-    InvalidRole.code -> InvalidRole,
-    UnauthorizedRole.code -> UnauthorizedRole,
-    InsufficientResourcesForRole.code -> InsufficientResourcesForRole,
-    InvalidNameLength.code -> InvalidNameLength,
-    UnauthorizedName.code -> UnauthorizedName,
-    UnauthorizedGUID.code -> UnauthorizedGUID,
-    InvalidIntegrityCheckValue.code -> InvalidIntegrityCheckValue,
+    NoMatchingIntegrityPayload.code      -> NoMatchingIntegrityPayload,
+    InactiveSessionId.code               -> InactiveSessionId,
+    InvalidRole.code                     -> InvalidRole,
+    UnauthorizedRole.code                -> UnauthorizedRole,
+    InsufficientResourcesForRole.code    -> InsufficientResourcesForRole,
+    InvalidNameLength.code               -> InvalidNameLength,
+    UnauthorizedName.code                -> UnauthorizedName,
+    UnauthorizedGUID.code                -> UnauthorizedGUID,
+    InvalidIntegrityCheckValue.code      -> InvalidIntegrityCheckValue,
     InvalidConfidentialityAlgorithm.code -> InvalidConfidentialityAlgorithm,
-    NoMatchingCipherSuite.code -> NoMatchingCipherSuite,
-    IllegalParameter.code -> IllegalParameter
+    NoMatchingCipherSuite.code           -> NoMatchingCipherSuite,
+    IllegalParameter.code                -> IllegalParameter
   )
 
   val lookup: PartialFunction[StatusCode, StatusCodeError] = codeLookupMap

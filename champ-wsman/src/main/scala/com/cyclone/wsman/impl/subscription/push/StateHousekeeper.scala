@@ -31,5 +31,3 @@ trait KerberosStateHousekeeperComponent extends StateHousekeeperComponent {
       Future.successful(Done)
     }
 }
-
-

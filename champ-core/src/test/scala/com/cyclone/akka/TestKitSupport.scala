@@ -27,8 +27,8 @@ import com.cyclone.akka.ActorSystemSupport._
 abstract class TestKitSupportBase(
   actorSystemName: String = "TestClusterActorSystem",
   configSource: String,
-  baseConfig: Config = ConfigFactory.load())
-  extends TestKit(ActorSystem(actorSystemName, effectiveConfig(configSource, baseConfig)))
+  baseConfig: Config = ConfigFactory.load()
+) extends TestKit(ActorSystem(actorSystemName, effectiveConfig(configSource, baseConfig)))
     with ActorSystemComponent {
   self: Suite with ActorSystemShutdown =>
 
@@ -49,8 +49,8 @@ abstract class TestKitSupportBase(
 abstract class TestKitSupport(
   actorSystemName: String = "TestActorSystem",
   configSource: String = nonClusterConfig,
-  baseConfig: Config = ConfigFactory.load())
-  extends TestKitSupportBase(actorSystemName, configSource, baseConfig) {
+  baseConfig: Config = ConfigFactory.load()
+) extends TestKitSupportBase(actorSystemName, configSource, baseConfig) {
   self: Suite with ActorSystemShutdown =>
 
   def subscribeMessages[T: ClassTag](subscriber: ActorRef) =
@@ -65,5 +65,3 @@ trait ActorSystemShutdown extends BeforeAndAfterAll {
     TestKit.shutdownActorSystem(actorSystem)
   }
 }
-
-

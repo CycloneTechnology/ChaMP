@@ -6,7 +6,6 @@ import com.cyclone.ipmi.protocol.packet.SeqNo
 
 import scala.collection.immutable.SortedSet
 
-
 object SeqNoManagerFactory {
   type Key = Any
 

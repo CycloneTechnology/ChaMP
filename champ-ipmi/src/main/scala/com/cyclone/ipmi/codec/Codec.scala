@@ -43,7 +43,9 @@ trait Codec[A] extends Coder[A] with Decoder[A]
 trait ErrorDecoder[+A] extends OrDecoder[IpmiError, A]
 
 object ErrorDecoder extends LazyLogging {
+
   def wrapToHandleExceptions[A](decoder: Decoder[A]): ErrorDecoder[A] = new ErrorDecoder[A] {
+
     def decode(data: ByteString): IpmiExceptionError \/ A = {
       Try(decoder.decode(data)) match {
         case Success(a) => a.right

@@ -3,7 +3,7 @@ package com.cyclone.ipmi.sdr
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 
-import scala.collection.{BitSet, immutable}
+import scala.collection.{immutable, BitSet}
 
 /**
   * Represents bits set (asserted) or masked for an event.
@@ -16,6 +16,7 @@ case class EventBits(bits: BitSet) extends AnyVal {
 
 object EventBits {
   implicit val decoder: Decoder[EventBits] = new Decoder[EventBits] {
+
     def decode(data: ByteString): EventBits = {
       // So that we can call with one byte
       val padded = data.padTo(2, 0.toByte)

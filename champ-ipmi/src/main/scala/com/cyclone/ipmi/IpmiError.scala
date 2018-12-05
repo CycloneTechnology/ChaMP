@@ -3,7 +3,7 @@ package com.cyclone.ipmi
 import com.cyclone.ipmi.command.StatusCode
 import com.cyclone.ipmi.protocol.packet.{IpmiVersion, PayloadType}
 import com.cyclone.ipmi.protocol.security.AuthenticationTypes
-import scalaz.{EitherT, \/}
+import scalaz.{\/, EitherT}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -39,7 +39,6 @@ object IpmiError {
   */
 case class IpmiErrorException(err: IpmiError) extends Exception with NoStackTrace
 
-
 /**
   * An error from an exception
   */
@@ -62,7 +61,8 @@ trait StatusCodeError extends IpmiError {
 case class SimpleStatusCodeError(
   code: StatusCode,
   message: String,
-  override val retryAfter: Option[FiniteDuration] = None) extends StatusCodeError
+  override val retryAfter: Option[FiniteDuration] = None
+) extends StatusCodeError
 
 case class IntegrityCheckError(message: String) extends IpmiError
 
@@ -79,7 +79,9 @@ case class UnsupportedPayloadType(payloadType: PayloadType) extends IpmiError {
 }
 
 case class NoSupportedAuthenticationTypes(authenticationTypes: AuthenticationTypes) extends IpmiError {
-  val message = s"None of the device's authentication capabilities: ${authenticationTypes.types.mkString(", ")} is supported"
+
+  val message =
+    s"None of the device's authentication capabilities: ${authenticationTypes.types.mkString(", ")} is supported"
 }
 
 case object NoSupportedCipherSuites extends IpmiError {

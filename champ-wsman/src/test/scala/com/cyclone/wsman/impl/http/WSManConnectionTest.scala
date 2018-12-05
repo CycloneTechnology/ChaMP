@@ -33,7 +33,7 @@ import scala.xml.Elem
   * Tests for [[WSManConnection]]
   */
 class WSManConnectionTest
-  extends WordSpec
+    extends WordSpec
     with OneInstancePerTest
     with Matchers
     with ScalaFutures
@@ -46,8 +46,9 @@ class WSManConnectionTest
   }
 
   val address = "http://someAddress/wsman"
-  val securityContext = PasswordSecurityContext(PasswordCredentials.fromStrings("user", "pwd"),
-    AuthenticationMethod.Basic)
+
+  val securityContext =
+    PasswordSecurityContext(PasswordCredentials.fromStrings("user", "pwd"), AuthenticationMethod.Basic)
 
   val faultXML =
     <Envelope>
@@ -94,10 +95,9 @@ class WSManConnectionTest
     import wsmanNetworking._
 
     class WSManTestConnection(
-      securityContext: SecurityContext = PasswordSecurityContext("user", "passwd", AuthenticationMethod.Basic))
-      extends DefaultWSManConnection(
-        HttpUrl.fromString(address),
-        securityContext, wsmanNetworking) {
+      securityContext: SecurityContext = PasswordSecurityContext("user", "passwd", AuthenticationMethod.Basic)
+    ) extends DefaultWSManConnection(HttpUrl.fromString(address), securityContext, wsmanNetworking) {
+
       def willRequest(response: Response) = {
         mockery.checking(new Expectations {
           e =>
@@ -248,9 +248,8 @@ class WSManConnectionTest
 
     "availability - no authentication wrong scheme - using basic; challenge negotiate" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(
-          PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Basic)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Basic)
+      ) {
         willRequest(response(401, Map("WWW-Authenticate" -> List("Negotiate"))))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.NoAuthWrongScheme
@@ -259,8 +258,8 @@ class WSManConnectionTest
 
     "availability - no authentication wrong scheme - using basic; challenge kerberos" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Basic)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Basic)
+      ) {
         willRequest(response(401, Map("WWW-Authenticate" -> List("Kerberos"))))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.NoAuthWrongScheme
@@ -269,8 +268,8 @@ class WSManConnectionTest
 
     "availability - no authentication wrong scheme - using kerberos; challenge basic" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Kerberos)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Kerberos)
+      ) {
         willRequest(response(401, Map("WWW-Authenticate" -> List("Basic realm=blahblah"))))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.NoAuthWrongScheme
@@ -279,8 +278,8 @@ class WSManConnectionTest
 
     "availability - no authentication right scheme - using basic; challenge basic" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Basic)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Basic)
+      ) {
         willRequest(response(401, Map("WWW-Authenticate" -> List("Basic realm=blahblah"))))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.BadCredentials
@@ -289,8 +288,8 @@ class WSManConnectionTest
 
     "availability - no authentication right scheme - using kerberos; challenge kerberos" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Kerberos)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Kerberos)
+      ) {
         willRequest(response(401, Map("WWW-Authenticate" -> List("Kerberos"))))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.BadCredentials
@@ -299,8 +298,8 @@ class WSManConnectionTest
 
     "availability - no authentication right scheme - using kerberos; challenge negotiate" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Kerberos)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Kerberos)
+      ) {
         willRequest(response(401, Map("WWW-Authenticate" -> List("Negotiate"))))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.BadCredentials
@@ -309,8 +308,8 @@ class WSManConnectionTest
 
     "availability - other response code" in new Fixture {
       new WSManTestConnection(
-        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"),
-          AuthenticationMethod.Basic)) {
+        PasswordSecurityContext(PasswordCredentials.fromStrings("ignored", "ignored"), AuthenticationMethod.Basic)
+      ) {
         willRequest(response(501, "ignored"))
 
         doDetermineAvailability.futureValue shouldBe WSManAvailability.OtherStatusCode(501, possibilyAvailable = true)

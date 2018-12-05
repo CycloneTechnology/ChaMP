@@ -9,6 +9,7 @@ sealed trait PrivilegeLevel {
 
 object PrivilegeLevel {
   implicit val codec: Codec[PrivilegeLevel] = new Codec[PrivilegeLevel] {
+
     def encode(a: PrivilegeLevel) =
       ByteString(a.code)
 

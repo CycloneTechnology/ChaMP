@@ -37,7 +37,8 @@ trait Dns4sDnsLookupComponent extends DnsLookupComponent {
       (dnsLookupActor ? DnsLookupActor.LookupPTRs(hostAddress)).mapTo[Seq[DnsRecord.PTR]]
 
     def lookupAddressAndPTRs(hostOrAddress: String): Future[Seq[DnsRecord.PTR]] =
-      (dnsLookupActor ? DnsLookupActor.LookupAddressAndPTRs(hostOrAddress)).mapTo[Seq[DnsRecord.PTR]]
+      (dnsLookupActor ? DnsLookupActor.LookupAddressAndPTRs(hostOrAddress))
+        .mapTo[Seq[DnsRecord.PTR]]
 
     def lookupMXs(mailAddressDomain: String): Future[Seq[DnsRecord.MX]] =
       (dnsLookupActor ? DnsLookupActor.LookupMXs(mailAddressDomain)).mapTo[Seq[DnsRecord.MX]]
@@ -45,6 +46,7 @@ trait Dns4sDnsLookupComponent extends DnsLookupComponent {
 }
 
 private[net] object DnsLookupActor {
+
   def props(dnsConfigSource: DnsConfigSource): Props =
     Props(new DnsLookupActor(dnsConfigSource))
 
@@ -96,25 +98,39 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
       }
   }
 
-  private def lookupPTRs(dnsConfig: DnsConfig, hostAddress: String, deadline: OperationDeadline): Future[Seq[DnsRecord.PTR]] = {
-    def arpaAddress(hostAddress: String) = hostAddress.split('.').reverse.mkString(".") + ".in-addr.arpa."
+  private def lookupPTRs(
+    dnsConfig: DnsConfig,
+    hostAddress: String,
+    deadline: OperationDeadline
+  ): Future[Seq[DnsRecord.PTR]] = {
+    def arpaAddress(hostAddress: String) =
+      hostAddress.split('.').reverse.mkString(".") + ".in-addr.arpa."
 
-    performQuery(dnsConfig, Query ~ Questions(QName(arpaAddress(hostAddress)) ~ TypePTR), deadline).map {
-      case Response(Answers(answers)) =>
-        answers.collect {
-          case PTRRecord(resource) => DnsRecord.PTR.fromRaw(resource.ptrdname)
-        }
-    }
+    performQuery(dnsConfig, Query ~ Questions(QName(arpaAddress(hostAddress)) ~ TypePTR), deadline)
+      .map {
+        case Response(Answers(answers)) =>
+          answers.collect {
+            case PTRRecord(resource) => DnsRecord.PTR.fromRaw(resource.ptrdname)
+          }
+      }
   }
 
-  private def lookupAddressAndPTRs(dnsConfig: DnsConfig, hostOrAddress: String, deadline: OperationDeadline): Future[Seq[DnsRecord.PTR]] = {
+  private def lookupAddressAndPTRs(
+    dnsConfig: DnsConfig,
+    hostOrAddress: String,
+    deadline: OperationDeadline
+  ): Future[Seq[DnsRecord.PTR]] = {
     for {
       address <- addressFor(dnsConfig, hostOrAddress, deadline)
-      ptrs <- lookupPTRs(dnsConfig, address, deadline)
+      ptrs    <- lookupPTRs(dnsConfig, address, deadline)
     } yield ptrs
   }
 
-  private def lookupAddresses(dnsConfig: DnsConfig, host: String, deadline: OperationDeadline): Future[Seq[String]] = {
+  private def lookupAddresses(
+    dnsConfig: DnsConfig,
+    host: String,
+    deadline: OperationDeadline
+  ): Future[Seq[String]] = {
     def queryWithDomainPrefix(domainPrefix: String): Future[Seq[String]] =
       performQuery(dnsConfig, Query ~ Questions(QName(host + domainPrefix) ~ TypeA), deadline).map {
         case Response(Answers(answers)) =>
@@ -129,26 +145,37 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
     first.map(_.getOrElse(Nil))
   }
 
-  private def addressFor(dnsConfig: DnsConfig, hostOrAddress: String, deadline: OperationDeadline) = {
+  private def addressFor(
+    dnsConfig: DnsConfig,
+    hostOrAddress: String,
+    deadline: OperationDeadline
+  ) = {
     if (InetAddresses.isInetAddress(hostOrAddress))
       Future.successful(hostOrAddress)
     else
       lookupAddresses(dnsConfig, hostOrAddress, deadline).map(_.headOption.getOrElse(hostOrAddress))
   }
 
-  private def lookupMXs(dnsConfig: DnsConfig, mailAddressDomain: String, deadline: OperationDeadline): Future[Seq[DnsRecord.MX]] = {
+  private def lookupMXs(
+    dnsConfig: DnsConfig,
+    mailAddressDomain: String,
+    deadline: OperationDeadline
+  ): Future[Seq[DnsRecord.MX]] = {
     performQuery(dnsConfig, Query ~ Questions(QName(mailAddressDomain) ~ TypeMX), deadline).map {
       case Response(Answers(answers)) =>
-        answers.collect {
+        answers
+          .collect {
             case MXRecord(resource) => DnsRecord.MX(resource.exchange, resource.preference)
-        }.sortBy(mx => mx.mxLevel)
+          }
+          .sortBy(mx => mx.mxLevel)
     }
   }
 
   private def performQuery(
     dnsConfig: DnsConfig,
     message: ComposableMessage,
-    deadline: OperationDeadline): Future[Message] = {
+    deadline: OperationDeadline
+  ): Future[Message] = {
     implicit val timeout: Timeout = Timeout(dnsConfig.timeout)
 
     val requests = Requests(

@@ -10,4 +10,3 @@ trait SpnegoDirectives {
   def spnegoAuthenticate(config: Config = ConfigFactory.load()): Directive1[Token] =
     SpnegoAuthenticator.spnegoAuthenticate(config, kerberosDeployment)
 }
-

@@ -14,6 +14,7 @@ object GetSystemRestartCause {
 
   object RestartCause {
     implicit val decoder: Decoder[RestartCause] = new Decoder[RestartCause] {
+
       def decode(data: ByteString): RestartCause = data(0).bits0To3.toUnsignedInt match {
         case 0x00 => Unknown
         case 0x01 => ChassisControlCommand
@@ -22,7 +23,8 @@ object GetSystemRestartCause {
         case 0x04 => WatchdogExpiration
         case 0x05 => OEM
         case 0x06 => AutomaticPowerUpOnACBeingAppliedDueTo_AlwaysRestore_PowerRestorePolicy
-        case 0x07 => AutomaticPowerUpOnACBeingAppliedDueTo_RestorePreviousPowerState_PowerRestorePolicy
+        case 0x07 =>
+          AutomaticPowerUpOnACBeingAppliedDueTo_RestorePreviousPowerState_PowerRestorePolicy
         case 0x08 => ResetViaPEF
         case 0x09 => PowerCycleViaPEF
         case 0x0A => SoftReset
@@ -59,6 +61,7 @@ object GetSystemRestartCause {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -73,7 +76,8 @@ object GetSystemRestartCause {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
@@ -86,12 +90,11 @@ object GetSystemRestartCause {
       def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.ChassisRequest
     val commandCode = CommandCode(0x07)
   }
 
 }
-
-

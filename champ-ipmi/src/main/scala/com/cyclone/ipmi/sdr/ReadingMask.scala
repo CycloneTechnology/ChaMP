@@ -31,9 +31,7 @@ object ReadingMask {
     val full = Threshold(ByteString(0xff.toByte, 0xff.toByte).as[EventBits])
   }
 
-  case class DigitalStates(
-    stateOffsetsReadable: EventBits,
-    eventReadingType: EventReadingType) extends ReadingMask {
+  case class DigitalStates(stateOffsetsReadable: EventBits, eventReadingType: EventReadingType) extends ReadingMask {
 
     def evaluateOffsets(eventBits: EventBits): Set[EventReadingOffset] =
       if (stateOffsetsReadable.isSet(0))
@@ -45,9 +43,7 @@ object ReadingMask {
         Set.empty
   }
 
-  case class DiscreteStates(
-    stateOffsetsReadable: EventBits,
-    eventReadingType: EventReadingType) extends ReadingMask {
+  case class DiscreteStates(stateOffsetsReadable: EventBits, eventReadingType: EventReadingType) extends ReadingMask {
 
     def evaluateOffsets(eventBits: EventBits): Set[EventReadingOffset] =
       eventBits.bits
@@ -59,9 +55,7 @@ object ReadingMask {
         }
   }
 
-  case class SensorSpecificDiscreteStates(
-    stateOffsetsReadable: EventBits,
-    sensorType: SensorType) extends ReadingMask {
+  case class SensorSpecificDiscreteStates(stateOffsetsReadable: EventBits, sensorType: SensorType) extends ReadingMask {
 
     def evaluateOffsets(eventBits: EventBits): Set[EventReadingOffset] =
       eventBits.bits

@@ -13,6 +13,7 @@ object GetSelInfo {
 
   object OperationSupport {
     implicit val decoder: Decoder[OperationSupport] = new Decoder[OperationSupport] {
+
       def decode(data: ByteString): OperationSupport = {
         val byte = data(0)
 
@@ -25,24 +26,27 @@ object GetSelInfo {
           deleteSELSupported = byte.bit3,
           partialAddSELSupported = byte.bit2,
           reserveSELSupported = byte.bit1,
-          getSELAllocationCommandSupported = byte.bit0)
+          getSELAllocationCommandSupported = byte.bit0
+        )
       }
     }
   }
 
   case class OperationSupport(
-                               standbyAllowed: Boolean,
-                               overflow: Boolean,
-                               reserved6: Boolean,
-                               reserved5: Boolean,
-                               reserved4: Boolean,
-                               deleteSELSupported: Boolean,
-                               partialAddSELSupported: Boolean,
-                               reserveSELSupported: Boolean,
-                               getSELAllocationCommandSupported: Boolean)
+    standbyAllowed: Boolean,
+    overflow: Boolean,
+    reserved6: Boolean,
+    reserved5: Boolean,
+    reserved4: Boolean,
+    deleteSELSupported: Boolean,
+    partialAddSELSupported: Boolean,
+    reserveSELSupported: Boolean,
+    getSELAllocationCommandSupported: Boolean
+  )
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -68,33 +72,36 @@ object GetSelInfo {
           freeSpace,
           mostRecentAdditionTimestamp,
           mostRecentEraseTimestamp,
-          operationSupport)
+          operationSupport
+        )
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
-                            selVersion: SelVersion,
-                            entries: Short,
-                            freeSpace: Short,
-                            mostRecentAdditionTimestamp: Instant,
-                            mostRecentEraseTimestamp: Instant,
-                            operationSupport: Option[OperationSupport]) extends IpmiCommandResult
+    selVersion: SelVersion,
+    entries: Short,
+    freeSpace: Short,
+    mostRecentAdditionTimestamp: Instant,
+    mostRecentEraseTimestamp: Instant,
+    operationSupport: Option[OperationSupport]
+  ) extends IpmiCommandResult
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+
       def encode(request: Command.type): ByteString =
         ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.StorageRequest
     val commandCode = CommandCode(0x40)
   }
 
 }
-
-

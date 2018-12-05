@@ -14,10 +14,12 @@ case class BoardInfo(
   serialNumber: String,
   partNumber: String,
   fruFileId: Option[String],
-  customFields: Seq[FruField])
+  customFields: Seq[FruField]
+)
 
 object BoardInfo {
   implicit val decoder: Decoder[BoardInfo] = new Decoder[BoardInfo] {
+
     def decode(data: ByteString): BoardInfo = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -51,7 +53,8 @@ object BoardInfo {
         serialNumber.stringValue,
         partNumber.stringValue,
         fruFileId.map(_.stringValue),
-        customFields)
+        customFields
+      )
     }
   }
 }

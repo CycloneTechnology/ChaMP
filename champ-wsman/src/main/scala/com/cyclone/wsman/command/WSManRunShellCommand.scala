@@ -20,13 +20,15 @@ import scala.concurrent.Future
   *
   * @author Jeremy.Stone
   */
-case class WSManRunShellCommand(command: String, arguments: String*)
-  extends WSManCommand
+case class WSManRunShellCommand(command: String, arguments: String*) extends WSManCommand
 
 object WSManRunShellCommand {
 
   implicit object Executor extends CommandExecutor[WSManRunShellCommand, WSManRunShellResult] {
-    def execute(command: WSManRunShellCommand)(implicit context: WSManOperationContext): Future[WSManErrorOr[WSManRunShellResult]] = {
+
+    def execute(
+      command: WSManRunShellCommand
+    )(implicit context: WSManOperationContext): Future[WSManErrorOr[WSManRunShellResult]] = {
 
       implicit val mat: Materializer = context.materializer
 
@@ -47,4 +49,3 @@ object WSManRunShellCommand {
   }
 
 }
-

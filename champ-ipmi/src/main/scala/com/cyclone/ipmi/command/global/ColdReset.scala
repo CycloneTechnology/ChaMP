@@ -8,7 +8,6 @@ import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, 
 /**
   * Cold Reset command and response
   */
-
 /**
   * FIXME The spec says the following, we need to cater for not receiving a response...
   *
@@ -27,7 +26,8 @@ object ColdReset {
       def decode(data: ByteString): CommandResult.type = CommandResult
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] = StatusCodeTranslator[CommandResult.type]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
 
   object Command extends IpmiStandardCommand {
@@ -35,12 +35,11 @@ object ColdReset {
       def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult.type] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult.type]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult.type]
 
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x02)
   }
 
 }
-
-

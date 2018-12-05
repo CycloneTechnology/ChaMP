@@ -2,7 +2,12 @@ package com.cyclone.ipmi.tool.command
 
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.command.chassis.GetChassisStatus
-import com.cyclone.ipmi.command.chassis.GetChassisStatus.{CurrentPowerState, FrontPanelButtonCapabilities, LastPowerEvent, MiscChassisState}
+import com.cyclone.ipmi.command.chassis.GetChassisStatus.{
+  CurrentPowerState,
+  FrontPanelButtonCapabilities,
+  LastPowerEvent,
+  MiscChassisState
+}
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}
 import com.cyclone.ipmi.IpmiError
 import scalaz.EitherT._
@@ -18,19 +23,26 @@ import scala.concurrent.Future
 object PowerStatusTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetChassisStatus.Command))
-        } yield Result(
-          cmdResult.currentPowerState, cmdResult.lastPowerEvent, cmdResult.miscChassisState, cmdResult.frontPanelButtonCapabilities)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(connection.executeCommandOrError(GetChassisStatus.Command))
+          } yield
+            Result(
+              cmdResult.currentPowerState,
+              cmdResult.lastPowerEvent,
+              cmdResult.miscChassisState,
+              cmdResult.frontPanelButtonCapabilities
+            )
+
+          result.run
+        }
       }
-    }
 
     def description() = "power status"
   }
@@ -39,6 +51,7 @@ object PowerStatusTool {
     currentPowerState: CurrentPowerState,
     lastEvent: LastPowerEvent,
     miscState: MiscChassisState,
-    frontPanelButtonCapabilities: Option[FrontPanelButtonCapabilities]) extends IpmiToolCommandResult
+    frontPanelButtonCapabilities: Option[FrontPanelButtonCapabilities]
+  ) extends IpmiToolCommandResult
 
 }

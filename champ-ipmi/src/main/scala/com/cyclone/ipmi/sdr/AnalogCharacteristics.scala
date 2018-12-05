@@ -11,10 +11,12 @@ case class AnalogCharacteristics(
 
 object AnalogCharacteristics {
   implicit val decoder: Decoder[AnalogCharacteristics] = new Decoder[AnalogCharacteristics] {
+
     def decode(data: ByteString) =
       AnalogCharacteristics(
         normalMinSpecified = data(0).bit2,
         normalMaxSpecified = data(0).bit1,
-        nominalReadingSpecified = data(0).bit1)
+        nominalReadingSpecified = data(0).bit1
+      )
   }
 }

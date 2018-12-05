@@ -21,7 +21,10 @@ trait DeliveryHandler {
 
   val deliveryModeString: String
 
-  def setupDelivery(context: WSManOperationContext, subscriptionRegistration: R): Source[WSManEnumItem, NotUsed]
+  def setupDelivery(
+    context: WSManOperationContext,
+    subscriptionRegistration: R
+  ): Source[WSManEnumItem, NotUsed]
 
   def notifyElements(localSubscriptionId: SubscriptionId): NodeSeq = NodeSeq.Empty
 
@@ -31,18 +34,22 @@ trait DeliveryHandler {
     localSubscriptionId: SubscriptionId,
     ref: ManagedReference,
     cimNamespace: Option[String],
-    filter: InstanceFilter)(implicit context: WSManOperationContext): Future[WSManErrorOr[R]] = {
-    val result = for (
-      out <- eitherT(WSManOperations.executeSoapRequest(
-        SubscribeXML(
-          ref,
-          SelectorClause.forCimNamespace(cimNamespace),
-          filter,
-          this,
-          localSubscriptionId)))
-    ) yield {
+    filter: InstanceFilter
+  )(implicit context: WSManOperationContext): Future[WSManErrorOr[R]] = {
+    val result = for (out <- eitherT(
+                        WSManOperations.executeSoapRequest(
+                          SubscribeXML(
+                            ref,
+                            SelectorClause.forCimNamespace(cimNamespace),
+                            filter,
+                            this,
+                            localSubscriptionId
+                          )
+                        )
+                      )) yield {
       val res = out \ "Body" \ "SubscribeResponse"
-      val remoteSubscriptionId = (res \ "SubscriptionManager" \ "ReferenceProperties" \ "Identifier").text
+      val remoteSubscriptionId =
+        (res \ "SubscriptionManager" \ "ReferenceProperties" \ "Identifier").text
       val ctx = (res \ "EnumerationContext").text
 
       val subscriptionDescriptor = SubscriptionDescriptor(remoteSubscriptionId, localSubscriptionId)
@@ -56,7 +63,8 @@ trait DeliveryHandler {
   protected def createRegistration(
     ref: ManagedReference,
     subscriptionDescriptor: SubscriptionDescriptor,
-    ctx: String)(implicit context: WSManOperationContext): R
+    ctx: String
+  )(implicit context: WSManOperationContext): R
 }
 
 /**
@@ -75,14 +83,15 @@ case class SubscriptionDescriptor(remoteSubscriptionId: String, localSubscriptio
   */
 class EventSubscriptionRegistration(
   subscriptionRef: ManagedReference,
-  subscriptionDescriptor: SubscriptionDescriptor)(implicit val context: WSManOperationContext) {
+  subscriptionDescriptor: SubscriptionDescriptor
+)(implicit val context: WSManOperationContext) {
 
   val localSubscriptionId: SubscriptionId = subscriptionDescriptor.localSubscriptionId
 
   def unsubscribe: Future[WSManErrorOr[Done]] =
-    WSManOperations.executeSoapRequest(UnsubscribeXML(subscriptionRef, subscriptionDescriptor))
+    WSManOperations
+      .executeSoapRequest(UnsubscribeXML(subscriptionRef, subscriptionDescriptor))
       .map {
         _.rightMap(_ => Done)
       }
 }
-

@@ -11,7 +11,8 @@ class ConfidentialityAlgorithmTest extends WordSpec with Matchers {
 
   val credentials = IpmiCredentials("root", "password")
 
-  def sikFrom(base: ByteString) = AuthenticationAlgorithm.RakpHmacSha1.determineSik(Key.KG.fromCredentials(credentials), base)
+  def sikFrom(base: ByteString) =
+    AuthenticationAlgorithm.RakpHmacSha1.determineSik(Key.KG.fromCredentials(credentials), base)
 
   "a MACBasedConfidentialityAlgorithm" must {
     "encrypt and decrypt" in {

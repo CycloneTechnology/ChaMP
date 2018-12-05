@@ -22,6 +22,7 @@ case class KerberosArtifacts(
 )
 
 object KerberosArtifacts {
+
   /**
     * Gets a source from a resource file on the classpath
     */
@@ -42,7 +43,8 @@ object KerberosArtifacts {
   def singleRealmKrb5Config(
     realm: String,
     kdcHosts: Seq[String],
-    realmHosts: Seq[String]): String = {
+    realmHosts: Seq[String]
+  ): String = {
 
     val ucRealm = realm.toUpperCase
     val lcHosts = realmHosts.map(_.toLowerCase)
@@ -82,15 +84,16 @@ object KerberosArtifacts {
     val config = ConfigFactory.load()
 
     val realm = config.getString("cyclone.kerberos.realm")
-    val kdcHosts= config.getStringList("cyclone.kerberos.kdcHosts").asScala
-    val realmHosts= config.getStringList("cyclone.kerberos.realmHosts").asScala
+    val kdcHosts = config.getStringList("cyclone.kerberos.kdcHosts").asScala
+    val realmHosts = config.getStringList("cyclone.kerberos.realmHosts").asScala
 
     KerberosArtifacts(
       kerb5ConfContent = Source.single(ByteString(singleRealmKrb5Config(realm, kdcHosts, realmHosts))),
       loginConfContent = resourceSource("/login.conf"),
       // FIXME next params reqd for push subscriptions
       "",
-      keyTabContent = Source.empty)
+      keyTabContent = Source.empty
+    )
   }
 
 }

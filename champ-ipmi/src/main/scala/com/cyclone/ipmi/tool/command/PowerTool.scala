@@ -36,30 +36,45 @@ object Power {
 object PowerTool {
 
   object Command {
-    implicit val executor: CommandExecutor[Command, PowerSet.type] = new CommandExecutor[Command, PowerSet.type] {
-      def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ PowerTool.PowerSet.type] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command, PowerSet.type] =
+      new CommandExecutor[Command, PowerSet.type] {
 
-        def exec = command.power match {
-          case Power.on    => connection.executeCommandOrError(ChassisControl.Command(Control.PowerUp))
-          case Power.off   => connection.executeCommandOrError(ChassisControl.Command(Control.PowerDown))
-          case Power.cycle => connection.executeCommandOrError(ChassisControl.Command(Control.PowerCycle))
-          case Power.reset => connection.executeCommandOrError(ChassisControl.Command(Control.HardReset))
-          case Power.diag  => connection.executeCommandOrError(ChassisControl.Command(Control.PulseDiagnosticInterrupt))
-          case Power.soft  => connection.executeCommandOrError(ChassisControl.Command(Control.EmulateFatalOverTemperature))
+        def execute(
+          command: Command
+        )(implicit ctx: Ctx): Future[IpmiError \/ PowerTool.PowerSet.type] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
+
+          def exec = command.power match {
+            case Power.on =>
+              connection.executeCommandOrError(ChassisControl.Command(Control.PowerUp))
+            case Power.off =>
+              connection.executeCommandOrError(ChassisControl.Command(Control.PowerDown))
+            case Power.cycle =>
+              connection.executeCommandOrError(ChassisControl.Command(Control.PowerCycle))
+            case Power.reset =>
+              connection.executeCommandOrError(ChassisControl.Command(Control.HardReset))
+            case Power.diag =>
+              connection.executeCommandOrError(
+                ChassisControl.Command(Control.PulseDiagnosticInterrupt)
+              )
+            case Power.soft =>
+              connection.executeCommandOrError(
+                ChassisControl.Command(Control.EmulateFatalOverTemperature)
+              )
+          }
+
+          val result = for {
+            _ <- eitherT(exec)
+          } yield PowerSet
+
+          result.run
         }
-
-        val result = for {
-          _ <- eitherT(exec)
-        } yield PowerSet
-
-        result.run
       }
-    }
   }
 
   case class Command(power: Power) extends IpmiToolCommand {
+
     def description(): String = {
       s"power $power"
     }

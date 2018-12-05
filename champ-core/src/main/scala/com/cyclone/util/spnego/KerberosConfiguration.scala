@@ -13,17 +13,21 @@ case class KerberosConfiguration(keytab: String, principal: String, debug: Boole
         "com.sun.security.auth.module.Krb5LoginModule",
         AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
         (Map(
-          "keyTab" -> keytab,
-          "principal" -> principal,
-          "useKeyTab" -> "true",
-          "storeKey" -> "true",
-          "doNotPrompt" -> "true",
-          "useTicketCache" -> "true",
-          "renewTGT" -> "true",
-          "isInitiator" -> "false",
+          "keyTab"            -> keytab,
+          "principal"         -> principal,
+          "useKeyTab"         -> "true",
+          "storeKey"          -> "true",
+          "doNotPrompt"       -> "true",
+          "useTicketCache"    -> "true",
+          "renewTGT"          -> "true",
+          "isInitiator"       -> "false",
           "refreshKrb5Config" -> "true",
-          "debug" -> debug.toString
-        ) ++ ticketCache.map { x => Map("ticketCache" -> x) }.getOrElse(Map.empty)).asJava
+          "debug"             -> debug.toString
+        ) ++ ticketCache
+          .map { x =>
+            Map("ticketCache" -> x)
+          }
+          .getOrElse(Map.empty)).asJava
       )
     )
 }

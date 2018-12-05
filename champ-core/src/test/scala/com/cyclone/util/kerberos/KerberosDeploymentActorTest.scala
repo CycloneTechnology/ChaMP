@@ -7,7 +7,11 @@ import akka.testkit.ImplicitSender
 import akka.util.ByteString
 import com.cyclone.akka.{ActorSystemShutdown, TestKitSupport}
 import com.cyclone.util.SynchronizedMockeryComponent
-import com.cyclone.util.kerberos.settings.{ArtifactDeploymentResult, KerberosDeploymentSettings, KerberosDeploymentSettingsComponent}
+import com.cyclone.util.kerberos.settings.{
+  ArtifactDeploymentResult,
+  KerberosDeploymentSettings,
+  KerberosDeploymentSettingsComponent
+}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 
@@ -15,7 +19,7 @@ import scala.concurrent.duration._
 import scala.util.control.NoStackTrace
 
 class KerberosDeploymentActorTest
-  extends TestKitSupport
+    extends TestKitSupport
     with WordSpecLike
     with Matchers
     with ActorSystemShutdown
@@ -24,7 +28,7 @@ class KerberosDeploymentActorTest
     with Inside {
 
   class Fixture
-    extends DefaultKerberosDeploymentActorComponent
+      extends DefaultKerberosDeploymentActorComponent
       with MockKerberosArtifactsSourceComponent
       with MockKerberosDeployerComponent
       with SynchronizedMockeryComponent

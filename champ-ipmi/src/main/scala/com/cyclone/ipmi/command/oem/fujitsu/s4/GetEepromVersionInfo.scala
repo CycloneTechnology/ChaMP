@@ -15,6 +15,7 @@ object GetEepromVersionInfo {
 
   object EepromNumber {
     implicit val decoder: Decoder[EepromNumber] = new Decoder[EepromNumber] {
+
       def decode(data: ByteString): EepromNumber = data(0).toUnsignedInt match {
         case 0x00 => Eeprom0
         case 0x01 => Eeprom1
@@ -22,6 +23,7 @@ object GetEepromVersionInfo {
     }
 
     implicit val encoder: Coder[EepromNumber] = new Coder[EepromNumber] {
+
       def encode(a: EepromNumber): ByteString = {
         a match {
           case Eeprom0 => ByteString(0x00)
@@ -40,6 +42,7 @@ object GetEepromVersionInfo {
 
   object Status {
     implicit val decoder: Decoder[Status] = new Decoder[Status] {
+
       def decode(data: ByteString): Status = data(0).toUnsignedInt match {
         case 0x00 => ChecksumErrorRuntimeFw
         case 0x01 => Ok
@@ -47,6 +50,7 @@ object GetEepromVersionInfo {
     }
 
     implicit val encoder: Coder[Status] = new Coder[Status] {
+
       def encode(a: Status): ByteString = {
         a match {
           case ChecksumErrorRuntimeFw => ByteString(0x00)
@@ -63,6 +67,7 @@ object GetEepromVersionInfo {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
 //        val iterator = data.iterator
 //        val is = iterator.asInputStream
@@ -93,13 +98,15 @@ object GetEepromVersionInfo {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -115,7 +122,8 @@ object GetEepromVersionInfo {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

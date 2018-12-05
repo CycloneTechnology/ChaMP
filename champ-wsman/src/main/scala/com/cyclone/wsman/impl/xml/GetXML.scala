@@ -7,9 +7,8 @@ import com.cyclone.wsman.impl.model.ManagedReference
 
 import scala.xml.Elem
 
-case class GetXML(ref: ManagedReference,
-  selectors: SelectorClause,
-  deadline: OperationDeadline) extends RequestXMLWithDeadline {
+case class GetXML(ref: ManagedReference, selectors: SelectorClause, deadline: OperationDeadline)
+    extends RequestXMLWithDeadline {
 
   import RequestXML._
 

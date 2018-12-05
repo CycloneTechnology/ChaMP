@@ -27,9 +27,12 @@ sealed trait AuthenticationAlgorithm {
 }
 
 object AuthenticationAlgorithm {
-  implicit val ordering: Ordering[AuthenticationAlgorithm] = Ordering.by { alg: AuthenticationAlgorithm => alg.goodness }
+  implicit val ordering: Ordering[AuthenticationAlgorithm] = Ordering.by { alg: AuthenticationAlgorithm =>
+    alg.goodness
+  }
 
   implicit val codec: Codec[AuthenticationAlgorithm] = new Codec[AuthenticationAlgorithm] {
+
     def encode(a: AuthenticationAlgorithm) =
       ByteString(a.code)
 
@@ -39,7 +42,9 @@ object AuthenticationAlgorithm {
       // We should have negotiated available algorithms:
       // if it is not available something unexpected has gone wrong
       fromCode(code)
-        .getOrElse(throw new IllegalArgumentException(s"Unsupported authentication algorithm $code"))
+        .getOrElse(
+          throw new IllegalArgumentException(s"Unsupported authentication algorithm $code")
+        )
     }
   }
 
@@ -75,7 +80,7 @@ object AuthenticationAlgorithm {
       (12-byte) truncation of the full 160-bit (20-byte) HMAC-SHA1.
      */
     override def determineRakp4AuthCode(sik: Key.SIK, data: ByteString): ByteString =
-    doDetermineAuthCode(sik, data).take(12)
+      doDetermineAuthCode(sik, data).take(12)
   }
 
   def fromCode(code: Byte): Option[AuthenticationAlgorithm] = code match {

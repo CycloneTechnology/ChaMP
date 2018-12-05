@@ -18,7 +18,6 @@ case class HostAndPort(host: String, port: Option[Int]) {
   def getPortOrDefault(defaultPort: Int): Int =
     port.getOrElse(defaultPort)
 
-
   def withDefaultPort(defaultPort: Int): HostAndPort = {
     checkArgument(isValidPort(defaultPort), "Port out of range: %s", defaultPort)
     if (port.isDefined) this else copy(port = Some(defaultPort))
@@ -56,4 +55,3 @@ object HostAndPort {
     HostAndPort(w.getHost, portIfSet(w))
   }
 }
-

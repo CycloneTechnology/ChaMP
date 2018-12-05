@@ -6,7 +6,11 @@ import akka.event.LoggingReceive
 import akka.pattern.pipe
 import com.cyclone.akka.ActorSystemComponent
 import com.cyclone.util.kerberos.KerberosDeploymentActor._
-import com.cyclone.util.kerberos.settings.{ArtifactDeploymentResult, KerberosDeploymentSettings, KerberosDeploymentSettingsComponent}
+import com.cyclone.util.kerberos.settings.{
+  ArtifactDeploymentResult,
+  KerberosDeploymentSettings,
+  KerberosDeploymentSettingsComponent
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -29,8 +33,9 @@ trait DefaultKerberosDeploymentActorComponent extends KerberosDeploymentActorCom
     with KerberosDeploymentSettingsComponent =>
 
   lazy val kerberosDeploymentActor: ActorRef = actorSystem.actorOf(
-    KerberosDeploymentActor.props(
-      kerberosArtifactsSource, kerberosDeployer, kerberosDeploymentSettings))
+    KerberosDeploymentActor
+      .props(kerberosArtifactsSource, kerberosDeployer, kerberosDeploymentSettings)
+  )
 }
 
 object KerberosDeploymentActor {
@@ -38,7 +43,8 @@ object KerberosDeploymentActor {
   def props(
     kerberosArtifactsSource: KerberosArtifactsSource,
     kerberosDeployer: KerberosDeployer,
-    settings: KerberosDeploymentSettings): Props =
+    settings: KerberosDeploymentSettings
+  ): Props =
     Props(new KerberosDeploymentActor(kerberosArtifactsSource, kerberosDeployer, settings))
 
   case object Deploy
@@ -58,8 +64,10 @@ object KerberosDeploymentActor {
 private[kerberos] class KerberosDeploymentActor(
   kerberosArtifactsSource: KerberosArtifactsSource,
   kerberosDeployer: KerberosDeployer,
-  settings: KerberosDeploymentSettings)
-  extends Actor with Timers with ActorLogging {
+  settings: KerberosDeploymentSettings
+) extends Actor
+    with Timers
+    with ActorLogging {
   implicit val sched: Scheduler = context.system.scheduler
 
   private val retryKey = "Retry"
@@ -68,54 +76,51 @@ private[kerberos] class KerberosDeploymentActor(
 
   def receive: Receive = idle(0, None)
 
-  def idle(
-    numDeployments: Int,
-    lastInfo: Option[ArtifactDeploymentInfo]): Receive = LoggingReceive.withLabel("idle") {
+  def idle(numDeployments: Int, lastInfo: Option[ArtifactDeploymentInfo]): Receive =
+    LoggingReceive.withLabel("idle") {
 
-    case Deploy =>
-      deploy(lastInfo).pipeTo(self)
-      context become deploying(numDeployments, lastInfo)
+      case Deploy =>
+        deploy(lastInfo).pipeTo(self)
+        context become deploying(numDeployments, lastInfo)
 
-    case GetDeploymentInfo =>
-      lastInfo match {
-        case Some(info) => sender() ! info
-        case None       => clientsRequiringInfo = sender() :: clientsRequiringInfo
-      }
+      case GetDeploymentInfo =>
+        lastInfo match {
+          case Some(info) => sender() ! info
+          case None       => clientsRequiringInfo = sender() :: clientsRequiringInfo
+        }
 
-    case GetState => sender() ! State(numDeployments, deployInProgress = false, lastInfo)
-  }
+      case GetState => sender() ! State(numDeployments, deployInProgress = false, lastInfo)
+    }
 
-  def deploying(numDeployments: Int,
-    lastInfo: Option[ArtifactDeploymentInfo]): Receive = LoggingReceive.withLabel("deploying") {
+  def deploying(numDeployments: Int, lastInfo: Option[ArtifactDeploymentInfo]): Receive =
+    LoggingReceive.withLabel("deploying") {
 
-    case GetDeploymentInfo =>
-      lastInfo match {
-        case Some(info) => sender() ! info
-        case None       => clientsRequiringInfo = sender() :: clientsRequiringInfo
-      }
+      case GetDeploymentInfo =>
+        lastInfo match {
+          case Some(info) => sender() ! info
+          case None       => clientsRequiringInfo = sender() :: clientsRequiringInfo
+        }
 
-    case GetState => sender() ! State(numDeployments, deployInProgress = true, lastInfo)
+      case GetState => sender() ! State(numDeployments, deployInProgress = true, lastInfo)
 
-    case Deploy =>
-      timers.cancel(retryKey)
-      deploy(lastInfo).pipeTo(self)
+      case Deploy =>
+        timers.cancel(retryKey)
+        deploy(lastInfo).pipeTo(self)
 
-    case result: ArtifactDeploymentResult =>
-      clientsRequiringInfo.reverse.foreach(_ ! result.information)
-      clientsRequiringInfo = Nil
-      context become idle(numDeployments + 1, Some(result.information))
+      case result: ArtifactDeploymentResult =>
+        clientsRequiringInfo.reverse.foreach(_ ! result.information)
+        clientsRequiringInfo = Nil
+        context become idle(numDeployments + 1, Some(result.information))
 
-    case Failure(e) =>
-      log.warning("Failed to deploy Kerberos artifacts - will retry: {}", e.getMessage)
-      timers.startSingleTimer(retryKey, Deploy, settings.retryDelay)
-  }
+      case Failure(e) =>
+        log.warning("Failed to deploy Kerberos artifacts - will retry: {}", e.getMessage)
+        timers.startSingleTimer(retryKey, Deploy, settings.retryDelay)
+    }
 
   private def deploy(deploymentLocations: Option[ArtifactDeploymentInfo]) = {
     for {
       kerberosArtifacts <- kerberosArtifactsSource.kerberosArtifacts
-      result <- kerberosDeployer.deploy(kerberosArtifacts, deploymentLocations)
+      result            <- kerberosDeployer.deploy(kerberosArtifacts, deploymentLocations)
     } yield result
   }
 }
-
-

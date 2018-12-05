@@ -11,6 +11,7 @@ import akka.util.ByteStringBuilder
   */
 trait DefaultCodecs {
   implicit val shortCodec: Codec[Short] = new Codec[Short] {
+
     def encode(a: Short): ByteString = {
       val b = new ByteStringBuilder
 
@@ -24,6 +25,7 @@ trait DefaultCodecs {
   }
 
   implicit val intCodec: Codec[Int] = new Codec[Int] {
+
     def encode(a: Int): ByteString = {
       val b = new ByteStringBuilder
 
@@ -37,6 +39,7 @@ trait DefaultCodecs {
   }
 
   implicit val longCodec: Codec[Long] = new Codec[Long] {
+
     def encode(a: Long): ByteString = {
       val b = new ByteStringBuilder
 
@@ -50,6 +53,7 @@ trait DefaultCodecs {
   }
 
   implicit val instantCodec: Codec[Instant] = new Codec[Instant] {
+
     def encode(a: Instant): ByteString = {
 
       val b = new ByteStringBuilder
@@ -66,4 +70,3 @@ trait DefaultCodecs {
     }
   }
 }
-

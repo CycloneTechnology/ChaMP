@@ -9,10 +9,8 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
-case class DnsConfig(
-  dnsServers: Seq[String],
-  domainNames: Seq[String],
-  timeout: FiniteDuration) {
+case class DnsConfig(dnsServers: Seq[String], domainNames: Seq[String], timeout: FiniteDuration) {
+
   def dnsServerSocketAddresses: Seq[InetSocketAddress] =
     dnsServers.map { server =>
       val hap = HostAndPort.fromString(server)

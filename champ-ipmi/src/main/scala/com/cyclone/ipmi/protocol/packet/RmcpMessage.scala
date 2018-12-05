@@ -15,6 +15,7 @@ object RmcpMessage {
     decoder.handleExceptions.decode(data)
 
   def coder: Coder[RmcpMessage] = new Coder[RmcpMessage] {
+
     def encode(message: RmcpMessage): ByteString = {
       import message._
 
@@ -32,6 +33,7 @@ object RmcpMessage {
   }
 
   def decoder: Decoder[RmcpMessage] = new Decoder[RmcpMessage] {
+
     def decode(data: ByteString): RmcpMessage = {
 
       val iterator = data.iterator

@@ -29,9 +29,7 @@ trait AkkaHttpTestWebServerComponent extends TestWebServerComponent {
   lazy val testWebServer = new TestWebServer {
 
     def start(): Unit =
-      Http().bindAndHandle(
-        route,
-        "0.0.0.0", hostAndPort.getPortOrDefault(port)).onComplete {
+      Http().bindAndHandle(route, "0.0.0.0", hostAndPort.getPortOrDefault(port)).onComplete {
         case Success(ok) => println(s"Test server bound to port $port")
         case Failure(e)  => e.printStackTrace()
       }

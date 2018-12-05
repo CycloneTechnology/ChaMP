@@ -4,7 +4,12 @@ import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.protocol.packet.SessionId.{ManagedSystemSessionId, RemoteConsoleSessionId}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiSessionActivationCommand, PayloadType}
+import com.cyclone.ipmi.protocol.packet.{
+  CommandResultCodec,
+  IpmiCommandResult,
+  IpmiSessionActivationCommand,
+  PayloadType
+}
 import com.cyclone.ipmi.{PrivilegeLevel, Username}
 
 /**
@@ -16,6 +21,7 @@ object Rakp1_2 {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -36,7 +42,8 @@ object Rakp1_2 {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult](RmcpPlusAndRakpStatusCodeErrors.lookup)
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult](RmcpPlusAndRakpStatusCodeErrors.lookup)
   }
 
   case class CommandResult(
@@ -48,6 +55,7 @@ object Rakp1_2 {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -72,7 +80,8 @@ object Rakp1_2 {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, Rakp1_2.CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, Rakp1_2.CommandResult]
   }
 
   case class Command(

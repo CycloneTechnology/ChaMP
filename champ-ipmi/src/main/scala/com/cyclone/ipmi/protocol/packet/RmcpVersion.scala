@@ -13,6 +13,7 @@ sealed trait RmcpVersion {
 object RmcpVersion {
 
   implicit val codec: Codec[RmcpVersion] = new Codec[RmcpVersion] {
+
     def encode(a: RmcpVersion) =
       ByteString(a.code)
 

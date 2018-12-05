@@ -11,6 +11,7 @@ sealed trait NicSelection
 object NicSelection {
 
   implicit val decoder: Decoder[NicSelection] = new Decoder[NicSelection] {
+
     def decode(data: ByteString): NicSelection = data(0).toUnsignedInt match {
       case 0x00 => Shared
       case 0x01 => SharedWithFailoverToNic2
@@ -20,6 +21,7 @@ object NicSelection {
   }
 
   implicit val encoder: Coder[NicSelection] = new Coder[NicSelection] {
+
     def encode(a: NicSelection): ByteString = {
       a match {
         case Shared                      => ByteString(0x00)

@@ -18,25 +18,26 @@ object ChassisIdentify {
       def decode(data: ByteString): CommandResult.type = CommandResult
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] = StatusCodeTranslator[CommandResult.type]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
-
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
         val b = new ByteStringBuilder
 
         interval match {
-          case Off         =>
+          case Off =>
             b += 0
             b += false.toBit0
           case OnFor(time) =>
             b += time.toSeconds.toByte
             b += false.toBit0
-          case On          =>
+          case On =>
             b += 0
             b += true.toBit0
         }
@@ -45,7 +46,8 @@ object ChassisIdentify {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult.type] = CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
 
   }
 

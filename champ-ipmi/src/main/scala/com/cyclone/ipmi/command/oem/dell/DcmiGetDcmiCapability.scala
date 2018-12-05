@@ -12,6 +12,7 @@ object DcmiGetDcmiCapability {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -22,16 +23,12 @@ object DcmiGetDcmiCapability {
         val parameterRevision = is.readByte
         val parameterData = is.read(12)
 
-        CommandResult(
-          identification,
-          majorVersion,
-          minorVersion,
-          parameterRevision,
-          parameterData)
+        CommandResult(identification, majorVersion, minorVersion, parameterRevision, parameterData)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
@@ -39,10 +36,12 @@ object DcmiGetDcmiCapability {
     majorVersion: Byte,
     minorVersion: Byte,
     parameterRevision: Byte,
-    parameterData: ByteString) extends IpmiCommandResult
+    parameterData: ByteString
+  ) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -55,7 +54,8 @@ object DcmiGetDcmiCapability {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command(identification: Byte, parameterSelect: Byte) extends IpmiStandardCommand {

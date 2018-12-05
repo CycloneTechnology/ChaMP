@@ -14,6 +14,7 @@ object GetChassisStatus {
 
   object PowerRestorePolicy {
     implicit val decoder: Decoder[PowerRestorePolicy] = new Decoder[PowerRestorePolicy] {
+
       def decode(data: ByteString): PowerRestorePolicy = data(0).bits5To6.toUnsignedInt match {
         case 0 => StaysPoweredOff
         case 1 => RestoreState
@@ -34,6 +35,7 @@ object GetChassisStatus {
 
   object CurrentPowerState {
     implicit val decoder: Decoder[CurrentPowerState] = new Decoder[CurrentPowerState] {
+
       def decode(data: ByteString): CurrentPowerState = {
         val byte = data(0)
 
@@ -60,6 +62,7 @@ object GetChassisStatus {
 
   object LastPowerEvent {
     implicit val decoder: Decoder[LastPowerEvent] = new Decoder[LastPowerEvent] {
+
       def decode(data: ByteString): LastPowerEvent = {
         val byte = data(0)
 
@@ -86,6 +89,7 @@ object GetChassisStatus {
 
   object ChassisIdentifyState {
     implicit val decoder: Decoder[ChassisIdentifyState] = new Decoder[ChassisIdentifyState] {
+
       def decode(data: ByteString): ChassisIdentifyState =
         data(0).toUnsignedInt match {
           case 0 => Off
@@ -108,6 +112,7 @@ object GetChassisStatus {
 
   object MiscChassisState {
     implicit val decoder: Decoder[MiscChassisState] = new Decoder[MiscChassisState] {
+
       def decode(data: ByteString): MiscChassisState = {
         val byte = data(0)
 
@@ -127,25 +132,28 @@ object GetChassisStatus {
     coolingFault: Boolean,
     driveFault: Boolean,
     frontPanelLockout: Boolean,
-    chassisIntrusion: Boolean)
+    chassisIntrusion: Boolean
+  )
 
   object FrontPanelButtonCapabilities {
-    implicit val decoder: Decoder[FrontPanelButtonCapabilities] = new Decoder[FrontPanelButtonCapabilities] {
-      def decode(data: ByteString): FrontPanelButtonCapabilities = {
-        val byte = data(0)
+    implicit val decoder: Decoder[FrontPanelButtonCapabilities] =
+      new Decoder[FrontPanelButtonCapabilities] {
 
-        FrontPanelButtonCapabilities(
-          standbyAllowed = byte.bit7,
-          diagnosticInterruptDisableAllowed = byte.bit6,
-          resetDisableAllowed = byte.bit5,
-          powerOffDisableAllowed = byte.bit4,
-          standbyDisabled = byte.bit3,
-          diagnosticInterruptDisabled = byte.bit2,
-          resetDisabled = byte.bit1,
-          powerOffDisabled = byte.bit0
-        )
+        def decode(data: ByteString): FrontPanelButtonCapabilities = {
+          val byte = data(0)
+
+          FrontPanelButtonCapabilities(
+            standbyAllowed = byte.bit7,
+            diagnosticInterruptDisableAllowed = byte.bit6,
+            resetDisableAllowed = byte.bit5,
+            powerOffDisableAllowed = byte.bit4,
+            standbyDisabled = byte.bit3,
+            diagnosticInterruptDisabled = byte.bit2,
+            resetDisabled = byte.bit1,
+            powerOffDisabled = byte.bit0
+          )
+        }
       }
-    }
   }
 
   case class FrontPanelButtonCapabilities(
@@ -156,10 +164,12 @@ object GetChassisStatus {
     standbyDisabled: Boolean,
     diagnosticInterruptDisabled: Boolean,
     resetDisabled: Boolean,
-    powerOffDisabled: Boolean)
+    powerOffDisabled: Boolean
+  )
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -179,7 +189,8 @@ object GetChassisStatus {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
@@ -191,16 +202,16 @@ object GetChassisStatus {
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+
       def encode(request: Command.type): ByteString =
         ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.ChassisRequest
     val commandCode = CommandCode(0x01)
   }
 
 }
-
-

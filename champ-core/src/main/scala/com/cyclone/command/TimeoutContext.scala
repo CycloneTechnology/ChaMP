@@ -13,7 +13,8 @@ import scala.concurrent.duration._
   */
 case class TimeoutContext(
   deadline: OperationDeadline,
-  requestTimeouts: RequestTimeouts = RequestTimeouts.default) {
+  requestTimeouts: RequestTimeouts = RequestTimeouts.default
+) {
   def deadlineReached: Boolean = deadline.currentState().deadlineReached
 
   def withTimeouts(requestTimeouts: RequestTimeouts): TimeoutContext =
@@ -21,10 +22,11 @@ case class TimeoutContext(
 }
 
 object TimeoutContext {
+
   def fromDeadline(deadline: FiniteDuration): TimeoutContext =
     TimeoutContext(deadline = OperationDeadline.fromNow(deadline))
 
-  val default: TimeoutContext = TimeoutContext(deadline = OperationDeadline.reusableTimeout(5.minutes))
+  val default: TimeoutContext = TimeoutContext(
+    deadline = OperationDeadline.reusableTimeout(5.minutes)
+  )
 }
-
-

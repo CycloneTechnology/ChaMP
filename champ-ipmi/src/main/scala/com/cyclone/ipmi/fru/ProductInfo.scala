@@ -14,10 +14,12 @@ case class ProductInfo(
   serialNumber: String,
   assetTag: String,
   fruFileId: Option[String],
-  customFields: Seq[FruField])
+  customFields: Seq[FruField]
+)
 
 object ProductInfo {
   implicit val decoder: Decoder[ProductInfo] = new Decoder[ProductInfo] {
+
     def decode(data: ByteString): ProductInfo = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -52,7 +54,8 @@ object ProductInfo {
         serialNumber.stringValue,
         assetTag.stringValue,
         fruFileId.map(_.stringValue),
-        customFields)
+        customFields
+      )
     }
   }
 }

@@ -8,7 +8,8 @@ sealed trait SecurityContext {
 
 case class PasswordSecurityContext(
   credentials: PasswordCredentials,
-  authenticationMethod: AuthenticationMethod) extends SecurityContext {
+  authenticationMethod: AuthenticationMethod
+) extends SecurityContext {
 
   def description: String = {
     val user = credentials.fullyQualifiedUsername(FQNFormat.UPNUpper)
@@ -18,10 +19,14 @@ case class PasswordSecurityContext(
 }
 
 object PasswordSecurityContext {
+
   def apply(
     fullyQualifiedUser: String,
     password: String,
-    authenticationMethod: AuthenticationMethod): PasswordSecurityContext =
-    PasswordSecurityContext(PasswordCredentials.parseFullyQualifiedUser(fullyQualifiedUser, password),
-      authenticationMethod)
+    authenticationMethod: AuthenticationMethod
+  ): PasswordSecurityContext =
+    PasswordSecurityContext(
+      PasswordCredentials.parseFullyQualifiedUser(fullyQualifiedUser, password),
+      authenticationMethod
+    )
 }

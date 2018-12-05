@@ -8,6 +8,7 @@ import javax.net.ssl.{SSLContext, TrustManager, X509TrustManager}
   * Created by jeremy.stone on 23/11/2016.
   */
 object SslContextFactory {
+
   /**
     * Creates an initialized SSLContext for creating client mode sockets that
     * trust all servers.

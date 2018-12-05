@@ -24,7 +24,9 @@ import scala.xml.{Elem, Node, NodeSeq}
   * @author Jeremy.Stone
   */
 object WSManEnumItem {
-  def fromElementFactory(context: WSManOperationContext): () => Elem => WSManEnumItem = fromElement _
+
+  def fromElementFactory(context: WSManOperationContext): () => Elem => WSManEnumItem =
+    fromElement _
 
   val fromElement: Elem => WSManEnumItem = { elem =>
     toEnumItem(elem)
@@ -45,11 +47,13 @@ object WSManEnumItem {
 
   private def objectAndRef(elem: Elem): WSManEnumItem = {
     def firstRefChild(elem: Elem) =
-      childElements(elem).view.find(isReferenceItem(_))
+      childElements(elem).view
+        .find(isReferenceItem(_))
         .map(ManagedReference(_))
 
     def firstObjectChild(elem: Elem) =
-      childElements(elem).view.find(!isReferenceItem(_))
+      childElements(elem).view
+        .find(!isReferenceItem(_))
         .map(ManagedInstance(_))
 
     (firstObjectChild(elem), firstRefChild(elem)) match {
@@ -102,8 +106,10 @@ object ReferenceEnumerationMode extends EnumerationMode {
 case class EnumerationParameters(maxElements: Int, deadline: OperationDeadline)
 
 object WSManEnumerator {
-  def apply(ref: ManagedReference, enumContext: String,
-    params: EnumerationParameters)(implicit context: WSManOperationContext): WSManEnumerator =
+
+  def apply(ref: ManagedReference, enumContext: String, params: EnumerationParameters)(
+    implicit context: WSManOperationContext
+  ): WSManEnumerator =
     new WSManEnumerator(ref, enumContext) with WSManEnumeratorConfig {
       protected[wsman] def release(enumContext: String): Future[_] =
         WSManOperations.executeSoapRequest(ReleaseXML(enumContext))
@@ -128,9 +134,9 @@ case class BatchTypeNotLast(nextContext: String) extends BatchType
 
 case class Batch(items: List[WSManEnumItem], batchType: BatchType)
 
-class WSManEnumerator protected(
-  protected[wsman] val ref: ManagedReference,
-  initialContext: String)(implicit context: WSManOperationContext) extends LazyLogging {
+class WSManEnumerator protected (protected[wsman] val ref: ManagedReference, initialContext: String)(
+  implicit context: WSManOperationContext
+) extends LazyLogging {
   self: WSManEnumeratorConfig =>
 
   def enumerate: Source[Batch, NotUsed] = {
@@ -140,11 +146,11 @@ class WSManEnumerator protected(
           .map {
             case \/-(document) =>
               batchFrom(document) match {
-                case batch@Batch(_, BatchTypeNotLast(nextContext)) =>
+                case batch @ Batch(_, BatchTypeNotLast(nextContext)) =>
                   logger.debug(s"Non-final enum batch fetched $batch")
                   Some((Some(nextContext), batch))
 
-                case batch@Batch(_, BatchTypeLast) =>
+                case batch @ Batch(_, BatchTypeLast) =>
                   logger.debug(s"Final enum batch fetched $batch")
                   Some((None, batch))
               }
@@ -165,8 +171,9 @@ class WSManEnumerator protected(
 
     val items = ListBuffer[WSManEnumItem]()
 
-    for (itemElement <- childElements(itemsElt)) items +=
-      WSManEnumItem.fromElement(itemElement)
+    for (itemElement <- childElements(itemsElt))
+      items +=
+        WSManEnumItem.fromElement(itemElement)
 
     Batch(items.toList, batchType(pullRespElt))
   }

@@ -17,6 +17,7 @@ import scalaz.Scalaz._
   * Implements the logic to negotiate a session
   */
 trait SessionNegotiator {
+
   /**
     * Performs necessary exchanges to negotiate a session
     *
@@ -27,8 +28,8 @@ trait SessionNegotiator {
     remoteConsoleSessionId: RemoteConsoleSessionId,
     credentials: IpmiCredentials,
     privilegeLevel: PrivilegeLevel,
-    requester: Requester)
-    (implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[(SessionContext, IpmiVersion)]]
+    requester: Requester
+  )(implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[(SessionContext, IpmiVersion)]]
 }
 
 trait SessionNegotiatorComponent {
@@ -43,48 +44,47 @@ trait DefaultSessionNegotiatorComponent extends SessionNegotiatorComponent {
   * Hands off session negotiation to a [[SessionNegotiationProtocol]]
   */
 object DefaultSessionNegotiator extends SessionNegotiator {
+
   def negotiateSession(
     versionRequirement: IpmiVersionRequirement,
     remoteConsoleSessionId: RemoteConsoleSessionId,
     credentials: IpmiCredentials,
     privilegeLevel: PrivilegeLevel,
-    requester: Requester)
-    (implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[(SessionContext, IpmiVersion)]] = {
+    requester: Requester
+  )(implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[(SessionContext, IpmiVersion)]] = {
 
-    def requiredVersion(supportsV20: Boolean): IpmiErrorOr[IpmiVersion] = (versionRequirement, supportsV20) match {
-      case (IpmiVersionRequirement.V15Only, _)            => IpmiVersion.V15.right
-      case (IpmiVersionRequirement.V20IfSupported, true)  => IpmiVersion.V20.right
-      case (IpmiVersionRequirement.V20IfSupported, false) => IpmiVersion.V15.right
-      case (IpmiVersionRequirement.V20Only, true)         => IpmiVersion.V20.right
-      case (IpmiVersionRequirement.V20Only, false)        => UnsupportedRequiredVersion(IpmiVersion.V20).left
-    }
+    def requiredVersion(supportsV20: Boolean): IpmiErrorOr[IpmiVersion] =
+      (versionRequirement, supportsV20) match {
+        case (IpmiVersionRequirement.V15Only, _)            => IpmiVersion.V15.right
+        case (IpmiVersionRequirement.V20IfSupported, true)  => IpmiVersion.V20.right
+        case (IpmiVersionRequirement.V20IfSupported, false) => IpmiVersion.V15.right
+        case (IpmiVersionRequirement.V20Only, true)         => IpmiVersion.V20.right
+        case (IpmiVersionRequirement.V20Only, false) =>
+          UnsupportedRequiredVersion(IpmiVersion.V20).left
+      }
 
     def protocolFor(version: IpmiVersion, authenticationTypes: AuthenticationTypes) = {
       import SessionNegotiationProtocol._
       version match {
-        case IpmiVersion.V15 => V15(remoteConsoleSessionId,
-          credentials,
-          privilegeLevel,
-          authenticationTypes,
-          requester)
+        case IpmiVersion.V15 =>
+          V15(remoteConsoleSessionId, credentials, privilegeLevel, authenticationTypes, requester)
 
-        case IpmiVersion.V20 => V20(remoteConsoleSessionId,
-          credentials,
-          privilegeLevel,
-          requester)
+        case IpmiVersion.V20 => V20(remoteConsoleSessionId, credentials, privilegeLevel, requester)
       }
     }
 
     val result = for {
-      caps <- eitherT(requester.makeRequest(
-        GetChannelAuthenticationCapabilities.Command(privilegeLevel), IpmiVersion.V15))
-      version <- eitherT(requiredVersion(caps.supportsV20).point[Future])
-      protocol <- eitherT(protocolFor(version, caps.authenticationTypes).right.point[Future])
+      caps <- eitherT(
+        requester.makeRequest(
+          GetChannelAuthenticationCapabilities.Command(privilegeLevel),
+          IpmiVersion.V15
+        )
+      )
+      version        <- eitherT(requiredVersion(caps.supportsV20).point[Future])
+      protocol       <- eitherT(protocolFor(version, caps.authenticationTypes).right.point[Future])
       sessionContext <- eitherT(protocol.negotiateSession())
     } yield (sessionContext, version)
 
     result.run
   }
 }
-
-

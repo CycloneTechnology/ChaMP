@@ -21,32 +21,35 @@ import scala.concurrent.Future
 object DeviceIdTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetDeviceId.Command))
-        } yield {
-          import cmdResult._
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-          Result(
-            deviceId = deviceId,
-            deviceSdrsProvided = deviceSdrsProvided,
-            deviceRevision = deviceRevision,
-            deviceAvailable = deviceAvailable,
-            firmwareRevision = firmwareRevision,
-            ipmiVersion = ipmiVersion,
-            deviceCapabilities = deviceCapabilities,
-            manufacturerId = manufacturerId,
-            productId = productId,
-            auxiliaryFirmwareRevisionInformation = auxiliaryFirmwareRevisionInformation)
+          val result = for {
+            cmdResult <- eitherT(connection.executeCommandOrError(GetDeviceId.Command))
+          } yield {
+            import cmdResult._
+
+            Result(
+              deviceId = deviceId,
+              deviceSdrsProvided = deviceSdrsProvided,
+              deviceRevision = deviceRevision,
+              deviceAvailable = deviceAvailable,
+              firmwareRevision = firmwareRevision,
+              ipmiVersion = ipmiVersion,
+              deviceCapabilities = deviceCapabilities,
+              manufacturerId = manufacturerId,
+              productId = productId,
+              auxiliaryFirmwareRevisionInformation = auxiliaryFirmwareRevisionInformation
+            )
+          }
+
+          result.run
         }
-
-        result.run
       }
-    }
 
     def description() = "bmc info"
   }
@@ -61,6 +64,7 @@ object DeviceIdTool {
     deviceCapabilities: DeviceCapabilities,
     manufacturerId: IanaEnterpriseNumber,
     productId: ProductId,
-    auxiliaryFirmwareRevisionInformation: Option[ByteString]) extends IpmiToolCommandResult
+    auxiliaryFirmwareRevisionInformation: Option[ByteString]
+  ) extends IpmiToolCommandResult
 
 }

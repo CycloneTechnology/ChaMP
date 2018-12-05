@@ -23,7 +23,9 @@ object Futures {
     * @param tasks tasks to run
     * @return the future containing the first successful result.
     */
-  def sequentiallyUntilSuccess[T](tasks: Seq[() => Future[T]])(implicit executor: ExecutionContext): Future[T] = {
+  def sequentiallyUntilSuccess[T](
+    tasks: Seq[() => Future[T]]
+  )(implicit executor: ExecutionContext): Future[T] = {
 
     if (tasks.isEmpty)
       throw new IllegalArgumentException("No tasks")
@@ -31,9 +33,11 @@ object Futures {
     val p = Promise[T]
 
     //  @tailrec
-    def seq(lastResult: Option[Try[T]], tsks: List[() => Future[T]])(implicit executor: ExecutionContext): Unit = {
+    def seq(lastResult: Option[Try[T]], tsks: List[() => Future[T]])(
+      implicit executor: ExecutionContext
+    ): Unit = {
       tsks match {
-        case Nil       =>
+        case Nil =>
           lastResult match {
             case Some(tr) => p.complete(tr)
             case None     =>
@@ -59,7 +63,9 @@ object Futures {
   /**
     * Converts the errors in a disjunction wrapped by a future into failed futures
     */
-  def disjunctionToFailedFuture[A, E](in: Future[E \/ A])(toThrowable: E => Throwable)(implicit ec: ExecutionContext): Future[A] = {
+  def disjunctionToFailedFuture[A, E](
+    in: Future[E \/ A]
+  )(toThrowable: E => Throwable)(implicit ec: ExecutionContext): Future[A] = {
     in.transform {
       case Success(\/-(a)) => Success(a)
       case Success(-\/(e)) => Failure(toThrowable(e))
@@ -70,12 +76,14 @@ object Futures {
   /**
     * Performs a traversal of a disjunction, but serially.
     */
-  def traverseSerially[A, E, B](inputs: Seq[A])(f: A => Future[E \/ B])(implicit ec: ExecutionContext): Future[E \/ Seq[B]] = {
+  def traverseSerially[A, E, B](
+    inputs: Seq[A]
+  )(f: A => Future[E \/ B])(implicit ec: ExecutionContext): Future[E \/ Seq[B]] = {
     inputs.foldLeft(Future.successful(Vector.empty[B].right[E])) {
       case (facc, a) =>
         val result = for {
           acc <- eitherT(facc)
-          b <- eitherT(f(a))
+          b   <- eitherT(f(a))
         } yield acc :+ b
 
         result.run
@@ -85,13 +93,14 @@ object Futures {
   /**
     * Evaluates the first successful result.
     */
-  def firstSuccess[A, E, B](inputs: Seq[A])(f: A => Future[E \/ B])(implicit ec: ExecutionContext): Future[Option[E \/ B]] = {
-    inputs.foldLeft(Future.successful(Option.empty[E \/ B])) {
-      (acc, in) =>
-        acc.flatMap {
-          case Some(\/-(_)) => acc
-          case _            => f(in).map(Some(_))
-        }
+  def firstSuccess[A, E, B](
+    inputs: Seq[A]
+  )(f: A => Future[E \/ B])(implicit ec: ExecutionContext): Future[Option[E \/ B]] = {
+    inputs.foldLeft(Future.successful(Option.empty[E \/ B])) { (acc, in) =>
+      acc.flatMap {
+        case Some(\/-(_)) => acc
+        case _            => f(in).map(Some(_))
+      }
     }
   }
 
@@ -104,12 +113,17 @@ object Futures {
     * @param f      mapping function
     * @return the first input to evaluate to true if any do.
     */
-  def findSerially[A](inputs: Seq[A])(f: A => Future[Boolean])(implicit executor: ExecutionContext): Future[Option[A]] = {
+  def findSerially[A](
+    inputs: Seq[A]
+  )(f: A => Future[Boolean])(implicit executor: ExecutionContext): Future[Option[A]] = {
     inputs.foldLeft(Future.successful(Option.empty[A])) {
       case (acc, input) =>
         acc.flatMap {
           case Some(_) => acc
-          case None    => f(input).map { result => result.option(input) }
+          case None =>
+            f(input).map { result =>
+              result.option(input)
+            }
         }
     }
   }
@@ -120,7 +134,9 @@ object Futures {
     * @param inputs inputs
     * @param f      mapping function
     */
-  def existsSerially[A](inputs: Seq[A])(f: A => Future[Boolean])(implicit executor: ExecutionContext): Future[Boolean] =
+  def existsSerially[A](
+    inputs: Seq[A]
+  )(f: A => Future[Boolean])(implicit executor: ExecutionContext): Future[Boolean] =
     findSerially(inputs)(f).map(_.isDefined)
 
 }

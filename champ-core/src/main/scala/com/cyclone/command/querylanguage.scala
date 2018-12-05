@@ -54,16 +54,13 @@ object PropertyRestriction {
     def filterProperties(allNames: Iterable[String]): Seq[String] = {
       val allMappedByLCName = mapByTrimmedLCName(allNames)
 
-      for (
-        Some(name) <- names.map(n => allMappedByLCName.get(n.trim.toLowerCase))
-      ) yield name
+      for (Some(name) <- names.map(n => allMappedByLCName.get(n.trim.toLowerCase))) yield name
     }
 
     def toArrayOrNull: Array[String] = names.toArray
 
     private def mapByTrimmedLCName(ns: Iterable[String]) =
-      ns
-        .map(name => (name.trim.toLowerCase, name))
+      ns.map(name => (name.trim.toLowerCase, name))
         .groupBy(_._1)
         .mapValues(_.head._2)
   }

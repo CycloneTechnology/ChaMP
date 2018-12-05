@@ -25,7 +25,8 @@ trait WSManInstancesResolver[Command] {
     context: WSManOperationContext,
     inst: ManagedInstance,
     cimNamespace: Option[String],
-    deadline: OperationDeadline): Future[WSManErrorOr[ManagedInstance]] = {
+    deadline: OperationDeadline
+  ): Future[WSManErrorOr[ManagedInstance]] = {
     def predicate(name: String, ref: ManagedReference) =
       propertyRestriction(command).containsProperty(name)
 

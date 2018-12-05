@@ -5,7 +5,7 @@ import com.cyclone.ipmi.codec._
 
 /*
  * System Enclosure or Chassis Types
- * 
+ *
  * Taken from the DMTF System Management BIOS Reference Specification
  */
 sealed trait ChassisType {
@@ -168,4 +168,3 @@ object ChassisType {
     case SealedCasePC.code        => SealedCasePC
   }
 }
-  

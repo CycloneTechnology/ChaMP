@@ -19,11 +19,14 @@ sealed trait ConfidentialityAlgorithm {
 // Get these from the ipmi4j code - they are more comprehensive
 object ConfidentialityAlgorithm {
 
-  implicit val ordering: Ordering[ConfidentialityAlgorithm] = Ordering.by { alg: ConfidentialityAlgorithm => alg.goodness }
+  implicit val ordering: Ordering[ConfidentialityAlgorithm] = Ordering.by { alg: ConfidentialityAlgorithm =>
+    alg.goodness
+  }
 
   private val ConstKey2 = ByteString(Array.fill(20)(2.toByte))
 
   implicit val codec: Codec[ConfidentialityAlgorithm] = new Codec[ConfidentialityAlgorithm] {
+
     def encode(a: ConfidentialityAlgorithm) =
       ByteString(a.code)
 
@@ -33,7 +36,9 @@ object ConfidentialityAlgorithm {
       // We should have negotiated available algorithms:
       // if it is not available something unexpected has gone wrong
       fromCode(code)
-        .getOrElse(throw new IllegalArgumentException(s"Unsupported confidentiality algorithm $code"))
+        .getOrElse(
+          throw new IllegalArgumentException(s"Unsupported confidentiality algorithm $code")
+        )
     }
   }
 
@@ -58,7 +63,7 @@ object ConfidentialityAlgorithm {
     def encrypt(sik: Key.SIK, data: ByteString): ByteString = {
       val paddedData = {
         // Pad to nearest multiple of 16 after adding byte with pad length
-        val pad = 16 - (data.length + 1 /* <-- pad len byte */) % 16
+        val pad = 16 - (data.length + 1 /* <-- pad len byte */ ) % 16
 
         val b = new ByteStringBuilder
         b ++= data

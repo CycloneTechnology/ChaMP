@@ -52,7 +52,9 @@ object EntityId {
 
   case object SystemBoard extends EntityId {
     val code: Byte = 0x07.toByte
-    val entity = "system board (main system board, may also be a processor board and/or internal expansion board)"
+
+    val entity =
+      "system board (main system board, may also be a processor board and/or internal expansion board)"
   }
 
   case object MemoryModule extends EntityId {
@@ -62,13 +64,17 @@ object EntityId {
 
   case object ProcessorModule extends EntityId {
     val code: Byte = 0x09.toByte
-    val entity = "processor module (holds processors, use this designation when processors are not mounted on system board)"
+
+    val entity =
+      "processor module (holds processors, use this designation when processors are not mounted on system board)"
   }
 
   case object PowerSupply extends EntityId {
     val code: Byte = 0x0a.toByte
-    val entity: String = "power supply (DMI refers to this as a 'power unit', but it’s used to represent a power supply). " +
-      "Use this value for the main power supply (supplies) for the system."
+
+    val entity
+      : String = "power supply (DMI refers to this as a 'power unit', but it’s used to represent a power supply). " +
+    "Use this value for the main power supply (supplies) for the system."
   }
 
   case object AddInCard extends EntityId {
@@ -108,21 +114,25 @@ object EntityId {
 
   case object ProcessorBoard extends EntityId {
     val code: Byte = 0x12.toByte
-    val entity = "processor board (holds 1 or more processors - includes boards that hold SECC modules)"
+
+    val entity =
+      "processor board (holds 1 or more processors - includes boards that hold SECC modules)"
   }
 
   case object PowerUnitPowerDomain extends EntityId {
     val code: Byte = 0x13.toByte
+
     val entity: String = "power unit / power domain - This Entity ID is typically used as a pre " +
-      "- defined logical entity for grouping power supplies and/or sensors that are associated " +
-      "in monitoring a particular logical power domain."
+    "- defined logical entity for grouping power supplies and/or sensors that are associated " +
+    "in monitoring a particular logical power domain."
   }
 
   case object PowerModuleDcDcConverter extends EntityId {
     val code: Byte = 0x14.toByte
+
     val entity: String = "power module / DC-to-DC converter - Use this value for internal converters. " +
-      "Note: You should use Entity ID 10 (power supply) for the main power supply even if the " +
-      "main supply is a DC-to-DC converter, e.g. gets external power from a -48 DC source"
+    "Note: You should use Entity ID 10 (power supply) for the main power supply even if the " +
+    "main supply is a DC-to-DC converter, e.g. gets external power from a -48 DC source"
   }
 
   case object PowerManagementPowerDistributionBoard extends EntityId {
@@ -172,9 +182,10 @@ object EntityId {
 
   case object CoolingUnitCoolingDomain extends EntityId {
     val code: Byte = 0x1e.toByte
+
     val entity: String = "cooling unit / cooling domain - This Entity ID can be used as a pre-defined " +
-      "logical entity for grouping fans or other cooling devices and/or sensors that are " +
-      "associated in monitoring a particular logical cooling domain."
+    "logical entity for grouping fans or other cooling devices and/or sensors that are " +
+    "associated in monitoring a particular logical cooling domain."
   }
 
   case object CableInterconnect extends EntityId {
@@ -184,9 +195,11 @@ object EntityId {
 
   case object MemoryDevice extends EntityId {
     val code: Byte = 0x20.toByte
-    val entity: String = "memory device - This Entity ID should be used for replaceable memory devices, e.g. DIMM/SIMM. " +
-      "It is recommended that Entity IDs not be used for individual non-replaceable memory devices. " +
-      "Rather, monitoring and error reporting should be associated with the FRU [e.g. memory card] holding the memory."
+
+    val entity
+      : String = "memory device - This Entity ID should be used for replaceable memory devices, e.g. DIMM/SIMM. " +
+    "It is recommended that Entity IDs not be used for individual non-replaceable memory devices. " +
+    "Rather, monitoring and error reporting should be associated with the FRU [e.g. memory card] holding the memory."
   }
 
   case object SystemManagementSoftware extends EntityId {
@@ -211,10 +224,11 @@ object EntityId {
 
   case object Group extends EntityId {
     val code: Byte = 0x25.toByte
+
     val entity: String = "Group - This is a logical entity for use with Entity Association records. " +
-      "It is provided to allow an Entity-association record to define a grouping of entities " +
-      "when there is no appropriate pre-defined entity for the container entity. " +
-      "This Entity should not be used as a physical entity."
+    "It is provided to allow an Entity-association record to define a grouping of entities " +
+    "when there is no appropriate pre-defined entity for the container entity. " +
+    "This Entity should not be used as a physical entity."
   }
 
   case object RemoteOobManagementCommunicationDevice extends EntityId {
@@ -224,14 +238,15 @@ object EntityId {
 
   case object ExternalEnvironment extends EntityId {
     val code: Byte = 0x27.toByte
+
     val entity: String = "External Environment - This Entity ID can be used to identify the environment " +
-      "outside the system chassis. For example, a system may have a temperature sensor that " +
-      "monitors the temperature “outside the box”. Such a temperature sensor can be associated " +
-      "with an External Environment entity. This value will typically be used as a single instance physical entity. " +
-      "However, the Entity Instance value can be used to denote a difference in regions of the " +
-      "external environment. For example, the region around the front of a chassis may be " +
-      "considered to be different from the region around the back, in which case it " +
-      "would be reasonable to have two different instances of the External Environment entity."
+    "outside the system chassis. For example, a system may have a temperature sensor that " +
+    "monitors the temperature “outside the box”. Such a temperature sensor can be associated " +
+    "with an External Environment entity. This value will typically be used as a single instance physical entity. " +
+    "However, the Entity Instance value can be used to denote a difference in regions of the " +
+    "external environment. For example, the region around the front of a chassis may be " +
+    "considered to be different from the region around the back, in which case it " +
+    "would be reasonable to have two different instances of the External Environment entity."
   }
 
   case object Battery extends EntityId {
@@ -241,14 +256,16 @@ object EntityId {
 
   case object ProcessingBlade extends EntityId {
     val code: Byte = 0x29.toByte
+
     val entity: String = "Processing blade (a blade module that contains processor, memory, " +
-      "and I/O connections that enable it to operate as a processing entity)"
+    "and I/O connections that enable it to operate as a processing entity)"
   }
 
   case object ConnectivitySwitch extends EntityId {
     val code: Byte = 0x2a.toByte
+
     val entity: String = "Connectivity switch (a blade module that provides the fabric or network connection " +
-      "for one or more processing blades or modules)"
+    "for one or more processing blades or modules)"
   }
 
   case object ProcessorMemoryModule extends EntityId {
@@ -268,15 +285,18 @@ object EntityId {
 
   case object ManagementControllerFirmware extends EntityId {
     val code: Byte = 0x2e.toByte
-    val entity = "Management Controller Firmware (Represents firmware or software running on a management controller)"
+
+    val entity =
+      "Management Controller Firmware (Represents firmware or software running on a management controller)"
   }
 
   case object IpmiChannel extends EntityId {
     val code: Byte = 0x2f.toByte
+
     val entity: String = "IPMI Channel - This Entity ID enables associating sensors with the IPMI " +
-      "communication channels - for example a Redundancy sensor could be used to report redundancy " +
-      "status for a channel that is composed of multiple physical links. " +
-      "By convention, the Entity Instance corresponds to the channel number"
+    "communication channels - for example a Redundancy sensor could be used to report redundancy " +
+    "status for a channel that is composed of multiple physical links. " +
+    "By convention, the Entity Instance corresponds to the channel number"
   }
 
   case object PciBus extends EntityId {
@@ -311,9 +331,10 @@ object EntityId {
 
   case object ReservedPreviouslyDuplicateOfSystemFirmware00 extends EntityId {
     val code: Byte = 0x36.toByte
+
     val entity: String = "reserved. This value was previously a duplicate of 22h (System Firmware). " +
-      "This value should remain reserved for any future versions of the specification to " +
-      "avoid conflicts with older applications that may interpret this as System Firmware."
+    "This value should remain reserved for any future versions of the specification to " +
+    "avoid conflicts with older applications that may interpret this as System Firmware."
   }
 
   case object ReservedPreviouslyDuplicateOfSystemFirmware01 extends EntityId {
@@ -363,23 +384,26 @@ object EntityId {
 
   case object AirInlet extends EntityId {
     val code: Byte = 0x40.toByte
+
     val entity: String = "air inlet - This Entity ID enables associating sensors such as temperature to the " +
-      "airflow at an air inlet. This Entity ID value is equivalent to Entity ID 37h. " +
-      "It is provided for interoperability with the DCMI 1.0 specifications."
+    "airflow at an air inlet. This Entity ID value is equivalent to Entity ID 37h. " +
+    "It is provided for interoperability with the DCMI 1.0 specifications."
   }
 
   case object ProcessorCpu extends EntityId {
     val code: Byte = 0x41.toByte
+
     val entity: String = "processor / CPU - This Entity ID value is equivalent to Entity ID 03h (processor). " +
-      "It is provided for interoperability with the DCMI 1.0 specifications."
+    "It is provided for interoperability with the DCMI 1.0 specifications."
   }
 
   case object Baseboard extends EntityId {
     val code: Byte = 0x42.toByte
-    val entity: String = "baseboard / main system board - This Entity ID value is equivalent to Entity ID 07h (system board). " +
-      "It is provided for interoperability with the DCMI 1.0 specifications."
-  }
 
+    val entity
+      : String = "baseboard / main system board - This Entity ID value is equivalent to Entity ID 07h (system board). " +
+    "It is provided for interoperability with the DCMI 1.0 specifications."
+  }
 
   case class ChassicSpecific(code: Byte) extends EntityId {
     val entity = "Chassis-specific entity."
@@ -394,77 +418,85 @@ object EntityId {
   }
 
   def fromCode(code: Byte): EntityId = code match {
-    case Unspecified.code                                   => Unspecified
-    case Other.code                                         => Other
-    case Unknown.code                                       => Unknown
-    case Processor.code                                     => Processor
-    case DiskOrDiskBay.code                                 => DiskOrDiskBay
-    case PeripheralBay.code                                 => PeripheralBay
-    case SystemManagementModule.code                        => SystemManagementModule
-    case SystemBoard.code                                   => SystemBoard
-    case MemoryModule.code                                  => MemoryModule
-    case ProcessorModule.code                               => ProcessorModule
-    case PowerSupply.code                                   => PowerSupply
-    case AddInCard.code                                     => AddInCard
-    case FrontPanelBoard.code                               => FrontPanelBoard
-    case BackPanelBoard.code                                => BackPanelBoard
-    case PowerSystemBoard.code                              => PowerSystemBoard
-    case DriveBackplane.code                                => DriveBackplane
-    case SystemInternalExpansionBoard.code                  => SystemInternalExpansionBoard
-    case OtherSystemBoard.code                              => OtherSystemBoard
-    case ProcessorBoard.code                                => ProcessorBoard
-    case PowerUnitPowerDomain.code                          => PowerUnitPowerDomain
-    case PowerModuleDcDcConverter.code                      => PowerModuleDcDcConverter
-    case PowerManagementPowerDistributionBoard.code         => PowerManagementPowerDistributionBoard
-    case ChassisBackPanelBoard.code                         => ChassisBackPanelBoard
-    case SystemChassis.code                                 => SystemChassis
-    case SubChassis.code                                    => SubChassis
-    case OtherChassisBoard.code                             => OtherChassisBoard
-    case DiskDriveBay.code                                  => DiskDriveBay
-    case PeripheralBay01.code                               => PeripheralBay01
-    case DeviceBay.code                                     => DeviceBay
-    case FanCoolingDevice.code                              => FanCoolingDevice
-    case CoolingUnitCoolingDomain.code                      => CoolingUnitCoolingDomain
-    case CableInterconnect.code                             => CableInterconnect
-    case MemoryDevice.code                                  => MemoryDevice
-    case SystemManagementSoftware.code                      => SystemManagementSoftware
-    case SystemFirmware.code                                => SystemFirmware
-    case OperatingSystem.code                               => OperatingSystem
-    case SystemBus.code                                     => SystemBus
-    case Group.code                                         => Group
-    case RemoteOobManagementCommunicationDevice.code        => RemoteOobManagementCommunicationDevice
-    case ExternalEnvironment.code                           => ExternalEnvironment
-    case Battery.code                                       => Battery
-    case ProcessingBlade.code                               => ProcessingBlade
-    case ConnectivitySwitch.code                            => ConnectivitySwitch
-    case ProcessorMemoryModule.code                         => ProcessorMemoryModule
-    case IoModule.code                                      => IoModule
-    case ProcessorIoModule.code                             => ProcessorIoModule
-    case ManagementControllerFirmware.code                  => ManagementControllerFirmware
-    case IpmiChannel.code                                   => IpmiChannel
-    case PciBus.code                                        => PciBus
-    case PciExpressBus.code                                 => PciExpressBus
-    case ScsiBusParalell.code                               => ScsiBusParalell
-    case SataSasBus.code                                    => SataSasBus
-    case ProcessorFrontSideBus.code                         => ProcessorFrontSideBus
-    case RealTimeClock.code                                 => RealTimeClock
-    case ReservedPreviouslyDuplicateOfSystemFirmware00.code => ReservedPreviouslyDuplicateOfSystemFirmware00
-    case ReservedPreviouslyDuplicateOfSystemFirmware01.code => ReservedPreviouslyDuplicateOfSystemFirmware01
-    case ReservedPreviouslyDuplicateOfSystemFirmware02.code => ReservedPreviouslyDuplicateOfSystemFirmware02
-    case ReservedPreviouslyDuplicateOfSystemFirmware03.code => ReservedPreviouslyDuplicateOfSystemFirmware03
-    case ReservedPreviouslyDuplicateOfSystemFirmware04.code => ReservedPreviouslyDuplicateOfSystemFirmware04
-    case ReservedPreviouslyDuplicateOfSystemFirmware05.code => ReservedPreviouslyDuplicateOfSystemFirmware05
-    case ReservedPreviouslyDuplicateOfSystemFirmware06.code => ReservedPreviouslyDuplicateOfSystemFirmware06
-    case ReservedPreviouslyDuplicateOfSystemFirmware07.code => ReservedPreviouslyDuplicateOfSystemFirmware07
-    case ReservedPreviouslyDuplicateOfSystemFirmware08.code => ReservedPreviouslyDuplicateOfSystemFirmware08
-    case ReservedPreviouslyDuplicateOfSystemFirmware09.code => ReservedPreviouslyDuplicateOfSystemFirmware09
-    case AirInlet.code                                      => AirInlet
-    case ProcessorCpu.code                                  => ProcessorCpu
-    case Baseboard.code                                     => Baseboard
-    case b if b.in(0x90 to 0xaf)                            => ChassicSpecific(b)
-    case b if b.in(0xb0 to 0xcf)                            => BoardSetSpecific(b)
-    case b if b.in(0xd0 to 0xff)                            => Oem(b)
+    case Unspecified.code                            => Unspecified
+    case Other.code                                  => Other
+    case Unknown.code                                => Unknown
+    case Processor.code                              => Processor
+    case DiskOrDiskBay.code                          => DiskOrDiskBay
+    case PeripheralBay.code                          => PeripheralBay
+    case SystemManagementModule.code                 => SystemManagementModule
+    case SystemBoard.code                            => SystemBoard
+    case MemoryModule.code                           => MemoryModule
+    case ProcessorModule.code                        => ProcessorModule
+    case PowerSupply.code                            => PowerSupply
+    case AddInCard.code                              => AddInCard
+    case FrontPanelBoard.code                        => FrontPanelBoard
+    case BackPanelBoard.code                         => BackPanelBoard
+    case PowerSystemBoard.code                       => PowerSystemBoard
+    case DriveBackplane.code                         => DriveBackplane
+    case SystemInternalExpansionBoard.code           => SystemInternalExpansionBoard
+    case OtherSystemBoard.code                       => OtherSystemBoard
+    case ProcessorBoard.code                         => ProcessorBoard
+    case PowerUnitPowerDomain.code                   => PowerUnitPowerDomain
+    case PowerModuleDcDcConverter.code               => PowerModuleDcDcConverter
+    case PowerManagementPowerDistributionBoard.code  => PowerManagementPowerDistributionBoard
+    case ChassisBackPanelBoard.code                  => ChassisBackPanelBoard
+    case SystemChassis.code                          => SystemChassis
+    case SubChassis.code                             => SubChassis
+    case OtherChassisBoard.code                      => OtherChassisBoard
+    case DiskDriveBay.code                           => DiskDriveBay
+    case PeripheralBay01.code                        => PeripheralBay01
+    case DeviceBay.code                              => DeviceBay
+    case FanCoolingDevice.code                       => FanCoolingDevice
+    case CoolingUnitCoolingDomain.code               => CoolingUnitCoolingDomain
+    case CableInterconnect.code                      => CableInterconnect
+    case MemoryDevice.code                           => MemoryDevice
+    case SystemManagementSoftware.code               => SystemManagementSoftware
+    case SystemFirmware.code                         => SystemFirmware
+    case OperatingSystem.code                        => OperatingSystem
+    case SystemBus.code                              => SystemBus
+    case Group.code                                  => Group
+    case RemoteOobManagementCommunicationDevice.code => RemoteOobManagementCommunicationDevice
+    case ExternalEnvironment.code                    => ExternalEnvironment
+    case Battery.code                                => Battery
+    case ProcessingBlade.code                        => ProcessingBlade
+    case ConnectivitySwitch.code                     => ConnectivitySwitch
+    case ProcessorMemoryModule.code                  => ProcessorMemoryModule
+    case IoModule.code                               => IoModule
+    case ProcessorIoModule.code                      => ProcessorIoModule
+    case ManagementControllerFirmware.code           => ManagementControllerFirmware
+    case IpmiChannel.code                            => IpmiChannel
+    case PciBus.code                                 => PciBus
+    case PciExpressBus.code                          => PciExpressBus
+    case ScsiBusParalell.code                        => ScsiBusParalell
+    case SataSasBus.code                             => SataSasBus
+    case ProcessorFrontSideBus.code                  => ProcessorFrontSideBus
+    case RealTimeClock.code                          => RealTimeClock
+    case ReservedPreviouslyDuplicateOfSystemFirmware00.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware00
+    case ReservedPreviouslyDuplicateOfSystemFirmware01.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware01
+    case ReservedPreviouslyDuplicateOfSystemFirmware02.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware02
+    case ReservedPreviouslyDuplicateOfSystemFirmware03.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware03
+    case ReservedPreviouslyDuplicateOfSystemFirmware04.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware04
+    case ReservedPreviouslyDuplicateOfSystemFirmware05.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware05
+    case ReservedPreviouslyDuplicateOfSystemFirmware06.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware06
+    case ReservedPreviouslyDuplicateOfSystemFirmware07.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware07
+    case ReservedPreviouslyDuplicateOfSystemFirmware08.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware08
+    case ReservedPreviouslyDuplicateOfSystemFirmware09.code =>
+      ReservedPreviouslyDuplicateOfSystemFirmware09
+    case AirInlet.code           => AirInlet
+    case ProcessorCpu.code       => ProcessorCpu
+    case Baseboard.code          => Baseboard
+    case b if b.in(0x90 to 0xaf) => ChassicSpecific(b)
+    case b if b.in(0xb0 to 0xcf) => BoardSetSpecific(b)
+    case b if b.in(0xd0 to 0xff) => Oem(b)
   }
 }
-
-  

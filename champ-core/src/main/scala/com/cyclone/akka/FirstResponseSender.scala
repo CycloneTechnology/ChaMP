@@ -11,12 +11,14 @@ import scala.reflect.ClassTag
   * request. It responds to the original sender with the first response it receives.
   */
 object FirstResponseSender {
+
   /**
     * @param timeout timeout for receiving a response from the time that the request is received.
     *                If the timeout if infinite (i.e. no timeout) then the actor should be
     *                stopped externally if no response is received.
     */
-  def props[Resp: ClassTag](timeout: Duration): Props = Props(new FirstResponseSender[Resp](timeout))
+  def props[Resp: ClassTag](timeout: Duration): Props =
+    Props(new FirstResponseSender[Resp](timeout))
 
   type Request = (ActorRef, Any)
 
@@ -24,8 +26,7 @@ object FirstResponseSender {
 
 }
 
-class FirstResponseSender[Resp: ClassTag](timeout: Duration)
-  extends Actor {
+class FirstResponseSender[Resp: ClassTag](timeout: Duration) extends Actor {
 
   def receive: Receive = {
     case Requests(reqs) =>
@@ -34,8 +35,7 @@ class FirstResponseSender[Resp: ClassTag](timeout: Duration)
       if (reqs.isEmpty) {
         client ! Status.Failure(new RuntimeException(s"Empty request"))
         context stop self
-      }
-      else {
+      } else {
         timeout match {
           case finite: FiniteDuration => context.setReceiveTimeout(finite)
           case _                      => // No timeout
@@ -57,5 +57,3 @@ class FirstResponseSender[Resp: ClassTag](timeout: Duration)
   }
 
 }
-
-

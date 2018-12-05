@@ -42,5 +42,4 @@ object IpmiToolExample extends App {
       System.exit(1)
   }
 
-
 }

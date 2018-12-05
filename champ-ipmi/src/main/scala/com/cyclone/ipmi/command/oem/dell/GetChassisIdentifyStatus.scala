@@ -15,6 +15,7 @@ object GetChassisIdentifyStatus {
   object IdentifyStatus {
 
     implicit val decoder: Decoder[IdentifyStatus] = new Decoder[IdentifyStatus] {
+
       def decode(data: ByteString): IdentifyStatus = data(0).toUnsignedInt match {
         case 0x00 => Off
         case 0x01 => On
@@ -22,6 +23,7 @@ object GetChassisIdentifyStatus {
     }
 
     implicit val encoder: Coder[IdentifyStatus] = new Coder[IdentifyStatus] {
+
       def encode(a: IdentifyStatus): ByteString = {
         a match {
           case Off => ByteString(0x00)
@@ -38,6 +40,7 @@ object GetChassisIdentifyStatus {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -48,7 +51,8 @@ object GetChassisIdentifyStatus {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(identifyStatus: IdentifyStatus) extends IpmiCommandResult
@@ -58,7 +62,8 @@ object GetChassisIdentifyStatus {
       def encode(request: Command): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command() extends IpmiStandardCommand {

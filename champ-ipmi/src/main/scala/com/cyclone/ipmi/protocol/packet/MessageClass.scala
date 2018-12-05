@@ -10,9 +10,9 @@ sealed trait MessageClass {
   def code: Byte
 }
 
-
 object MessageClass {
   implicit val codec: Codec[MessageClass] = new Codec[MessageClass] {
+
     def encode(a: MessageClass) =
       ByteString(a.code)
 

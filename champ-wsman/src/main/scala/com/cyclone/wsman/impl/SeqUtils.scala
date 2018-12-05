@@ -8,6 +8,7 @@ import scala.annotation.tailrec
   * @author Jeremy.Stone
   */
 object SeqUtils {
+
   def replace[T](in: Seq[T], oldValue: Seq[T], newValue: Seq[T]): Seq[T] =
     replace(0, in, oldValue, newValue)
 
@@ -23,7 +24,12 @@ object SeqUtils {
     }
   }
 
-  def replaceIndexedOccurrence[T](n: Int, in: Seq[T], oldValue: Seq[T], newValue: Seq[T]): Seq[T] = {
+  def replaceIndexedOccurrence[T](
+    n: Int,
+    in: Seq[T],
+    oldValue: Seq[T],
+    newValue: Seq[T]
+  ): Seq[T] = {
     val index = indexOfOccurrence(n, 0, in, oldValue)
 
     if (index == -1) {
@@ -45,7 +51,12 @@ object SeqUtils {
       indexOfOccurrence(n - 1, index + value.size, in, value)
   }
 
-  def replaceIndexedOccurrenceFromEnd[T](n: Int, in: Seq[T], oldValue: Seq[T], newValue: Seq[T]): Seq[T] = {
+  def replaceIndexedOccurrenceFromEnd[T](
+    n: Int,
+    in: Seq[T],
+    oldValue: Seq[T],
+    newValue: Seq[T]
+  ): Seq[T] = {
     val index = indexOfOccurrenceFromEnd(n, in.size, in, oldValue)
 
     if (index == -1) {

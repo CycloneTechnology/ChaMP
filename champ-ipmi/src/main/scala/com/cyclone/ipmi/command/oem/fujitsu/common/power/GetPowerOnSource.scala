@@ -15,6 +15,7 @@ object GetPowerOnSource {
 
   object PowerOnSource {
     implicit val decoder: Decoder[PowerOnSource] = new Decoder[PowerOnSource] {
+
       def decode(data: ByteString): PowerOnSource = data(0).toUnsignedInt match {
         case 0x00 => SoftwareOrCommand
         case 0x01 => PowerSwitch
@@ -34,6 +35,7 @@ object GetPowerOnSource {
     }
 
     implicit val encoder: Coder[PowerOnSource] = new Coder[PowerOnSource] {
+
       def encode(a: PowerOnSource): ByteString = {
         a match {
           case SoftwareOrCommand                                => ByteString(0x00)
@@ -86,25 +88,31 @@ object GetPowerOnSource {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val ianaNumber = */is.read(3).as[IanaEnterpriseNumber] // IANA number LSB First (Should always be 80 28 00 for Fujitsu
-        /*val length = */is.readByte // Should always be 1
+        /*val ianaNumber = */
+        is.read(3)
+          .as[IanaEnterpriseNumber] // IANA number LSB First (Should always be 80 28 00 for Fujitsu
+        /*val length = */
+        is.readByte // Should always be 1
         val powerOnSource = is.readByte.as[PowerOnSource]
 
         CommandResult(powerOnSource)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(powerOnSource: PowerOnSource) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -118,7 +126,8 @@ object GetPowerOnSource {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 
@@ -129,5 +138,3 @@ object GetPowerOnSource {
   }
 
 }
-
-

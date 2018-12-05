@@ -25,18 +25,24 @@ object SessionManager {
 
   def props(
     seqNoManagerFactory: ActorRef,
-    address: InetAddress, port: Int,
+    address: InetAddress,
+    port: Int,
     inactivityTimeout: FiniteDuration = 1.minute,
     hubFactory: SessionHubFactory = DefaultSessionHubFactory,
     sessionNegotiator: SessionNegotiator = DefaultSessionNegotiator,
-    requesterFactory: RequesterFactory = RequestHandlerRequesterFactory) =
-    Props(new SessionManager(
-      seqNoManagerFactory,
-      address, port,
-      inactivityTimeout,
-      hubFactory,
-      sessionNegotiator,
-      requesterFactory))
+    requesterFactory: RequesterFactory = RequestHandlerRequesterFactory
+  ) =
+    Props(
+      new SessionManager(
+        seqNoManagerFactory,
+        address,
+        port,
+        inactivityTimeout,
+        hubFactory,
+        sessionNegotiator,
+        requesterFactory
+      )
+    )
 
   case class NegotiateSession(
     ipmiCredentials: IpmiCredentials,
@@ -57,8 +63,9 @@ object SessionManager {
   case object ClosedDown
 
   case class ExecuteCommand[Cmd <: IpmiStandardCommand, Res <: IpmiCommandResult](
-    command: Cmd, targetAddress: DeviceAddress = DeviceAddress.BmcAddress)
-    (implicit val timeoutContext: TimeoutContext, val codec: CommandResultCodec[Cmd, Res])
+    command: Cmd,
+    targetAddress: DeviceAddress = DeviceAddress.BmcAddress
+  )(implicit val timeoutContext: TimeoutContext, val codec: CommandResultCodec[Cmd, Res])
 
   sealed trait CommandExecutionResult
 
@@ -68,13 +75,15 @@ object SessionManager {
 
   case class CommandExecutionFailure(e: Throwable) extends CommandExecutionResult
 
-  private case class SessionNegotiationComplete(sessionContext: SessionContext, version: IpmiVersion)
+  private case class SessionNegotiationComplete(
+    sessionContext: SessionContext,
+    version: IpmiVersion
+  )
 
   private case object SessionNegotiationFailed
 
-  private[protocol] val ClosedowntimeoutContext = TimeoutContext(
-    OperationDeadline.fromNow(5.second),
-    RequestTimeouts.simple())
+  private[protocol] val ClosedowntimeoutContext =
+    TimeoutContext(OperationDeadline.fromNow(5.second), RequestTimeouts.simple())
 }
 
 /**
@@ -82,15 +91,20 @@ object SessionManager {
   */
 class SessionManager(
   seqNoManagerFactory: ActorRef,
-  address: InetAddress, port: Int,
+  address: InetAddress,
+  port: Int,
   inactivityTimeout: FiniteDuration,
   hubFactory: SessionHubFactory,
   sessionNegotiator: SessionNegotiator,
-  requesterFactory: RequesterFactory) extends Actor with Stash with ActorLogging {
+  requesterFactory: RequesterFactory
+) extends Actor
+    with Stash
+    with ActorLogging {
 
   val remoteConsoleSessionId = RemoteConsoleSessionId(new Random().nextInt())
 
-  val hub: ActorRef = hubFactory.createHub(context, self, UDPTransport.factory(context, address, port))
+  val hub: ActorRef =
+    hubFactory.createHub(context, self, UDPTransport.factory(context, address, port))
 
   context.setReceiveTimeout(inactivityTimeout)
 
@@ -119,55 +133,62 @@ class SessionManager(
     case _ => stash()
   }
 
-  def noSession(requester: Requester): Receive = LoggingReceive.withLabel("No session") {
-    case ns@NegotiateSession(credentials, versionRequirement, privilegeLevel) =>
-      implicit val rc: TimeoutContext = ns.timeoutContext
-      val client = sender
+  def noSession(requester: Requester): Receive =
+    LoggingReceive.withLabel("No session") {
+      case ns @ NegotiateSession(credentials, versionRequirement, privilegeLevel) =>
+        implicit val rc: TimeoutContext = ns.timeoutContext
+        val client = sender
 
-      val futureNegotiation =
-        sessionNegotiator.negotiateSession(
-          versionRequirement,
-          remoteConsoleSessionId,
-          credentials,
-          privilegeLevel,
-          requester)
+        val futureNegotiation =
+          sessionNegotiator.negotiateSession(
+            versionRequirement,
+            remoteConsoleSessionId,
+            credentials,
+            privilegeLevel,
+            requester
+          )
 
-      futureNegotiation.onComplete {
-        case Success(\/-((sessionContext, version))) =>
-          client ! SessionNegotiationSuccess
-          self ! SessionNegotiationComplete(sessionContext, version)
+        futureNegotiation.onComplete {
+          case Success(\/-((sessionContext, version))) =>
+            client ! SessionNegotiationSuccess
+            self ! SessionNegotiationComplete(sessionContext, version)
 
-        case Success(-\/(e)) =>
-          client ! SessionNegotiationError(e)
-          self ! SessionNegotiationFailed
+          case Success(-\/(e)) =>
+            client ! SessionNegotiationError(e)
+            self ! SessionNegotiationFailed
 
-        case Failure(t) =>
-          client ! SessionNegotiationFailure(t)
-          self ! SessionNegotiationFailed
-      }
+          case Failure(t) =>
+            client ! SessionNegotiationFailure(t)
+            self ! SessionNegotiationFailed
+        }
 
-      context become negotiatingSession(requester)
+        context become negotiatingSession(requester)
 
-    case Closedown =>
-      context become closingDown(sender)
-      self ! ClosedDown
+      case Closedown =>
+        context become closingDown(sender)
+        self ! ClosedDown
 
-  } orElse handleExecutionRequests(requester, SessionContext.NoSession, IpmiVersion.V15) orElse closedownIfInactive
+    } orElse handleExecutionRequests(requester, SessionContext.NoSession, IpmiVersion.V15) orElse closedownIfInactive
 
-  def negotiatingSession(requester: Requester): Receive = LoggingReceive.withLabel("Negotiating session") {
-    case SessionNegotiationComplete(sessionContext, version) =>
-      hub ! Transport.SetSessionContext(sessionContext)
-      context become awaitingSetSessionContextAck(requester, sessionContext, version)
-      unstashAll()
+  def negotiatingSession(requester: Requester): Receive =
+    LoggingReceive.withLabel("Negotiating session") {
+      case SessionNegotiationComplete(sessionContext, version) =>
+        hub ! Transport.SetSessionContext(sessionContext)
+        context become awaitingSetSessionContextAck(requester, sessionContext, version)
+        unstashAll()
 
-    case SessionNegotiationFailed =>
-      context become noSession(requester)
-      unstashAll()
+      case SessionNegotiationFailed =>
+        context become noSession(requester)
+        unstashAll()
 
-    case _ => stash()
-  }
+      case _ => stash()
+    }
 
-  def awaitingSetSessionContextAck(requester: Requester, sessionContext: SessionContext, version: IpmiVersion): Receive =
+  def awaitingSetSessionContextAck(
+    requester: Requester,
+    sessionContext: SessionContext,
+    version: IpmiVersion
+  ): Receive =
     LoggingReceive.withLabel("Awaiting SetSessionContextAck") {
       case Transport.SetSessionContextAck =>
         context become sessionActive(requester, sessionContext, version)
@@ -176,14 +197,21 @@ class SessionManager(
       case _ => stash()
     }
 
-  def sessionActive(requester: Requester, sessionContext: SessionContext, version: IpmiVersion): Receive =
+  def sessionActive(
+    requester: Requester,
+    sessionContext: SessionContext,
+    version: IpmiVersion
+  ): Receive =
     LoggingReceive.withLabel("Session active") {
       case Closedown =>
         implicit val rc: TimeoutContext = ClosedowntimeoutContext
 
         val futClose = requester.makeRequest(
           CloseSession.Command(sessionContext.managedSystemSessionId),
-          version, sessionContext, DeviceAddress.BmcAddress)
+          version,
+          sessionContext,
+          DeviceAddress.BmcAddress
+        )
 
         context become closingDown(sender)
 
@@ -192,7 +220,8 @@ class SessionManager(
           self ! ClosedDown
         }
 
-      case _: NegotiateSession => sender() ! Status.Failure(new IllegalStateException("Session already active"))
+      case _: NegotiateSession =>
+        sender() ! Status.Failure(new IllegalStateException("Session already active"))
 
     } orElse handleExecutionRequests(requester, sessionContext, version) orElse closedownIfInactive
 
@@ -202,11 +231,16 @@ class SessionManager(
       context stop self
   }
 
-  def handleExecutionRequests(requester: Requester, sessionContext: SessionContext, version: IpmiVersion): Receive = LoggingReceive {
-    case mr@ExecuteCommand(request, targetAddress) =>
+  def handleExecutionRequests(
+    requester: Requester,
+    sessionContext: SessionContext,
+    version: IpmiVersion
+  ): Receive = LoggingReceive {
+    case mr @ ExecuteCommand(request, targetAddress) =>
       implicit val rc: TimeoutContext = mr.timeoutContext
       implicit val codec: CommandResultCodec[IpmiStandardCommand, IpmiCommandResult] = mr.codec
-      requester.makeRequest(request, version, sessionContext, targetAddress)
+      requester
+        .makeRequest(request, version, sessionContext, targetAddress)
         .map {
           case \/-(result) => CommandExecutionSuccess(result)
           case -\/(e)      => CommandExecutionError(e)
@@ -223,5 +257,3 @@ class SessionManager(
       self ! Closedown
   }
 }
-
-

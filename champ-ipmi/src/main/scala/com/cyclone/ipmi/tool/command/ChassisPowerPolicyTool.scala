@@ -34,15 +34,28 @@ object ChassisPowerPolicyTool {
 
   object Command {
     implicit val executor: CommandExecutor[Command, Result] = new CommandExecutor[Command, Result] {
+
       def execute(Command: Command)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
         implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
         import ctx._
 
         def exec = Command.chassisPolicy match {
-          case ChassisPolicy.`always-off` => connection.executeCommandOrError(SetPowerRestorePolicy.Command(PowerRestorePolicy.ChassisAlwaysOffAfterAcApplied))
-          case ChassisPolicy.previous     => connection.executeCommandOrError(SetPowerRestorePolicy.Command(PowerRestorePolicy.ChassisPowerRestoredToPreviousState))
-          case ChassisPolicy.`always-on`  => connection.executeCommandOrError(SetPowerRestorePolicy.Command(PowerRestorePolicy.ChassisAlwaysPowersOnAfterAcApplid))
-          case ChassisPolicy.list         => connection.executeCommandOrError(SetPowerRestorePolicy.Command(PowerRestorePolicy.NoChangeJustGetPresentPolicy))
+          case ChassisPolicy.`always-off` =>
+            connection.executeCommandOrError(
+              SetPowerRestorePolicy.Command(PowerRestorePolicy.ChassisAlwaysOffAfterAcApplied)
+            )
+          case ChassisPolicy.previous =>
+            connection.executeCommandOrError(
+              SetPowerRestorePolicy.Command(PowerRestorePolicy.ChassisPowerRestoredToPreviousState)
+            )
+          case ChassisPolicy.`always-on` =>
+            connection.executeCommandOrError(
+              SetPowerRestorePolicy.Command(PowerRestorePolicy.ChassisAlwaysPowersOnAfterAcApplid)
+            )
+          case ChassisPolicy.list =>
+            connection.executeCommandOrError(
+              SetPowerRestorePolicy.Command(PowerRestorePolicy.NoChangeJustGetPresentPolicy)
+            )
         }
 
         val result = for {
@@ -55,6 +68,7 @@ object ChassisPowerPolicyTool {
   }
 
   case class Command(chassisPolicy: ChassisPolicy) extends IpmiToolCommand {
+
     def description(): String = {
       s"chassis policy $chassisPolicy"
     }

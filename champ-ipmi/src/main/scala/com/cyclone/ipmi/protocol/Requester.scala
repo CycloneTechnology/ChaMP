@@ -12,6 +12,7 @@ import scala.concurrent.Future
   * Utility for making requests and receiving responses
   */
 trait Requester {
+
   /**
     * Sends a command and returns either an error or a result.
     *
@@ -23,15 +24,15 @@ trait Requester {
     command: Cmd,
     version: IpmiVersion,
     sessionContext: SessionContext = SessionContext.NoSession,
-    targetAddress: DeviceAddress = DeviceAddress.BmcAddress)
-    (implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Cmd, Res]): Future[IpmiErrorOr[Res]]
+    targetAddress: DeviceAddress = DeviceAddress.BmcAddress
+  )(
+    implicit timeoutContext: TimeoutContext,
+    codec: CommandResultCodec[Cmd, Res]
+  ): Future[IpmiErrorOr[Res]]
 }
 
 trait RequesterFactory {
-  def requester(
-    actorContext: ActorContext,
-    hub: ActorRef,
-    seqNoManager: ActorRef): Requester
+  def requester(actorContext: ActorContext, hub: ActorRef, seqNoManager: ActorRef): Requester
 }
 
 trait RequesterFactoryComponent {

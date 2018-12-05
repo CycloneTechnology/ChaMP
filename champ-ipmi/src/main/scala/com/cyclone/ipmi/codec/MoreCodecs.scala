@@ -8,7 +8,9 @@ import org.joda.time.DateTime
   * Additional useful (but non-implicit) codecs
   */
 object MoreCodecs {
+
   def nullTerminatedStringCoder(length: Int): Codec[String] = new Codec[String] {
+
     def encode(a: String): ByteString = {
       val as = a.getBytes(Charsets.US_ASCII)
       val pad = (length - as.length) max 0
@@ -26,6 +28,7 @@ object MoreCodecs {
     * Codec for short (<256 chars strings). Uses a single byte to encode the length.
     */
   val shortStringLengthPrefixedStringCodec: Codec[String] = new Codec[String] {
+
     def encode(a: String): ByteString = {
       val b = new ByteStringBuilder
 
@@ -44,10 +47,10 @@ object MoreCodecs {
     }
   }
 
-
   private val base1996Time = new DateTime(1996, 1, 1, 0, 0)
 
   val datetimeCodecFrom1996InMinutes: Decoder[DateTime] = new Decoder[DateTime] {
+
     def decode(data: ByteString): DateTime = {
       // Codec required 3 bytes - pad with 0
       val mins = (data :+ 0.toByte).as[Int]

@@ -14,6 +14,7 @@ object GetSystemStatus {
 
   object SystemStatus {
     implicit val decoder: Decoder[SystemStatus] = new Decoder[SystemStatus] {
+
       def decode(data: ByteString): SystemStatus = {
         val byte = data(0)
 
@@ -25,7 +26,8 @@ object GetSystemStatus {
           reserved3 = byte.bit3,
           watchdogActive = byte.bit2,
           agentConnected = byte.bit1,
-          postState = byte.bit0)
+          postState = byte.bit0
+        )
       }
     }
   }
@@ -38,10 +40,12 @@ object GetSystemStatus {
     reserved3: Boolean,
     watchdogActive: Boolean,
     agentConnected: Boolean,
-    postState: Boolean)
+    postState: Boolean
+  )
 
   object Signaling {
     implicit val decoder: Decoder[Signaling] = new Decoder[Signaling] {
+
       def decode(data: ByteString): Signaling = {
         val byte = data(0)
 
@@ -53,7 +57,8 @@ object GetSystemStatus {
           cssLed0 = byte.bit3,
           cssLed1 = byte.bit2,
           globalErrorLed0 = byte.bit1,
-          globalErrorLed1 = byte.bit0)
+          globalErrorLed1 = byte.bit0
+        )
       }
     }
   }
@@ -66,10 +71,12 @@ object GetSystemStatus {
     cssLed0: Boolean,
     cssLed1: Boolean,
     globalErrorLed0: Boolean,
-    globalErrorLed1: Boolean)
+    globalErrorLed1: Boolean
+  )
 
   object Notifications {
     implicit val decoder: Decoder[Notifications] = new Decoder[Notifications] {
+
       def decode(data: ByteString): Notifications = {
         val byte = data(0)
 
@@ -81,7 +88,8 @@ object GetSystemStatus {
           configSpaceModified = byte.bit3,
           reserved2 = byte.bit2,
           reserved1 = byte.bit1,
-          newOutputOnLocalViewDisplay = byte.bit0)
+          newOutputOnLocalViewDisplay = byte.bit0
+        )
       }
     }
   }
@@ -94,38 +102,43 @@ object GetSystemStatus {
     configSpaceModified: Boolean,
     reserved2: Boolean,
     reserved1: Boolean,
-    newOutputOnLocalViewDisplay: Boolean)
+    newOutputOnLocalViewDisplay: Boolean
+  )
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val requestType = */is.read(3).as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
+        /*val requestType = */
+        is.read(3)
+          .as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
 
         val systemStatus = is.readByteOptional.map(_.as[SystemStatus])
         val signaling = is.readByteOptional.map(_.as[Signaling])
         val notifications = is.readByteOptional.map(_.as[Notifications])
         val postCode = is.readByte
 
-        CommandResult(systemStatus,
-          signaling,
-          notifications,
-          postCode)
+        CommandResult(systemStatus, signaling, notifications, postCode)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
-  case class CommandResult(systemStatus: Option[SystemStatus],
+  case class CommandResult(
+    systemStatus: Option[SystemStatus],
     signaling: Option[Signaling],
     notifications: Option[Notifications],
-    postCode: Byte) extends IpmiCommandResult
+    postCode: Byte
+  ) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -141,7 +154,8 @@ object GetSystemStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

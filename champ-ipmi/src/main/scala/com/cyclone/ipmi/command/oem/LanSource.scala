@@ -11,6 +11,7 @@ sealed trait LanSource
 object LanSource {
 
   implicit val decoder: Decoder[LanSource] = new Decoder[LanSource] {
+
     def decode(data: ByteString): LanSource = data(0).toUnsignedInt match {
       case 0x00 => SharedNic
       case 0x01 => DedicatedNic
@@ -18,6 +19,7 @@ object LanSource {
   }
 
   implicit val encoder: Coder[LanSource] = new Coder[LanSource] {
+
     def encode(a: LanSource): ByteString = {
       a match {
         case SharedNic    => ByteString(0x00)

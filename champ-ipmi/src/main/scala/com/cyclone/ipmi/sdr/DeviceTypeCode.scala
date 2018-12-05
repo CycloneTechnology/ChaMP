@@ -43,46 +43,49 @@ sealed trait DeviceType {
 
 object DeviceType {
   implicit val decoder: Decoder[DeviceType] = new Decoder[DeviceType] {
+
     def decode(data: ByteString): DeviceType =
       data(0) match {
-        case Reserved00.code                                      => Reserved00
-        case Reserved01.code                                      => Reserved01
-        case DS1624TemperatureSensorEEPROMorEquivalent.code       => DS1624TemperatureSensorEEPROMorEquivalent
-        case DS1621TemperatureSensorOrEquivalent.code             => DS1621TemperatureSensorOrEquivalent
-        case LM75TemperatureSensorOrEquivalent.code               => LM75TemperatureSensorOrEquivalent
-        case HecetaASICorSimilar.code                             => HecetaASICorSimilar
-        case Reserved06.code                                      => Reserved06
-        case Reserved07.code                                      => Reserved07
-        case EEPROM24C01orEquivalent.code                         => EEPROM24C01orEquivalent
-        case EEPROM24C02orEquivalent.code                         => EEPROM24C02orEquivalent
-        case EEPROM24C04orEquivalent.code                         => EEPROM24C04orEquivalent
-        case EEPROM24C08orEquivalent.code                         => EEPROM24C08orEquivalent
-        case EEPROM24C16orEquivalent.code                         => EEPROM24C16orEquivalent
-        case EEPROM24C17orEquivalent.code                         => EEPROM24C17orEquivalent
-        case EEPROM24C32orEquivalent.code                         => EEPROM24C32orEquivalent
-        case EEPROM24C64orEquivalent.code                         => EEPROM24C64orEquivalent
-        case FruInventoryDeviceBehindMc.code                      => FruInventoryDeviceBehindMc
-        case Reserved11.code                                      => Reserved11
-        case Reserved12.code                                      => Reserved12
-        case Reserved13.code                                      => Reserved13
-        case PCF8570_256ByteRamOrEquivalent.code                  => PCF8570_256ByteRamOrEquivalent
-        case PCF8573ClockCalendar.code                            => PCF8573ClockCalendar
-        case PCF8574AIoPort.code                                  => PCF8574AIoPort
-        case PCF8583ClockCalendar.code                            => PCF8583ClockCalendar
-        case PCF8593ClockCalendar.code                            => PCF8593ClockCalendar
-        case ClockCalendar.code                                   => ClockCalendar
-        case PCF8591AdDaConverter.code                            => PCF8591AdDaConverter
-        case IoPort.code                                          => IoPort
-        case AdConverter.code                                     => AdConverter
-        case DaConverter.code                                     => DaConverter
-        case AdDaConverter.code                                   => AdDaConverter
-        case LCDControllerDriver.code                             => LCDControllerDriver
-        case CoreLogicChipSetDevice.code                          => CoreLogicChipSetDevice
-        case LMC6874IntelligentBatteryControllerOrEquivalent.code => LMC6874IntelligentBatteryControllerOrEquivalent
-        case IntelligentBatteryController.code                    => IntelligentBatteryController
-        case ComboManagementASIC.code                             => ComboManagementASIC
-        case Maxim1617TemperatureSensor.code                      => Maxim1617TemperatureSensor
-        case OtherUnspecifiedDevice.code                          => OtherUnspecifiedDevice
+        case Reserved00.code => Reserved00
+        case Reserved01.code => Reserved01
+        case DS1624TemperatureSensorEEPROMorEquivalent.code =>
+          DS1624TemperatureSensorEEPROMorEquivalent
+        case DS1621TemperatureSensorOrEquivalent.code => DS1621TemperatureSensorOrEquivalent
+        case LM75TemperatureSensorOrEquivalent.code   => LM75TemperatureSensorOrEquivalent
+        case HecetaASICorSimilar.code                 => HecetaASICorSimilar
+        case Reserved06.code                          => Reserved06
+        case Reserved07.code                          => Reserved07
+        case EEPROM24C01orEquivalent.code             => EEPROM24C01orEquivalent
+        case EEPROM24C02orEquivalent.code             => EEPROM24C02orEquivalent
+        case EEPROM24C04orEquivalent.code             => EEPROM24C04orEquivalent
+        case EEPROM24C08orEquivalent.code             => EEPROM24C08orEquivalent
+        case EEPROM24C16orEquivalent.code             => EEPROM24C16orEquivalent
+        case EEPROM24C17orEquivalent.code             => EEPROM24C17orEquivalent
+        case EEPROM24C32orEquivalent.code             => EEPROM24C32orEquivalent
+        case EEPROM24C64orEquivalent.code             => EEPROM24C64orEquivalent
+        case FruInventoryDeviceBehindMc.code          => FruInventoryDeviceBehindMc
+        case Reserved11.code                          => Reserved11
+        case Reserved12.code                          => Reserved12
+        case Reserved13.code                          => Reserved13
+        case PCF8570_256ByteRamOrEquivalent.code      => PCF8570_256ByteRamOrEquivalent
+        case PCF8573ClockCalendar.code                => PCF8573ClockCalendar
+        case PCF8574AIoPort.code                      => PCF8574AIoPort
+        case PCF8583ClockCalendar.code                => PCF8583ClockCalendar
+        case PCF8593ClockCalendar.code                => PCF8593ClockCalendar
+        case ClockCalendar.code                       => ClockCalendar
+        case PCF8591AdDaConverter.code                => PCF8591AdDaConverter
+        case IoPort.code                              => IoPort
+        case AdConverter.code                         => AdConverter
+        case DaConverter.code                         => DaConverter
+        case AdDaConverter.code                       => AdDaConverter
+        case LCDControllerDriver.code                 => LCDControllerDriver
+        case CoreLogicChipSetDevice.code              => CoreLogicChipSetDevice
+        case LMC6874IntelligentBatteryControllerOrEquivalent.code =>
+          LMC6874IntelligentBatteryControllerOrEquivalent
+        case IntelligentBatteryController.code => IntelligentBatteryController
+        case ComboManagementASIC.code          => ComboManagementASIC
+        case Maxim1617TemperatureSensor.code   => Maxim1617TemperatureSensor
+        case OtherUnspecifiedDevice.code       => OtherUnspecifiedDevice
 
         case b if b.in(0xc0 to 0xfff) => OemRange(b)
       }
@@ -117,7 +120,6 @@ object DeviceType {
 
     val deviceType = "DS1621 temperature sensor or equivalent"
 
-
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
@@ -126,7 +128,6 @@ object DeviceType {
 
     val deviceType = "LM75 Temperature Sensor or equivalent"
 
-
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
@@ -134,7 +135,6 @@ object DeviceType {
     val code: Byte = 0x05.toByte
 
     val deviceType = "'Heceta’ ASIC or similar"
-
 
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
       case 0x00 => Some(DeviceTypeModifier.Heceta1)
@@ -168,7 +168,6 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C01 or equivalent"
 
-
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
       case 0x00 => None
       case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
@@ -183,7 +182,6 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C02 or equivalent"
 
-
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
       case 0x00 => None
       case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
@@ -197,7 +195,6 @@ object DeviceType {
     val code: Byte = 0x0a.toByte
 
     val deviceType = "EEPROM, 24C04 or equivalent"
-
 
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
       case 0x00 => None
@@ -425,7 +422,6 @@ object DeviceType {
     val code: Byte = 0x21.toByte
 
     val deviceType = "LMC6874 Intelligent Battery controller, or equivalent"
-
 
     def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }

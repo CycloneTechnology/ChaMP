@@ -6,11 +6,7 @@ import com.cyclone.akka.FirstResponseSender.Requests
 import org.scalatest.WordSpecLike
 import scala.concurrent.duration._
 
-class FirstResponseSenderTest
-  extends TestKitSupport
-    with WordSpecLike
-    with ImplicitSender
-    with ActorSystemShutdown {
+class FirstResponseSenderTest extends TestKitSupport with WordSpecLike with ImplicitSender with ActorSystemShutdown {
 
   val actor1 = TestProbe()
   val actor2 = TestProbe()

@@ -15,7 +15,7 @@ class XmlUtilsTest extends JUnitSuite {
   }
 
   @Test
-  def attributeValue_doesNotGetPrefixedAttributes() : Unit = {
+  def attributeValue_doesNotGetPrefixedAttributes(): Unit = {
     val xml = <d xmlns:p="http://someurl"><e p:name="value"/></d>
 
     assert(attributeValue((xml \ "e").head, "name") === None)
@@ -46,7 +46,7 @@ class XmlUtilsTest extends JUnitSuite {
   }
 
   @Test
-  def childElements_ignoresTextSiblings() : Unit= {
+  def childElements_ignoresTextSiblings(): Unit = {
     val xml = <a>
                 someText
                 <b>one</b>
@@ -69,6 +69,7 @@ class XmlUtilsTest extends JUnitSuite {
 
     assert(singleElement(xml \ "b") === <b>one</b>)
   }
+
   @Test
   def singleChildOfSingleElement_returnsFirstChildOfFirstChild(): Unit = {
     val xml = <a>

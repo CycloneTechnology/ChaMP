@@ -71,8 +71,7 @@ class SeqNoManager(allSeqNos: Seq[SeqNo]) extends Actor {
               case _ =>
                 doRelease(seqNo)
             }
-          }
-          else
+          } else
             sender() ! SequenceNumberNotHeld
       }
 
@@ -81,9 +80,13 @@ class SeqNoManager(allSeqNos: Seq[SeqNo]) extends Actor {
       context become running(remainingWaiters)
 
       // Let them know...
-      waitersForTerminated.foreach(waiter => waiter.client ! SequenceNumberNotAcquiredHandlerTerminated(ref))
+      waitersForTerminated.foreach(
+        waiter => waiter.client ! SequenceNumberNotAcquiredHandlerTerminated(ref)
+      )
 
-      val seqNosToRelease = acquiredSeqNos.collect { case (seqNo, requestHandler) if requestHandler == ref => seqNo }
+      val seqNosToRelease = acquiredSeqNos.collect {
+        case (seqNo, requestHandler) if requestHandler == ref => seqNo
+      }
 
       seqNosToRelease.foreach(seqNo => self ! ReleaseSequenceNumber(seqNo))
   }

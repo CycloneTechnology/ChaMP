@@ -7,11 +7,13 @@ import com.cyclone.wsman.impl.{EnumerationMode, InstanceFilter, Namespace}
 
 import scala.xml.Elem
 
-case class EnumXML(ref: ManagedReference,
+case class EnumXML(
+  ref: ManagedReference,
   selectors: SelectorClause,
   filter: InstanceFilter,
   enumMode: EnumerationMode,
-  deadline: OperationDeadline) extends RequestXMLWithDeadline {
+  deadline: OperationDeadline
+) extends RequestXMLWithDeadline {
 
   import RequestXML._
 

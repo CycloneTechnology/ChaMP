@@ -5,7 +5,12 @@ import com.cyclone.ipmi.PrivilegeLevel
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.protocol.packet.SessionId.{ManagedSystemSessionId, RemoteConsoleSessionId}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiSessionActivationCommand, PayloadType}
+import com.cyclone.ipmi.protocol.packet.{
+  CommandResultCodec,
+  IpmiCommandResult,
+  IpmiSessionActivationCommand,
+  PayloadType
+}
 import com.cyclone.ipmi.protocol.security._
 
 import scalaz.Scalaz._
@@ -17,6 +22,7 @@ object OpenSession {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -51,10 +57,12 @@ object OpenSession {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult](RmcpPlusAndRakpStatusCodeErrors.lookup)
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult](RmcpPlusAndRakpStatusCodeErrors.lookup)
   }
 
-  case class CommandResult(privilegeLevel: PrivilegeLevel,
+  case class CommandResult(
+    privilegeLevel: PrivilegeLevel,
     remoteConsoleSessionId: RemoteConsoleSessionId,
     managedSystemSessionId: ManagedSystemSessionId,
     authenticationAlgorithm: AuthenticationAlgorithm,
@@ -64,6 +72,7 @@ object OpenSession {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -108,7 +117,8 @@ object OpenSession {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, OpenSession.CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, OpenSession.CommandResult]
   }
 
   case class Command(

@@ -10,6 +10,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.xml.{Elem, Node}
 
 trait PushEventXmlParser {
+
   /**
     * Parses received XML document containing events or heartbeats
     * to create [[PushedMessage]] objects.
@@ -24,20 +25,20 @@ trait PushEventXmlParserComponent {
 trait DefaultPushEventXmlParserComponent extends PushEventXmlParserComponent with LazyLogging {
 
   lazy val pushEventXmlParser: PushEventXmlParser = new PushEventXmlParser {
+
     def messagesFor(document: Elem, localSubscriptionId: SubscriptionId): List[PushedMessage] = {
       def items(document: Elem): List[PushedMessage] = {
         logger.debug(s"EventReceiver received:\n${prettyPrint(document)}")
 
         allEventElems(document)
           .map(WSManEnumItem.fromElement)
-          .map(Item(_, localSubscriptionId)).toList
+          .map(Item(_, localSubscriptionId))
+          .toList
       }
 
       def allEventElems(document: Elem) = {
-        for (
-          eventParent <- eventParents(document);
-          eventElem <- XmlUtils.childElements(eventParent)
-        ) yield eventElem
+        for (eventParent <- eventParents(document);
+             eventElem   <- XmlUtils.childElements(eventParent)) yield eventElem
       }
 
       def eventParents(document: Elem): Iterable[Node] = {

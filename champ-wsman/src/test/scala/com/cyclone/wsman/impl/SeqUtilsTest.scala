@@ -7,6 +7,7 @@ import org.scalatest.junit.JUnitSuite
 import scala.language.implicitConversions
 
 class SeqUtilsTest extends JUnitSuite {
+
   @Test
   def replace_replacesSingleOccurrence(): Unit = {
     val s = seqFor("abcdef")

@@ -12,6 +12,7 @@ object SetFrontPanelButtonEnables {
 
   object FrontPanelEnables {
     implicit val decoder: Decoder[FrontPanelEnables] = new Decoder[FrontPanelEnables] {
+
       def decode(data: ByteString): FrontPanelEnables = {
         val byte = data(0)
 
@@ -23,21 +24,24 @@ object SetFrontPanelButtonEnables {
           disableStandbyButton = byte.bit3,
           disableDiagnosticInterruptButton = byte.bit2,
           disableResetButton = byte.bit1,
-          disablePowerOffButton = byte.bit0)
+          disablePowerOffButton = byte.bit0
+        )
       }
     }
 
     implicit val encoder: Coder[FrontPanelEnables] = new Coder[FrontPanelEnables] {
+
       def encode(a: FrontPanelEnables): ByteString = {
-        ByteString((
-          a.reserved7.toBit7.toUnsignedInt &
-            a.reserved6.toBit6.toUnsignedInt &
-            a.reserved5.toBit5.toUnsignedInt &
-            a.reserved4.toBit4.toUnsignedInt &
-            a.disableStandbyButton.toBit3.toUnsignedInt &
-            a.disableDiagnosticInterruptButton.toBit2.toUnsignedInt &
-            a.disableResetButton.toBit1.toUnsignedInt &
-            a.disablePowerOffButton.toBit0.toUnsignedInt).toByte)
+        ByteString(
+          (a.reserved7.toBit7.toUnsignedInt &
+          a.reserved6.toBit6.toUnsignedInt &
+          a.reserved5.toBit5.toUnsignedInt &
+          a.reserved4.toBit4.toUnsignedInt &
+          a.disableStandbyButton.toBit3.toUnsignedInt &
+          a.disableDiagnosticInterruptButton.toBit2.toUnsignedInt &
+          a.disableResetButton.toBit1.toUnsignedInt &
+          a.disablePowerOffButton.toBit0.toUnsignedInt).toByte
+        )
       }
     }
   }
@@ -50,23 +54,27 @@ object SetFrontPanelButtonEnables {
     disableStandbyButton: Boolean,
     disableDiagnosticInterruptButton: Boolean,
     disableResetButton: Boolean,
-    disablePowerOffButton: Boolean)
+    disablePowerOffButton: Boolean
+  )
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
 
         CommandResult()
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -78,7 +86,8 @@ object SetFrontPanelButtonEnables {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 
@@ -89,5 +98,3 @@ object SetFrontPanelButtonEnables {
   }
 
 }
-
-

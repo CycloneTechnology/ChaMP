@@ -25,19 +25,23 @@ object SystemInfoParameterExtractor extends LazyLogging {
   /**
     * Extracts a parameter from a single command execution.
     */
-  def extractSimple[P <: ParameterSelector, D](selector: P)
-    (implicit ctx: IpmiOperationContext,
-      parameterCodec: ParameterCodec[P, D, Nothing]): Future[IpmiErrorOr[Option[D]]] = {
+  def extractSimple[P <: ParameterSelector, D](selector: P)(
+    implicit ctx: IpmiOperationContext,
+    parameterCodec: ParameterCodec[P, D, Nothing]
+  ): Future[IpmiErrorOr[Option[D]]] = {
     implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
     import ctx._
 
     val result = for {
-      cmdResult <- eitherT(connection.executeCommandOrError(GetSystemInfoParameters.Command(selector)))
+      cmdResult <- eitherT(
+        connection.executeCommandOrError(GetSystemInfoParameters.Command(selector))
+      )
 
       _ = logger.debug(s"Result=$cmdResult")
-    } yield cmdResult match {
-      case GetSystemInfoParameters.CommandResult(_, d) => d
-    }
+    } yield
+      cmdResult match {
+        case GetSystemInfoParameters.CommandResult(_, d) => d
+      }
 
     logger.debug(s"Extracting simple parameter data for $selector")
     recoverNotSupportedToOption(result.run)
@@ -66,15 +70,18 @@ object SystemInfoParameterExtractor extends LazyLogging {
     * So this utility just pulls out and concatenates the data up to the required string length
     * and returns it along with the encoding that can be used if desired.
     */
-  def extractBlock[P <: ParameterSelector, B](selector: P)
-    (implicit ctx: IpmiOperationContext,
-      parameterCodec: ParameterCodec[P, BlockData, B]): Future[IpmiErrorOr[Option[B]]] = {
+  def extractBlock[P <: ParameterSelector, B](selector: P)(
+    implicit ctx: IpmiOperationContext,
+    parameterCodec: ParameterCodec[P, BlockData, B]
+  ): Future[IpmiErrorOr[Option[B]]] = {
     implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
     import ctx._
 
-    def loop(setSelector: Int,
+    def loop(
+      setSelector: Int,
       lengthAndCharset: Option[(Int, StringDecoder)],
-      acc: ByteString): Future[IpmiErrorOr[(StringDecoder, ByteString)]] = {
+      acc: ByteString
+    ): Future[IpmiErrorOr[(StringDecoder, ByteString)]] = {
       lengthAndCharset match {
         case Some((len, enc)) if acc.length >= len =>
           // We're done...
@@ -82,8 +89,11 @@ object SystemInfoParameterExtractor extends LazyLogging {
 
         case _ =>
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(
-              GetSystemInfoParameters.Command(selector, setSelector = setSelector)))
+            cmdResult <- eitherT(
+              connection.executeCommandOrError(
+                GetSystemInfoParameters.Command(selector, setSelector = setSelector)
+              )
+            )
 
             _ = logger.debug(s"Selector $setSelector result=$cmdResult")
 
@@ -113,9 +123,10 @@ object SystemInfoParameterExtractor extends LazyLogging {
     logger.debug(s"Extracting block parameter data for $selector")
     val result = for {
       charsetAndData <- eitherT(loop(0, None, ByteString.empty))
-    } yield charsetAndData match {
-      case (dec, data) => parameterCodec.blockDecoder.decode(dec, data)
-    }
+    } yield
+      charsetAndData match {
+        case (dec, data) => parameterCodec.blockDecoder.decode(dec, data)
+      }
 
     recoverNotSupportedToOption(result.run)
   }
@@ -123,7 +134,9 @@ object SystemInfoParameterExtractor extends LazyLogging {
   /**
     * Recovers from an unsupported parameter by returning an empty (None) value
     */
-  def recoverNotSupportedToOption[D](futureErrorOrValue: Future[IpmiErrorOr[D]]): Future[IpmiErrorOr[Option[D]]] =
+  def recoverNotSupportedToOption[D](
+    futureErrorOrValue: Future[IpmiErrorOr[D]]
+  ): Future[IpmiErrorOr[Option[D]]] =
     futureErrorOrValue.map { errorOrValue =>
       errorOrValue
         .map(Some(_))

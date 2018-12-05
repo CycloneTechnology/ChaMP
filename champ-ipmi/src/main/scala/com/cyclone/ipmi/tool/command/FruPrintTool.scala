@@ -32,108 +32,125 @@ object FruPrintTool {
     private[command] def chunkSizesAndOffsetsFor(size: Int): Iterator[(Int, Short)] = {
       logger.debug(s"Total size = $size")
 
-      def chunkSizes = (0 until size / rawDataReadChunkSize).toIterator.map(_ => rawDataReadChunkSize) ++
-        (if (size % rawDataReadChunkSize == 0) Iterator.empty else Iterator(size % rawDataReadChunkSize))
+      def chunkSizes =
+        (0 until size / rawDataReadChunkSize).toIterator.map(_ => rawDataReadChunkSize) ++
+        (if (size % rawDataReadChunkSize == 0) Iterator.empty
+         else Iterator(size % rawDataReadChunkSize))
 
       val offsets = chunkSizes.scanLeft(0)(_ + _).map(_.toShort)
 
       chunkSizes zip offsets
     }
 
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          frus <- eitherT(readFrus)
-        } yield Result(frus)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
 
-        result.run
-      }
+          val result = for {
+            frus <- eitherT(readFrus)
+          } yield Result(frus)
 
-      private def readFruFor(fruDescriptor: FruDescriptor)
-        (implicit ctx: IpmiOperationContext) = {
-        logger.debug(s"Reading FRU for $fruDescriptor")
-
-        val result = for {
-          rawData <- rawFruData(fruDescriptor.deviceId)
-          fru <- eitherT(fruDescriptor.decode(rawData).map(fru => FruInfo.present(fruDescriptor, fru)).point[Future])
-        } yield fru
-
-        result.run.map { fruInfoOrError =>
-          fruInfoOrError.recover(Function.unlift {
-            case GenericStatusCodeErrors.SensorNotPresent => Some(FruInfo.absent(fruDescriptor))
-            case DeadlineReached                          => None // <- Don't recover from this
-            case e: IpmiError                             => Some(FruInfo.error(fruDescriptor, e.message))
-          })
+          result.run
         }
-      }
 
-      private def readFrus(implicit ctx: IpmiOperationContext) = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+        private def readFruFor(fruDescriptor: FruDescriptor)(implicit ctx: IpmiOperationContext) = {
+          logger.debug(s"Reading FRU for $fruDescriptor")
 
-        val result = for {
-          deviceId <- eitherT(connection.executeCommandOrError(GetDeviceId.Command))
-          fruDescriptors <- getFruDescriptors
-          frus <- eitherT(Futures.traverseSerially(fruDescriptors)(readFruFor))
-        } yield frus
+          val result = for {
+            rawData <- rawFruData(fruDescriptor.deviceId)
+            fru <- eitherT(
+              fruDescriptor
+                .decode(rawData)
+                .map(fru => FruInfo.present(fruDescriptor, fru))
+                .point[Future]
+            )
+          } yield fru
 
-        result.run
-      }
-
-      private def getFruDescriptors(implicit ctx: IpmiOperationContext) = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
-
-        def fruDescriptorsFrom(sdrHeader: SdrHeader) =
-          if (sdrHeader.recordType.canProvideFruDescriptor) {
-            val result = for {
-              sdr <- eitherT(sdrReader.readSdr(sdrHeader.recordId))
-              optDescriptor = sdr match {
-                case fruSdr: FruSdrKeyAndBody => fruSdr.optFruDescriptor
-                case _                        => None
-              }
-            } yield optDescriptor
-
-            result.run
+          result.run.map { fruInfoOrError =>
+            fruInfoOrError.recover(Function.unlift {
+              case GenericStatusCodeErrors.SensorNotPresent => Some(FruInfo.absent(fruDescriptor))
+              case DeadlineReached                          => None // <- Don't recover from this
+              case e: IpmiError                             => Some(FruInfo.error(fruDescriptor, e.message))
+            })
           }
-          else None.right[IpmiError].point[Future]
+        }
 
-        for {
-          headers <- eitherT(sdrReader.readAllSdrHeaders())
-          descriptors <- eitherT(Futures.traverseSerially(headers)(fruDescriptorsFrom)
-            .map(_.map(_.flatten)))
-        } yield descriptors
-      }
+        private def readFrus(implicit ctx: IpmiOperationContext) = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-      private def rawFruData(deviceId: DeviceId)(implicit ctx: IpmiOperationContext) = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+          val result = for {
+            deviceId       <- eitherT(connection.executeCommandOrError(GetDeviceId.Command))
+            fruDescriptors <- getFruDescriptors
+            frus           <- eitherT(Futures.traverseSerially(fruDescriptors)(readFruFor))
+          } yield frus
 
-        for {
-          areaInfo <- eitherT(connection.executeCommandOrError(GetFruInventoryAreaInfo.Command(deviceId)))
+          result.run
+        }
 
-          chunksAndOffsets = chunkSizesAndOffsetsFor(areaInfo.fruInventoryAreaSize)
-          bytes <- eitherT(chunksAndOffsets.foldLeft(Future.successful(ByteString.empty.right[IpmiError])) {
-            case (facc, (chunkSize, offset)) =>
+        private def getFruDescriptors(implicit ctx: IpmiOperationContext) = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
+
+          def fruDescriptorsFrom(sdrHeader: SdrHeader) =
+            if (sdrHeader.recordType.canProvideFruDescriptor) {
               val result = for {
-                acc <- eitherT(facc)
-
-                _ = logger.debug(s"Reading offset $offset for $chunkSize")
-                commandResult <- eitherT(connection.executeCommandOrError(ReadFruData.Command(deviceId, offset, chunkSize)))
-              } yield {
-                val ReadFruData.CommandResult(data) = commandResult
-                logger.debug(s"Read chunk ${data.toHexString()}")
-                acc ++ data
-              }
+                sdr <- eitherT(sdrReader.readSdr(sdrHeader.recordId))
+                optDescriptor = sdr match {
+                  case fruSdr: FruSdrKeyAndBody => fruSdr.optFruDescriptor
+                  case _                        => None
+                }
+              } yield optDescriptor
 
               result.run
-          })
+            } else None.right[IpmiError].point[Future]
 
-        } yield bytes
+          for {
+            headers <- eitherT(sdrReader.readAllSdrHeaders())
+            descriptors <- eitherT(
+              Futures
+                .traverseSerially(headers)(fruDescriptorsFrom)
+                .map(_.map(_.flatten))
+            )
+          } yield descriptors
+        }
+
+        private def rawFruData(deviceId: DeviceId)(implicit ctx: IpmiOperationContext) = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
+
+          for {
+            areaInfo <- eitherT(
+              connection.executeCommandOrError(GetFruInventoryAreaInfo.Command(deviceId))
+            )
+
+            chunksAndOffsets = chunkSizesAndOffsetsFor(areaInfo.fruInventoryAreaSize)
+            bytes <- eitherT(
+              chunksAndOffsets.foldLeft(Future.successful(ByteString.empty.right[IpmiError])) {
+                case (facc, (chunkSize, offset)) =>
+                  val result = for {
+                    acc <- eitherT(facc)
+
+                    _ = logger.debug(s"Reading offset $offset for $chunkSize")
+                    commandResult <- eitherT(
+                      connection
+                        .executeCommandOrError(ReadFruData.Command(deviceId, offset, chunkSize))
+                    )
+                  } yield {
+                    val ReadFruData.CommandResult(data) = commandResult
+                    logger.debug(s"Read chunk ${data.toHexString()}")
+                    acc ++ data
+                  }
+
+                  result.run
+              }
+            )
+
+          } yield bytes
+        }
       }
-    }
 
     def description() = "fru print"
   }
@@ -149,6 +166,7 @@ object FruPrintTool {
   )
 
   object FruInfo {
+
     def present(fruDescriptor: FruDescriptor, fru: Fru): FruInfo =
       FruInfo(fruDescriptor, present = true, Some(fru), None)
 

@@ -9,10 +9,12 @@ case class ReadingFactors(
   bExp: Int,
   rExp: Int,
   tolerance: RawTolerance,
-  accuracy: RawAccuracy)
+  accuracy: RawAccuracy
+)
 
 object ReadingFactors {
   implicit val decoder: Decoder[ReadingFactors] = new Decoder[ReadingFactors] {
+
     def decode(data: ByteString): ReadingFactors = {
       val iterator = data.iterator
       val is = iterator.asInputStream

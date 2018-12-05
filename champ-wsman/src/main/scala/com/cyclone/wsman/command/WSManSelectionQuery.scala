@@ -24,13 +24,19 @@ protected trait WSManQueryDefn extends WSManCommand {
 object WSManQueryDefn {
 
   trait Executor[Query <: WSManQueryDefn]
-    extends CommandExecutor[Query, WSManInstancesResult]
+      extends CommandExecutor[Query, WSManInstancesResult]
       with WSManInstancesResolver[Query] {
-    def execute(query: Query)(implicit context: WSManOperationContext): Future[WSManErrorOr[WSManInstancesResult]] = {
 
-      def resolveAll(instances: Seq[ManagedInstance]): Future[WSManErrorOr[Seq[ManagedInstance]]] = {
+    def execute(
+      query: Query
+    )(implicit context: WSManOperationContext): Future[WSManErrorOr[WSManInstancesResult]] = {
+
+      def resolveAll(
+        instances: Seq[ManagedInstance]
+      ): Future[WSManErrorOr[Seq[ManagedInstance]]] = {
         Futures.traverseSerially(instances)(
-          resolveReferencesIfReqd(query, context, _, query.cimNamespace, context.operationDeadline))
+          resolveReferencesIfReqd(query, context, _, query.cimNamespace, context.operationDeadline)
+        )
       }
 
       def createResult(instances: Seq[ManagedInstance]) =
@@ -38,7 +44,7 @@ object WSManQueryDefn {
 
       val result = for {
         instances <- eitherT(executeInstancesQuery(query, resourceUriReference(query)))
-        resolved <- eitherT(resolveAll(instances))
+        resolved  <- eitherT(resolveAll(instances))
       } yield createResult(resolved)
 
       result.run
@@ -46,14 +52,14 @@ object WSManQueryDefn {
 
     protected def resourceUriReference(query: Query): ManagedReference
 
-    protected def executeInstancesQuery(query: Query, ref: ManagedReference)
-      (implicit context: WSManOperationContext): Future[WSManErrorOr[Seq[ManagedInstance]]]
+    protected def executeInstancesQuery(query: Query, ref: ManagedReference)(
+      implicit context: WSManOperationContext
+    ): Future[WSManErrorOr[Seq[ManagedInstance]]]
   }
 
 }
 
-trait WSManEnumerationQueryDefn
-  extends WSManQueryDefn {
+trait WSManEnumerationQueryDefn extends WSManQueryDefn {
 
   def maxElementsPerEnumeration: Int
 }
@@ -61,24 +67,26 @@ trait WSManEnumerationQueryDefn
 object WSManEnumerationQueryDefn {
 
   trait Executor[Query <: WSManEnumerationQueryDefn] extends WSManQueryDefn.Executor[Query] {
-    protected def executeInstancesQuery(
-      query: Query,
-      ref: ManagedReference)(implicit context: WSManOperationContext): Future[WSManErrorOr[Seq[ManagedInstance]]] = {
+    protected def executeInstancesQuery(query: Query, ref: ManagedReference)(
+      implicit context: WSManOperationContext
+    ): Future[WSManErrorOr[Seq[ManagedInstance]]] = {
 
       def enumerate(enumMode: EnumerationMode)(implicit context: WSManOperationContext) = {
 
         val enumerationParameters =
           EnumerationParameters(query.maxElementsPerEnumeration, context.operationDeadline)
 
-        for (
-          response <- eitherT(WSManOperations.executeSoapRequest(
-            EnumXML(
-              ref,
-              SelectorClause.forCimNamespace(query.cimNamespace),
-              instanceFilter(query),
-              enumMode,
-              enumerationParameters.deadline)))
-        ) yield {
+        for (response <- eitherT(
+               WSManOperations.executeSoapRequest(
+                 EnumXML(
+                   ref,
+                   SelectorClause.forCimNamespace(query.cimNamespace),
+                   instanceFilter(query),
+                   enumMode,
+                   enumerationParameters.deadline
+                 )
+               )
+             )) yield {
           val ctx = (response \ "Body" \ "EnumerateResponse" \ "EnumerationContext").text
 
           WSManEnumerator(ref, ctx, enumerationParameters)
@@ -88,8 +96,7 @@ object WSManEnumerationQueryDefn {
       def itemsFor(enumerator: WSManEnumerator) = {
         implicit val mat: Materializer = context.materializer
 
-        val fBatches = enumerator
-          .enumerate
+        val fBatches = enumerator.enumerate
           .toMat(Sink.seq)(Keep.right)
           .run()
 
@@ -115,7 +122,8 @@ object WSManEnumerationQueryDefn {
                 acc ++ batch.items
               }
               .flatMap(_.managedInstance)
-              .toList.right
+              .toList
+              .right
           }
           .recoverWith {
             case WSManErrorException(err) => err.left.point[Future]
@@ -124,7 +132,7 @@ object WSManEnumerationQueryDefn {
 
       val result = for {
         enumerator <- enumerate(ObjectAndReferenceEnumerationMode)
-        items <- eitherT(itemsFor(enumerator))
+        items      <- eitherT(itemsFor(enumerator))
       } yield items
 
       result.run
@@ -134,10 +142,3 @@ object WSManEnumerationQueryDefn {
   }
 
 }
-
-
-
-
-
-
-

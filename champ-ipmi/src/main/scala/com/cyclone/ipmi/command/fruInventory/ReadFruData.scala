@@ -30,6 +30,7 @@ object ReadFruData {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -41,15 +42,17 @@ object ReadFruData {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult] {
-      case FRUDeviceBusy.code => FRUDeviceBusy
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult] {
+        case FRUDeviceBusy.code => FRUDeviceBusy
+      }
   }
 
   case class CommandResult(requestedData: ByteString) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -63,7 +66,8 @@ object ReadFruData {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 
@@ -73,4 +77,3 @@ object ReadFruData {
   }
 
 }
-

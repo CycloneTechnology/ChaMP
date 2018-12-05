@@ -22,13 +22,15 @@ case class CompactSdrKeyAndBody(
   sensorRecordSharing: SensorRecordSharing,
   positiveGoingThresholdHysteresis: Hysteresis,
   negativeGoingThresholdHysteresis: Hysteresis
-) extends SharingSdrKeyAndBody with EventSdrKeyAndBody {
+) extends SharingSdrKeyAndBody
+    with EventSdrKeyAndBody {
   val recordType: SensorDataRecordType = SensorDataRecordType.Compact
   val optSensorType = Some(sensorType)
 }
 
 object CompactSdrKeyAndBody {
   implicit val decoder: Decoder[CompactSdrKeyAndBody] = new Decoder[CompactSdrKeyAndBody] {
+
     def decode(data: ByteString): CompactSdrKeyAndBody = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -46,7 +48,8 @@ object CompactSdrKeyAndBody {
 
       val eventReadingType = is.readByte.as[EventReadingType]
 
-      val sensorMasks = is.read(6).as[SensorMasks](SensorMasks.decoder(eventReadingType, sensorType))
+      val sensorMasks =
+        is.read(6).as[SensorMasks](SensorMasks.decoder(eventReadingType, sensorType))
 
       // Strange - why does compact have units (although no linearization)?
       val sensorUnits = is.read(3).as[SensorUnits]

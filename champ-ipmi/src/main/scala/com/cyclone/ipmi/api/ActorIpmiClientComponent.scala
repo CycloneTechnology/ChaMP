@@ -3,7 +3,7 @@ package com.cyclone.ipmi.api
 import java.net.InetAddress
 
 import akka.actor.ActorRef
-import akka.pattern.{AskTimeoutException, ask}
+import akka.pattern.{ask, AskTimeoutException}
 import akka.util.Timeout
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi._
@@ -25,6 +25,7 @@ trait ActorIpmiClientComponent extends IpmiClientComponent {
   self: IpmiManagerComponent =>
 
   lazy val ipmiClient: IpmiClient = new IpmiClient {
+
     def connectionFor(inetAddress: InetAddress, port: Int): Future[IpmiConnectionImpl] = {
       implicit val timeout: Timeout = Timeout(1.second)
 
@@ -35,19 +36,20 @@ trait ActorIpmiClientComponent extends IpmiClientComponent {
   }
 
   class IpmiConnectionImpl(sessionManager: ActorRef) extends IpmiConnection {
+
     def negotiateSession(
       ipmiCredentials: IpmiCredentials,
       versionRequirement: IpmiVersionRequirement,
-      privilegeLevel: PrivilegeLevel)
-      (implicit timeoutContext: TimeoutContext): Future[IpmiError \/ Unit] = {
+      privilegeLevel: PrivilegeLevel
+    )(implicit timeoutContext: TimeoutContext): Future[IpmiError \/ Unit] = {
 
       implicit val timeout: Timeout = timeoutContext.deadline.largerTimeout()
 
       (sessionManager ? SessionManager.NegotiateSession(
         ipmiCredentials,
         versionRequirement,
-        privilegeLevel))
-        .mapTo[SessionManager.SessionNegotiationResult]
+        privilegeLevel
+      )).mapTo[SessionManager.SessionNegotiationResult]
         .flatMap {
           case SessionManager.SessionNegotiationSuccess    => Future.successful(().right)
           case SessionManager.SessionNegotiationError(e)   => Future.successful(e.left)
@@ -66,10 +68,13 @@ trait ActorIpmiClientComponent extends IpmiClientComponent {
         .map(_ => ())
     }
 
-
-    def executeCommandOrError[Cmd <: IpmiStandardCommand, Res <: IpmiCommandResult]
-    (command: Cmd, targetAddress: DeviceAddress)
-      (implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Cmd, Res]): Future[IpmiError \/ Res] = {
+    def executeCommandOrError[Cmd <: IpmiStandardCommand, Res <: IpmiCommandResult](
+      command: Cmd,
+      targetAddress: DeviceAddress
+    )(
+      implicit timeoutContext: TimeoutContext,
+      codec: CommandResultCodec[Cmd, Res]
+    ): Future[IpmiError \/ Res] = {
 
       implicit val timeout: Timeout = timeoutContext.deadline.largerTimeout()
 
@@ -87,4 +92,3 @@ trait ActorIpmiClientComponent extends IpmiClientComponent {
   }
 
 }
-

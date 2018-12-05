@@ -25,13 +25,15 @@ trait KerberosTokenCacheComponent {
 
 trait GuavaKerberosTokenCacheComponent extends KerberosTokenCacheComponent {
   private val cache: Cache[String, Token] =
-    CacheBuilder.newBuilder()
+    CacheBuilder
+      .newBuilder()
       .removalListener { notification: RemovalNotification[String, Token] =>
         notification.getValue.dispose()
       }
       .build()
 
   lazy val kerberosTokenCache: KerberosTokenCache = new KerberosTokenCache {
+
     def getTokenFor(subscriptionId: SubscriptionId): Option[Token] =
       Option(cache.getIfPresent(subscriptionId.id))
 

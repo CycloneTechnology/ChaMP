@@ -2,15 +2,15 @@ package com.cyclone.ipmi.command.oem.sunoracle
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{ CommandCode, StatusCodeTranslator }
-import com.cyclone.ipmi.protocol.packet.{ CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction }
+import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
 import com.cyclone.ipmi.StatusCodeError
 import com.cyclone.ipmi.command.StatusCode
 import akka.util.ByteStringBuilder
 
 /**
- * GetVersion
- */
+  * GetVersion
+  */
 object GetVersion {
 
   case object CommandNotSupported extends StatusCodeError {
@@ -25,6 +25,7 @@ object GetVersion {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -36,11 +37,16 @@ object GetVersion {
         val ipmiFirmwareRev1Byte = is.readByte
         val ipmiFirmwareRev1LowerNibble = ipmiFirmwareRev1Byte.bits0To3
 
-        /*val ipmiFirmwareRev2Byte = */is.readByte
+        /*val ipmiFirmwareRev2Byte = */
+        is.readByte
         val ipmiFirmwareRev2LowerNibble = ipmiFirmwareRev1Byte.bits0To3
         val ipmiFirmwareRev2HighNibble = ipmiFirmwareRev1Byte.bits4To7
 
-        val ipmiFirmwareRev = "%d.%d.%d".format(ipmiFirmwareRev1LowerNibble, ipmiFirmwareRev2HighNibble, ipmiFirmwareRev2LowerNibble)
+        val ipmiFirmwareRev = "%d.%d.%d".format(
+          ipmiFirmwareRev1LowerNibble,
+          ipmiFirmwareRev2HighNibble,
+          ipmiFirmwareRev2LowerNibble
+        )
 
         is.skip(3) // Reserved for future use, ignore
 
@@ -48,16 +54,18 @@ object GetVersion {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult] {
-      case CommandNotSupported.code => CommandNotSupported
-      case InvalidDataInRequest.code => InvalidDataInRequest
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult] {
+        case CommandNotSupported.code  => CommandNotSupported
+        case InvalidDataInRequest.code => InvalidDataInRequest
+      }
   }
 
   case class CommandResult(cpldVersion: Byte, ipmiFirmwareRev: String) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -71,7 +79,8 @@ object GetVersion {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command() extends IpmiStandardCommand {

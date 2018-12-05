@@ -25,6 +25,7 @@ object RequestConverter {
 }
 
 trait SimpleRequestConverter[-I, +O] extends RequestConverter.Converter[I, O] {
+
   def apply(in: RequestData[I]): RequestData[O] = {
     val newBody = convertBody(in)
 
@@ -37,12 +38,17 @@ trait SimpleRequestConverter[-I, +O] extends RequestConverter.Converter[I, O] {
 }
 
 case class ParameterisedHeader(name: String, value: String) {
+
   val map: Map[String, String] = {
     if (value.contains(';'))
-      value.split(';')
+      value
+        .split(';')
         .filter(_.contains('='))
         .map(_.split('=').map(_.trim))
-        .map { p => (p(0), p(1)) }.toMap
+        .map { p =>
+          (p(0), p(1))
+        }
+        .toMap
     else
       Map.empty
   }
@@ -62,7 +68,8 @@ object RequestData {
 case class RequestData[+T](
   request: HttpRequest,
   appliedConversions: List[RequestConverter.Converter[_, _]],
-  body: T) extends HeaderSource {
+  body: T
+) extends HeaderSource {
 
   def header(name: String): Option[ParameterisedHeader] =
     rawHeaderValue(name).map(v => ParameterisedHeader(name, v))
@@ -85,7 +92,7 @@ case class RequestData[+T](
 
     def headerContentType =
       for {
-        raw <- rawHeaderValue("Content-Type")
+        raw         <- rawHeaderValue("Content-Type")
         contentType <- contentTypeWithHeader(raw)
       } yield contentType
 
@@ -96,20 +103,19 @@ case class RequestData[+T](
   }
 
   def charset: Charset = {
-    val charset = for (
-      header <- header("Content-Type");
-      charset <- header.getParameter("charset")
-    ) yield Charset.forName(charset)
+    val charset = for (header  <- header("Content-Type");
+                       charset <- header.getParameter("charset")) yield Charset.forName(charset)
 
     charset.getOrElse(Charset.defaultCharset())
   }
 
   def isMultipart: Boolean =
     request.method == HttpMethods.POST &&
-      contentType.exists(_.getBody.startsWith("multipart"))
+    contentType.exists(_.getBody.startsWith("multipart"))
 }
 
 case class DataPart(headers: List[ParameterisedHeader], body: ByteString) extends HeaderSource {
+
   def header(name: String): Option[ParameterisedHeader] =
     headers.find(_.name == name)
 }

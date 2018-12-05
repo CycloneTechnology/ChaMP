@@ -10,10 +10,12 @@ case class ChassisInfo(
   chassisType: ChassisType,
   chassisPartNumber: String,
   chassisSerialNumber: String,
-  customFields: Seq[FruField])
+  customFields: Seq[FruField]
+)
 
 object ChassisInfo {
   implicit val decoder: Decoder[ChassisInfo] = new Decoder[ChassisInfo] {
+
     def decode(data: ByteString): ChassisInfo = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -40,7 +42,8 @@ object ChassisInfo {
         chassisType,
         chassisPartNumber.stringValue,
         chassisSerialNumber.stringValue,
-        customFields)
+        customFields
+      )
     }
   }
 }

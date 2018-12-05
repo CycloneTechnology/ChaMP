@@ -26,36 +26,55 @@ object SensorTool {
 
   object Command extends LazyLogging {
     implicit val executor: CommandExecutor[Command, Result] = new CommandExecutor[Command, Result] {
+
       def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ SensorTool.Result] = {
         val result = for {
-          sdrs <- eitherT(sdrReader.readAllSdrs)
+          sdrs     <- eitherT(sdrReader.readAllSdrs)
           filtered <- eitherT(sdrs.filter(command.sdrFilter.predicate).right.point[Future])
           sensorNumbersIdsAndSdrs <- eitherT(
             filtered
               .flatMap { sdr =>
                 sdr.sensorNumbersAndIds
                   .map { case (num, sid) => (num, sid, sdr) }
-              }.right.point[Future])
+              }
+              .right
+              .point[Future]
+          )
           sensorReadings <- eitherT(sensorReadingsFor(sensorNumbersIdsAndSdrs))
         } yield Result(sensorReadings)
 
         result.run
       }
 
-      private def sensorReadingsFor(sensorNumbersIdsAndSdrs: Seq[(SensorNumber, SensorId, SdrKeyAndBody)])
-        (implicit ctx: IpmiOperationContext): Future[IpmiErrorOr[Seq[SensorReading]]] = {
+      private def sensorReadingsFor(
+        sensorNumbersIdsAndSdrs: Seq[(SensorNumber, SensorId, SdrKeyAndBody)]
+      )(implicit ctx: IpmiOperationContext): Future[IpmiErrorOr[Seq[SensorReading]]] = {
         implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
         import ctx._
 
         def toSensorRecord(sensorNumber: SensorNumber, sensorId: SensorId, sdr: SdrKeyAndBody) = {
           val result: FutureIpmiErrorOr[SensorReading] = for {
-            sensorReadingResult <- eitherT(connection.executeCommandOrError(GetSensorReading.Command(sensorNumber)))
+            sensorReadingResult <- eitherT(
+              connection.executeCommandOrError(GetSensorReading.Command(sensorNumber))
+            )
             rawValueConverter <- rawValueConverter(sensorNumber, sensorReadingResult, sdr)
 
-            sensorThresholdsResult <- eitherT(connection.executeCommandOrError(GetSensorThresholds.Command(sensorNumber)))
-            analogReadings <- eitherT(evaluateAnalogReadings(sensorId, sensorReadingResult, sensorThresholdsResult, rawValueConverter, sdr).right.point[Future])
+            sensorThresholdsResult <- eitherT(
+              connection.executeCommandOrError(GetSensorThresholds.Command(sensorNumber))
+            )
+            analogReadings <- eitherT(
+              evaluateAnalogReadings(
+                sensorId,
+                sensorReadingResult,
+                sensorThresholdsResult,
+                rawValueConverter,
+                sdr
+              ).right.point[Future]
+            )
 
-            discreteReadings <- eitherT(evaluateDiscreteReadings(sensorId, sensorReadingResult, sdr).right.point[Future])
+            discreteReadings <- eitherT(
+              evaluateDiscreteReadings(sensorId, sensorReadingResult, sdr).right.point[Future]
+            )
           } yield SensorReading(sensorId, analogReadings, discreteReadings)
 
           result.map(Some(_)).run.map { errorOrSensorReading =>
@@ -63,44 +82,52 @@ object SensorTool {
               case GenericStatusCodeErrors.SensorNotPresent =>
                 logger.debug(s"Ignoring missing sensor $sensorId")
                 None
-              case GenericStatusCodeErrors.IllegalCommand   =>
+              case GenericStatusCodeErrors.IllegalCommand =>
                 logger.debug(s"Ignoring non-sensor sdr $sensorId")
                 None
             }
           }
         }
 
-        Futures.traverseSerially(sensorNumbersIdsAndSdrs) {
-          case (sensorNumber, sensorId, sdr) => toSensorRecord(sensorNumber, sensorId, sdr)
-        }.map(_.map(_.flatten))
+        Futures
+          .traverseSerially(sensorNumbersIdsAndSdrs) {
+            case (sensorNumber, sensorId, sdr) => toSensorRecord(sensorNumber, sensorId, sdr)
+          }
+          .map(_.map(_.flatten))
       }
 
       private def rawValueConverter(
         sensorNumber: SensorNumber,
         readingResult: GetSensorReading.CommandResult,
-        sdr: SdrKeyAndBody)
-        (implicit ctx : IpmiOperationContext): FutureIpmiErrorOr[RawValueConverter] = {
+        sdr: SdrKeyAndBody
+      )(implicit ctx: IpmiOperationContext): FutureIpmiErrorOr[RawValueConverter] = {
         implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
         import ctx._
 
         sdr match {
           case analogSdr: AnalogSdrKeyAndBody =>
-            def converter(linearizable: Linearizable, readingFactors: ReadingFactors) = RawValueConverter.fromReadingFactors(
-              readingFactors,
-              analogSdr.analogDataFormat,
-              linearizable,
-              analogSdr.sensorUnits)
+            def converter(linearizable: Linearizable, readingFactors: ReadingFactors) =
+              RawValueConverter.fromReadingFactors(
+                readingFactors,
+                analogSdr.analogDataFormat,
+                linearizable,
+                analogSdr.sensorUnits
+              )
 
             analogSdr.linearization match {
               case linearizable: Linearizable =>
-                eitherT(converter(linearizable, analogSdr.readingFactors).right[IpmiError].point[Future])
+                eitherT(
+                  converter(linearizable, analogSdr.readingFactors).right[IpmiError].point[Future]
+                )
 
               case Linearization.NonLinearizable =>
                 for {
-                  sensorReadingFactorsResult <- eitherT(connection.executeCommandOrError(
-                    GetSensorReadingFactors.Command(sensorNumber, readingResult.rawValue)))
-                } yield
-                  converter(Linearization.Linear, sensorReadingFactorsResult.readingFactors)
+                  sensorReadingFactorsResult <- eitherT(
+                    connection.executeCommandOrError(
+                      GetSensorReadingFactors.Command(sensorNumber, readingResult.rawValue)
+                    )
+                  )
+                } yield converter(Linearization.Linear, sensorReadingFactorsResult.readingFactors)
             }
 
           case _ => eitherT(RawValueConverter.NoConversion.right[IpmiError].point[Future])
@@ -112,7 +139,8 @@ object SensorTool {
         readingResult: GetSensorReading.CommandResult,
         thresholdsResult: GetSensorThresholds.CommandResult,
         rawValueConverter: RawValueConverter,
-        sdr: SdrKeyAndBody): Option[AnalogReadings] = sdr match {
+        sdr: SdrKeyAndBody
+      ): Option[AnalogReadings] = sdr match {
 
         case _: AnalogSdrKeyAndBody if !readingResult.readingUnavailable =>
           val reading =
@@ -131,10 +159,14 @@ object SensorTool {
       private def evaluateDiscreteReadings(
         sensorId: SensorId,
         readingResult: GetSensorReading.CommandResult,
-        sdr: SdrKeyAndBody): Option[DiscreteReadings] = sdr match {
+        sdr: SdrKeyAndBody
+      ): Option[DiscreteReadings] = sdr match {
         case sdr: EventSdrKeyAndBody =>
-          Some(DiscreteReadings(
-            sdr.sensorMasks.readingMask.evaluateOffsets(readingResult.eventStateBits)))
+          Some(
+            DiscreteReadings(
+              sdr.sensorMasks.readingMask.evaluateOffsets(readingResult.eventStateBits)
+            )
+          )
 
         case _: SdrKeyAndBody =>
           logger.debug(s"Ignoring non-discrete reading for $sensorId")
@@ -145,12 +177,14 @@ object SensorTool {
   }
 
   case class Command(sdrFilter: SdrFilter) extends IpmiToolCommand {
+
     def description(): String = {
       import SdrFilter._
 
       sdrFilter match {
-        case All                       => s"sensor list"
-        case BySensorIds(sensorIds@_*) => s"sensor get ${sensorIds.map(sid => s""""${sid.id}"""").mkString(" ")}"
+        case All => s"sensor list"
+        case BySensorIds(sensorIds @ _*) =>
+          s"sensor get ${sensorIds.map(sid => s""""${sid.id}"""").mkString(" ")}"
 
         // There is no way to parse other filter types currently
         case _ => s"sensor list"

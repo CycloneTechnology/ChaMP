@@ -10,6 +10,7 @@ case class ParameterRevision(present: Int, required: Int)
 
 object ParameterRevision {
   implicit val decoder: Decoder[ParameterRevision] = new Decoder[ParameterRevision] {
+
     def decode(data: ByteString) =
       ParameterRevision(
         present = data(0).bits4To7.toUnsignedInt,
@@ -58,6 +59,7 @@ object GetSystemInfoParameters {
 
       object Data {
         implicit val decoder: Decoder[Data] = new Decoder[Data] {
+
           def decode(data: ByteString): Data = {
             val setState = data(0).toUnsignedInt match {
               case 0 => SetState.Complete
@@ -71,13 +73,15 @@ object GetSystemInfoParameters {
         }
       }
 
-      implicit val parameterCodec: ParameterCodec[SetInProgress.type, Data, Nothing] = ParameterCodec.parameterCodecFor[SetInProgress.type, SetInProgress.Data]
+      implicit val parameterCodec: ParameterCodec[SetInProgress.type, Data, Nothing] =
+        ParameterCodec.parameterCodecFor[SetInProgress.type, SetInProgress.Data]
     }
 
     case class BlockData(setSelector: Int, data: ByteString)
 
     object BlockData {
       implicit val decoder: Decoder[BlockData] = new Decoder[BlockData] {
+
         def decode(data: ByteString) =
           BlockData(data(0), data.drop(1))
       }
@@ -87,6 +91,7 @@ object GetSystemInfoParameters {
 
     object LongString {
       implicit val blockDecoder: BlockDecoder[LongString] = new BlockDecoder[LongString] {
+
         def decode(encoding: StringDecoder, data: ByteString) =
           LongString(data.as(encoding))
       }
@@ -96,6 +101,7 @@ object GetSystemInfoParameters {
 
     object ShortString {
       implicit val decoder: Decoder[ShortString] = new Decoder[ShortString] {
+
         def decode(data: ByteString): ShortString = {
           val len = data(0).toUnsignedInt
           ShortString(data.drop(1).take(len).as(StringDecoder.AsciiLatin))
@@ -121,7 +127,8 @@ object GetSystemInfoParameters {
       val code = 0x03
 
       implicit val parameterCodec: ParameterCodec[PrimaryOperatingSystemName.type, BlockData, LongString] =
-        ParameterCodec.blockParameterCodecFor[PrimaryOperatingSystemName.type, BlockData, LongString]
+        ParameterCodec
+          .blockParameterCodecFor[PrimaryOperatingSystemName.type, BlockData, LongString]
     }
 
     case object OperatingSystemName extends ParameterSelector {
@@ -149,7 +156,8 @@ object GetSystemInfoParameters {
       val code = 0x07
 
       implicit val parameterCodec: ParameterCodec[BaseOsHypervisorUrlForManageability.type, BlockData, LongString] =
-        ParameterCodec.blockParameterCodecFor[BaseOsHypervisorUrlForManageability.type, BlockData, LongString]
+        ParameterCodec
+          .blockParameterCodecFor[BaseOsHypervisorUrlForManageability.type, BlockData, LongString]
     }
 
     // NB: OEM codes can be specified in OEM specific object modules
@@ -162,7 +170,9 @@ object GetSystemInfoParameters {
   object BlockDecoder {
 
     implicit object NoBlockDecoder extends BlockDecoder[Nothing] {
-      def decode(encoding: StringDecoder, data: ByteString) = throw new UnsupportedOperationException
+
+      def decode(encoding: StringDecoder, data: ByteString) =
+        throw new UnsupportedOperationException
     }
 
   }
@@ -178,18 +188,27 @@ object GetSystemInfoParameters {
     * Others require multiple commands to create a block of data that is decoded.
     */
   object ParameterCodec {
-    def parameterCodecFor[P <: ParameterSelector : Coder, D: Decoder]: ParameterCodec[P, D, Nothing] =
-      ParameterCodec[P, D, Nothing](implicitly[Coder[P]], implicitly[Decoder[D]], BlockDecoder.NoBlockDecoder)
 
-    def blockParameterCodecFor[P <: ParameterSelector : Coder, D: Decoder, B: BlockDecoder] =
+    def parameterCodecFor[P <: ParameterSelector: Coder, D: Decoder]: ParameterCodec[P, D, Nothing] =
+      ParameterCodec[P, D, Nothing](
+        implicitly[Coder[P]],
+        implicitly[Decoder[D]],
+        BlockDecoder.NoBlockDecoder
+      )
+
+    def blockParameterCodecFor[P <: ParameterSelector: Coder, D: Decoder, B: BlockDecoder] =
       ParameterCodec(implicitly[Coder[P]], implicitly[Decoder[D]], implicitly[BlockDecoder[B]])
   }
 
   case class ParameterCodec[P <: ParameterSelector, D, B](
-    coder: Coder[P], decoder: Decoder[D], blockDecoder: BlockDecoder[B])
+    coder: Coder[P],
+    decoder: Decoder[D],
+    blockDecoder: BlockDecoder[B]
+  )
 
   object CommandResult {
     implicit def decoder[D: Decoder]: Decoder[CommandResult[D]] = new Decoder[CommandResult[D]] {
+
       def decode(data: ByteString): CommandResult[D] = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -202,17 +221,17 @@ object GetSystemInfoParameters {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult[_]] = StatusCodeTranslator[CommandResult[_]] {
-      case ParameterNotSupported.code => ParameterNotSupported
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult[_]] =
+      StatusCodeTranslator[CommandResult[_]] {
+        case ParameterNotSupported.code => ParameterNotSupported
+      }
   }
 
-  case class CommandResult[+D: Decoder](
-    parameterRevision: ParameterRevision,
-    data: D) extends IpmiCommandResult
+  case class CommandResult[+D: Decoder](parameterRevision: ParameterRevision, data: D) extends IpmiCommandResult
 
   object Command {
-    implicit def coder[P <: ParameterSelector : Coder]: Coder[Command[P]] = new Coder[Command[P]] {
+    implicit def coder[P <: ParameterSelector: Coder]: Coder[Command[P]] = new Coder[Command[P]] {
+
       def encode(request: Command[P]): ByteString = {
         import request._
 
@@ -227,7 +246,9 @@ object GetSystemInfoParameters {
       }
     }
 
-    implicit def codec[P <: ParameterSelector, D](implicit codec: ParameterCodec[P, D, _]): CommandResultCodec[Command[P], CommandResult[D]] = {
+    implicit def codec[P <: ParameterSelector, D](
+      implicit codec: ParameterCodec[P, D, _]
+    ): CommandResultCodec[Command[P], CommandResult[D]] = {
       implicit val decoder: Decoder[D] = codec.decoder
       implicit val coder: Coder[P] = codec.coder
       CommandResultCodec.commandResultCodecFor[Command[P], CommandResult[D]]
@@ -237,7 +258,8 @@ object GetSystemInfoParameters {
   case class Command[P <: ParameterSelector](
     parameterSelector: P,
     setSelector: Int = 0,
-    blockSelector: Int = 0) extends IpmiStandardCommand {
+    blockSelector: Int = 0
+  ) extends IpmiStandardCommand {
 
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x59)

@@ -10,10 +10,7 @@ import com.cyclone.wsman.subscription.{DeliveryExpiryParams, SubscriptionId}
 
 import scala.xml.{Elem, NodeSeq}
 
-case class PushDeliveryHandler(
-  deliverTo: HttpUrl,
-  expiryParams: DeliveryExpiryParams)
-  extends DeliveryHandler {
+case class PushDeliveryHandler(deliverTo: HttpUrl, expiryParams: DeliveryExpiryParams) extends DeliveryHandler {
   type R = EventSubscriptionRegistration
 
   val deliveryModeString: String = EventMode.EVENT_MODE_PUSH_SINGLE
@@ -24,24 +21,27 @@ case class PushDeliveryHandler(
   def createRegistration(
     ref: ManagedReference,
     subscriptionDescriptor: SubscriptionDescriptor,
-    ctx: String)(implicit context: WSManOperationContext) =
+    ctx: String
+  )(implicit context: WSManOperationContext) =
     new EventSubscriptionRegistration(ref, subscriptionDescriptor: SubscriptionDescriptor)
 
   override def notifyElements(localSubscriptionId: SubscriptionId): Elem =
-  // @formatter:off
+    // @formatter:off
     <wse:NotifyTo>
       <a:Address>{deliverTo.urlString + "?pushId=" + localSubscriptionId.id}</a:Address>
     </wse:NotifyTo>
 
   // @formatter:on
 
-  def setupDelivery(context: WSManOperationContext, subscriptionRegistration: EventSubscriptionRegistration): Source[WSManEnumItem, NotUsed] =
-    context.pushDeliveryHub.newSubscriberSource(
-      subscriptionRegistration.localSubscriptionId,
-      expiryParams.expiry)
+  def setupDelivery(
+    context: WSManOperationContext,
+    subscriptionRegistration: EventSubscriptionRegistration
+  ): Source[WSManEnumItem, NotUsed] =
+    context.pushDeliveryHub
+      .newSubscriberSource(subscriptionRegistration.localSubscriptionId, expiryParams.expiry)
 
   protected def heartbeatElements: NodeSeq =
-  // @formatter:off
+    // @formatter:off
     expiryParams.heartbeat match {
       case Some(duration) => <w:Heartbeats>PT{duration.toSeconds}.000000S</w:Heartbeats>
       case None           => NodeSeq.Empty
@@ -49,4 +49,3 @@ case class PushDeliveryHandler(
 
   // @formatter:on
 }
-

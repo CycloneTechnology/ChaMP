@@ -15,10 +15,11 @@ import com.cyclone.ipmi.command.sdrRepository.GetSDR
   * @param nextRecordId     the id of the next record
   * @param sensorDataRecord the record (may have a partial or incomplete body)
   */
-case class SdrHeader private(
+case class SdrHeader private (
   nextRecordId: SensorDataRecordId,
   headerData: ByteString,
-  sensorDataRecord: SensorDataRecord) {
+  sensorDataRecord: SensorDataRecord
+) {
   require(headerData.length == SensorDataRecord.headerLength)
 
   def recordId: SensorDataRecordId = sensorDataRecord.recordId
@@ -30,15 +31,17 @@ case class SdrHeader private(
   def totalLength: Int = SensorDataRecord.headerLength + bodyLength
 }
 
-
 object SdrHeader {
+
   def fromCommandResult(commandResult: GetSDR.CommandResult): IpmiErrorOr[SdrHeader] =
-    SensorDataRecord.decoder.handleExceptions.decode(commandResult.recordData)
+    SensorDataRecord.decoder.handleExceptions
+      .decode(commandResult.recordData)
       .map { sdr =>
         SdrHeader(
           commandResult.nextRecordId,
           commandResult.recordData.take(SensorDataRecord.headerLength),
-          sdr)
+          sdr
+        )
       }
 }
 
@@ -50,7 +53,8 @@ case class SensorDataRecord(
   sdrVersion: SdrVersion,
   recordType: SensorDataRecordType,
   bodyLength: Int,
-  bodyData: ByteString)
+  bodyData: ByteString
+)
 
 object SensorDataRecord {
   // When we do a Get SDR the length specified is the length of this entire record (header + body)
@@ -60,6 +64,7 @@ object SensorDataRecord {
   val headerLength = 5
 
   implicit val decoder: Decoder[SensorDataRecord] = new Decoder[SensorDataRecord] {
+
     def decode(data: ByteString): SensorDataRecord = {
       val iterator = data.iterator
       val is = iterator.asInputStream

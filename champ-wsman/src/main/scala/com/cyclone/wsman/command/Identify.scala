@@ -11,9 +11,11 @@ import scala.concurrent.Future
 case object Identify extends WSManCommand {
 
   implicit object Executor extends CommandExecutor[Identify.type, WSManIdentifyResult] {
-    def execute(command: Identify.type)(implicit context: WSManOperationContext): Future[\/[WSManError, WSManIdentifyResult]] =
+
+    def execute(
+      command: Identify.type
+    )(implicit context: WSManOperationContext): Future[\/[WSManError, WSManIdentifyResult]] =
       WSManOperations.identify(context.operationDeadline).map(_.map(_.external))
   }
 
 }
-

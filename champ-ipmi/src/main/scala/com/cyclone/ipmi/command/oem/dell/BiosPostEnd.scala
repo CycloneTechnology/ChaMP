@@ -15,7 +15,8 @@ object BiosPostEnd {
       def decode(data: ByteString): CommandResult.type = CommandResult
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] = StatusCodeTranslator[CommandResult.type]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
 
   object Command {
@@ -23,7 +24,8 @@ object BiosPostEnd {
       def encode(request: Command): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult.type] = CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
   }
 
   // Note attributeId = 0x00 means read entire configuration data and bytestoRead = 0xFF means read entire configuration or attribute.

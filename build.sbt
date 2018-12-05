@@ -71,4 +71,3 @@ lazy val wsman = project.in(file("champ-wsman")).
   .dependsOn(
     core % "compile->compile;test->test"
   )
-

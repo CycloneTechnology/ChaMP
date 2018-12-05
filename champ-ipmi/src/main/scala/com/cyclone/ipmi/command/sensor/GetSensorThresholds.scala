@@ -14,6 +14,7 @@ object GetSensorThresholds {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -21,28 +22,29 @@ object GetSensorThresholds {
         val readableThresholds = is.readByte.as[Set[ThresholdComparison]]
 
         val values = Map[ThresholdComparison, Byte](
-          ThresholdComparison.LowerNonCritical -> is.readByte,
-          ThresholdComparison.LowerCritical -> is.readByte,
+          ThresholdComparison.LowerNonCritical    -> is.readByte,
+          ThresholdComparison.LowerCritical       -> is.readByte,
           ThresholdComparison.LowerNonRecoverable -> is.readByte,
-          ThresholdComparison.UpperNonCritical -> is.readByte,
-          ThresholdComparison.UpperCritical -> is.readByte,
+          ThresholdComparison.UpperNonCritical    -> is.readByte,
+          ThresholdComparison.UpperCritical       -> is.readByte,
           ThresholdComparison.UpperNonRecoverable -> is.readByte
-        )
-          .collect {
-            case (k, b) if readableThresholds.contains(k) => (k, RawSensorValue(b.toUnsignedInt))
-          }
+        ).collect {
+          case (k, b) if readableThresholds.contains(k) => (k, RawSensorValue(b.toUnsignedInt))
+        }
 
         CommandResult(values)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(sensorThresholds: Map[ThresholdComparison, RawSensorValue]) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -54,7 +56,8 @@ object GetSensorThresholds {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 
@@ -65,5 +68,3 @@ object GetSensorThresholds {
   }
 
 }
-
-

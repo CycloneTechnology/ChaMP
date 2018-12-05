@@ -17,11 +17,7 @@ import scala.util.{Failure, Try}
 /**
   * Tests for [[Futures]]
   */
-class FuturesTest
-  extends WordSpec
-    with Matchers
-    with ScalaFutures
-    with IntegrationPatience {
+class FuturesTest extends WordSpec with Matchers with ScalaFutures with IntegrationPatience {
 
   val timeout = 1.seconds
 
@@ -29,10 +25,15 @@ class FuturesTest
 
   val nonRunningTask = mockery.mock(classOf[() => Future[String]])
 
-  val task = { () => Future.successful("OK") }
+  val task = { () =>
+    Future.successful("OK")
+  }
 
   val e = new RuntimeException("Oops!")
-  val failingTask = { () => Future.failed(e) }
+
+  val failingTask = { () =>
+    Future.failed(e)
+  }
 
   mockery.checking(new Expectations {
     never(nonRunningTask).apply()
@@ -89,9 +90,10 @@ class FuturesTest
 
     "sequentiallyUntilSuccess" must {
       "run tasks serially" in {
-        val sleepTask = () => Future {
-          Thread.sleep(1000)
-          "OK"
+        val sleepTask = () =>
+          Future {
+            Thread.sleep(1000)
+            "OK"
         }
 
         val f = sequentiallyUntilSuccess(Seq(sleepTask))
@@ -102,26 +104,24 @@ class FuturesTest
 
     "firstSuccess" must {
       "return None if no tasks" in {
-        Futures.firstSuccess(Seq.empty[Int])(i =>
-          Future.successful(i.right))
-          .futureValue shouldBe None
+        Futures.firstSuccess(Seq.empty[Int])(i => Future.successful(i.right)).futureValue shouldBe None
       }
 
       "return the first result if it is good" in {
-        Futures.firstSuccess(Seq(1, 2))(i =>
-          Future.successful((i == 1).option(i).toRightDisjunction("Error")))
+        Futures
+          .firstSuccess(Seq(1, 2))(i => Future.successful((i == 1).option(i).toRightDisjunction("Error")))
           .futureValue shouldBe Some(1.right)
       }
 
       "return the second result if the first is not good" in {
-        Futures.firstSuccess(Seq(1, 2, 3))(i =>
-          Future.successful((i == 2).option(i).toRightDisjunction("Error")))
+        Futures
+          .firstSuccess(Seq(1, 2, 3))(i => Future.successful((i == 2).option(i).toRightDisjunction("Error")))
           .futureValue shouldBe Some(2.right)
       }
 
       "return the last error if no results good" in {
-        Futures.firstSuccess(Seq(1, 2, 3))(i =>
-          Future.successful((i > 3).option(i).toRightDisjunction("Error")))
+        Futures
+          .firstSuccess(Seq(1, 2, 3))(i => Future.successful((i > 3).option(i).toRightDisjunction("Error")))
           .futureValue shouldBe Some("Error".left)
       }
     }
@@ -129,18 +129,19 @@ class FuturesTest
     "findSerially" when {
       "first input is true" must {
         "return first input" in {
-          Futures.findSerially(Seq(1, 2))(i => Future.successful(i > 0))
-            .futureValue shouldBe Some(1)
+          Futures.findSerially(Seq(1, 2))(i => Future.successful(i > 0)).futureValue shouldBe Some(1)
         }
 
         "does not run further tasks" must {
           "return that input" in {
             val promise = Promise[Unit]
 
-            Futures.findSerially(Seq(1, 2)) { i =>
-              if (i == 2) promise.trySuccess(())
-              Future.successful(true)
-            }.futureValue shouldBe Some(1)
+            Futures
+              .findSerially(Seq(1, 2)) { i =>
+                if (i == 2) promise.trySuccess(())
+                Future.successful(true)
+              }
+              .futureValue shouldBe Some(1)
 
             intercept[scala.concurrent.TimeoutException] {
               Await.ready(promise.future, 300.millis)
@@ -151,23 +152,20 @@ class FuturesTest
 
       "subsequent input is true" must {
         "return that input" in {
-          Futures.findSerially(Seq(0, 1))(i => Future.successful(i > 0))
-            .futureValue shouldBe Some(1)
+          Futures.findSerially(Seq(0, 1))(i => Future.successful(i > 0)).futureValue shouldBe Some(1)
         }
       }
 
       "no input is true" must {
         "return None" in {
-          Futures.findSerially(Seq(0, -1))(i => Future.successful(i > 0))
-            .futureValue shouldBe None
+          Futures.findSerially(Seq(0, -1))(i => Future.successful(i > 0)).futureValue shouldBe None
         }
       }
 
       "future fails" must {
         "result is that failed future" in {
           val e = new IOException
-          Futures.findSerially(Seq(0, 1))(i => Future.failed(e))
-            .failed.futureValue shouldBe e
+          Futures.findSerially(Seq(0, 1))(i => Future.failed(e)).failed.futureValue shouldBe e
         }
       }
     }

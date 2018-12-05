@@ -5,7 +5,8 @@ import com.cyclone.wsman.impl.Namespace
 import com.cyclone.wsman.impl.SubscriptionDescriptor
 import com.cyclone.wsman.impl.model.ManagedReference
 
-case class UnsubscribeXML(ref: ManagedReference, subscriptionDescriptor: SubscriptionDescriptor) extends RequestXMLWithNoDeadline {
+case class UnsubscribeXML(ref: ManagedReference, subscriptionDescriptor: SubscriptionDescriptor)
+    extends RequestXMLWithNoDeadline {
 
   import RequestXML._
 

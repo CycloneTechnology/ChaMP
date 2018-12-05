@@ -7,8 +7,12 @@ import com.cyclone.wsman.impl.model.ManagedInstance
 
 import scala.xml.Elem
 
-case class CreateXML(managedInstance: ManagedInstance, resourceURI: String, selectors: SelectorClause,
-  deadline: OperationDeadline) extends RequestXMLWithDeadline {
+case class CreateXML(
+  managedInstance: ManagedInstance,
+  resourceURI: String,
+  selectors: SelectorClause,
+  deadline: OperationDeadline
+) extends RequestXMLWithDeadline {
 
   import RequestXML._
 

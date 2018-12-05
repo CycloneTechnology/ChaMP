@@ -3,11 +3,11 @@ package com.cyclone.ipmi.sdr
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 
-
 sealed trait RateUnit
 
 object RateUnit {
   implicit val decoder: Decoder[Option[RateUnit]] = new Decoder[Option[RateUnit]] {
+
     def decode(data: ByteString): Option[RateUnit] = data(0).bits3To5.toUnsignedInt match {
       case 0 => None
       case 1 => Some(PerMicroSecond)
@@ -33,11 +33,11 @@ object RateUnit {
 
 }
 
-
 sealed trait UnitCombination
 
 object UnitCombination {
   implicit val decoder: Decoder[Option[UnitCombination]] = new Decoder[Option[UnitCombination]] {
+
     def decode(data: ByteString): Option[UnitCombination] = data(0).bits1To2.toUnsignedInt match {
       case 0 => None
       case 1 => Some(Divide)
@@ -62,6 +62,7 @@ sealed trait SensorUnits
 object SensorUnits {
 
   implicit val decoder: Decoder[SensorUnits] = new Decoder[SensorUnits] {
+
     def decode(data: ByteString): SensorUnits = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -80,14 +81,14 @@ object SensorUnits {
     }
   }
 
-  case class Simple(unit: SensorUnit, optRateUnit: Option[RateUnit] = None)
-    extends SensorUnits
+  case class Simple(unit: SensorUnit, optRateUnit: Option[RateUnit] = None) extends SensorUnits
 
   case class Combined(
     baseUnit: SensorUnit,
     modifierUnit: SensorUnit,
     combination: UnitCombination,
-    optRateUnit: Option[RateUnit] = None) extends SensorUnits
+    optRateUnit: Option[RateUnit] = None
+  ) extends SensorUnits
 
   case class Percentage(optRateUnit: Option[RateUnit]) extends SensorUnits
 

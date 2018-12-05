@@ -15,6 +15,7 @@ object GetBiosPostState {
 
   object BiosPostState {
     implicit val decoder: Decoder[BiosPostState] = new Decoder[BiosPostState] {
+
       def decode(data: ByteString): BiosPostState =
         if (data(0).bit0) BiosIsInPost else BiosNotInPost
     }
@@ -27,11 +28,14 @@ object GetBiosPostState {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val requestType = */is.read(3).as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
+        /*val requestType = */
+        is.read(3)
+          .as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
 
         val biosPostState = is.readByte.as[BiosPostState]
 
@@ -39,13 +43,15 @@ object GetBiosPostState {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(biosPostState: BiosPostState) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -59,7 +65,8 @@ object GetBiosPostState {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

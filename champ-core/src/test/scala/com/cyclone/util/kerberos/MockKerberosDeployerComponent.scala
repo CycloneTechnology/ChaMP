@@ -15,19 +15,22 @@ trait MockKerberosDeployerComponent extends KerberosDeployerComponent {
   def willDeployKerberosArtifacts(
     kerberosArtifacts: KerberosArtifacts,
     locations: Option[ArtifactDeploymentInfo],
-    result: ArtifactDeploymentResult): Unit =
+    result: ArtifactDeploymentResult
+  ): Unit =
     willDeployKerberosArtifactsF(kerberosArtifacts, locations, Future.successful(result))
 
   def willFailToDeployKerberosArtifacts(
     kerberosArtifacts: KerberosArtifacts,
     locations: Option[ArtifactDeploymentInfo],
-    exception: Exception): Unit =
+    exception: Exception
+  ): Unit =
     willDeployKerberosArtifactsF(kerberosArtifacts, locations, Future.failed(exception))
 
   def willDeployKerberosArtifactsF(
     kerberosArtifacts: KerberosArtifacts,
     locations: Option[ArtifactDeploymentInfo],
-    result: Future[ArtifactDeploymentResult]): Unit =
+    result: Future[ArtifactDeploymentResult]
+  ): Unit =
     mockery.checking(new Expectations {
       oneOf(kerberosDeployer).deploy(kerberosArtifacts, locations)
       will(returnValue(result))

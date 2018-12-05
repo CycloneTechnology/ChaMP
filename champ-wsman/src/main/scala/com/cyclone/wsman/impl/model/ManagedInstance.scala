@@ -13,6 +13,7 @@ import scala.xml.NodeSeq.seqToNodeSeq
 import scala.xml._
 
 private[wsman] object ManagedInstance extends LazyLogging {
+
   def fromResourceURI(resourceURI: String, prefix: String = "p"): ManagedInstance =
     apply(documentElement(resourceURI, prefix))
 
@@ -33,14 +34,16 @@ private[wsman] object ManagedInstance extends LazyLogging {
     if (pos > 0) {
       documentElement(resourceURI.substring(pos + 1), resourceURI, prefix)
     } else {
-        <xml/>.copy(label = resourceURI, prefix = prefix)
+      <xml/>.copy(label = resourceURI, prefix = prefix)
     }
   }
 
   private def documentElement(elementName: String, namespace: String, prefix: String) =
-      <xml/>.copy(prefix = prefix,
+    <xml/>.copy(
+      prefix = prefix,
       label = elementName,
-      scope = NamespaceBinding(prefix, namespace, TopScope))
+      scope = NamespaceBinding(prefix, namespace, TopScope)
+    )
 }
 
 /**
@@ -50,7 +53,7 @@ private[wsman] object ManagedInstance extends LazyLogging {
   *
   * Note: ManagedInstance instances are immutable. All 'update' methods return new instances.
   */
-private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
+private[wsman] class ManagedInstance private (private[impl] val root: Elem) {
 
   /**
     * @return the external (API) equivalent instance
@@ -102,20 +105,21 @@ private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
         if (elt \ "Address" != NodeSeq.Empty && elt \ "ReferenceParameters" != NodeSeq.Empty)
           Some(ManagedReferencePropertyMetaData(elt))
         else
-          (for (
-            t <- typeName(elt, child);
-            converter <- converterFor(t)
-          ) yield ConverterPropertyMetaData(elt, converter))
+          (for (t         <- typeName(elt, child);
+                converter <- converterFor(t)) yield ConverterPropertyMetaData(elt, converter))
             .orElse(Some(ManagedInstancePropertyMetaData(elt)))
-      case None        => Some(ConverterPropertyMetaData(elt, { e => StringPropertyValue(e.text) }))
+      case None =>
+        Some(ConverterPropertyMetaData(elt, { e =>
+          StringPropertyValue(e.text)
+        }))
     }
   }
 
-  private def metaDatasForTopLevelProperty(name: String): Iterable[PropertyMetaData[PropertyValue]] = {
-    for (
-      e <- elementsWithName(name);
-      opt <- getElementPropertyMetaData(e)
-    ) yield opt
+  private def metaDatasForTopLevelProperty(
+    name: String
+  ): Iterable[PropertyMetaData[PropertyValue]] = {
+    for (e   <- elementsWithName(name);
+         opt <- getElementPropertyMetaData(e)) yield opt
   }
 
   private def assertValidPropertyName(name: String): Unit =
@@ -126,9 +130,10 @@ private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
     */
   def getPropertyValue(name: String): Option[PropertyValue] = {
     metaDatasForTopLevelProperty(name).toList match {
-      case Nil                                          => None
-      case List(meta)                                   => Some(meta.evaluate)
-      case metas: List[PropertyMetaData[PropertyValue]] => Some(ListPropertyValue(metas.map(_.evaluate)))
+      case Nil        => None
+      case List(meta) => Some(meta.evaluate)
+      case metas: List[PropertyMetaData[PropertyValue]] =>
+        Some(ListPropertyValue(metas.map(_.evaluate)))
     }
   }
 
@@ -141,9 +146,11 @@ private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
     * @param predicate to filter the names and values returned
     * @return property names and values as tuples
     */
-  def propertyNamesAndValues(predicate: (String, PropertyValue) => Boolean): Seq[(String, PropertyValue)] = {
+  def propertyNamesAndValues(
+    predicate: (String, PropertyValue) => Boolean
+  ): Seq[(String, PropertyValue)] = {
     for {
-      name <- propertyNames
+      name  <- propertyNames
       value <- getPropertyValue(name) if predicate(name, value)
     } yield (name, value)
   }
@@ -193,8 +200,7 @@ private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
   }
 
   private def removeProperty(name: String) =
-    ManagedInstance(copyRootWithChildren(
-      childElts.filter(_.label != name)))
+    ManagedInstance(copyRootWithChildren(childElts.filter(_.label != name)))
 
   // FIXME return this if no property with name present ^^ (i.e. remove is no-op)
 
@@ -207,8 +213,8 @@ private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
     */
   object PropertyValueConverterRegistry {
     private val map = HashMap[String, Elem => PropertyValue]() +
-      ("cim:cimDateTime" -> CIMDateTimePropertyConverter) +
-      ("Datetime" -> CIMDateTimePropertyConverter)
+    ("cim:cimDateTime" -> CIMDateTimePropertyConverter) +
+    ("Datetime"        -> CIMDateTimePropertyConverter)
 
     def converterFor(typeName: String): Option[Elem => PropertyValue] = map.get(typeName)
   }
@@ -225,17 +231,16 @@ private[wsman] class ManagedInstance private(private[impl] val root: Elem) {
   }
 
   case class ConverterPropertyMetaData(element: Elem, converter: Elem => PropertyValue)
-    extends PropertyMetaData[PropertyValue](element) {
+      extends PropertyMetaData[PropertyValue](element) {
     def evaluate: PropertyValue = converter(element)
   }
 
-  case class ManagedInstancePropertyMetaData(element: Elem)
-    extends PropertyMetaData[InstancePropertyValue](element) {
+  case class ManagedInstancePropertyMetaData(element: Elem) extends PropertyMetaData[InstancePropertyValue](element) {
     def evaluate = InstancePropertyValue(ManagedInstance(element))
   }
 
-  case class ManagedReferencePropertyMetaData(element: Elem)
-    extends PropertyMetaData[ReferencePropertyValue](element) {
+  case class ManagedReferencePropertyMetaData(element: Elem) extends PropertyMetaData[ReferencePropertyValue](element) {
+
     def evaluate: ReferencePropertyValue = {
       val address = element \ "Address"
       val refData = element \ "ReferenceParameters"

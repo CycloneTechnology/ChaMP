@@ -12,8 +12,8 @@ case class SubscribeByWQL(
   baseResourceUri: ResourceUri = ResourceUri.defaultBase,
   resolveReferences: Boolean = false,
   resolutionTimeout: FiniteDuration = 5.seconds,
-  cimNamespace: Option[String] = None)
-  extends WSManFilteredSubscriptionDefn
+  cimNamespace: Option[String] = None
+) extends WSManFilteredSubscriptionDefn
 
 object SubscribeByWQL {
 

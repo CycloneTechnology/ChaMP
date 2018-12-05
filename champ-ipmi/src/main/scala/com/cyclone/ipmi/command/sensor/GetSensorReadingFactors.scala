@@ -13,6 +13,7 @@ object GetSensorReadingFactors {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -25,15 +26,15 @@ object GetSensorReadingFactors {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
-  case class CommandResult(
-    nextReading: RawSensorValue,
-    readingFactors: ReadingFactors) extends IpmiCommandResult
+  case class CommandResult(nextReading: RawSensorValue, readingFactors: ReadingFactors) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -46,7 +47,8 @@ object GetSensorReadingFactors {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 
@@ -57,5 +59,3 @@ object GetSensorReadingFactors {
   }
 
 }
-
-

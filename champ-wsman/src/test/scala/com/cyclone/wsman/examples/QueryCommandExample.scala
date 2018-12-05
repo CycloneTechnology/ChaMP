@@ -34,18 +34,21 @@ object QueryCommandExample extends App {
       _ <- KerberosDeployer.create.deploy(KerberosArtifacts.simpleFromConfig)
 
       commandResult <- wsman.executeCommand(
-        WSManTarget(WSMan.httpUrlFor(host, ssl = false),
-          PasswordSecurityContext(username, password, AuthenticationMethod.Kerberos)),
-        EnumerateByWQL("select * from Win32_Service"))
+        WSManTarget(
+          WSMan.httpUrlFor(host, ssl = false),
+          PasswordSecurityContext(username, password, AuthenticationMethod.Kerberos)
+        ),
+        EnumerateByWQL("select * from Win32_Service")
+      )
     } yield commandResult
 
   futureResult.onComplete {
     case Success(result) =>
       result.instances.foreach { instance =>
         for {
-          caption <- instance.stringProperty("Caption")
+          caption   <- instance.stringProperty("Caption")
           startMode <- instance.stringProperty("StartMode")
-          state <- instance.stringProperty("State")
+          state     <- instance.stringProperty("State")
         } println(s"Service '$caption' with start mode $startMode state is $state")
       }
       System.exit(0)

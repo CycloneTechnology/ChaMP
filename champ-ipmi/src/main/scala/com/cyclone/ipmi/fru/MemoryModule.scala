@@ -5,13 +5,13 @@ import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.sdr.jedec.ManufacturerIdentificationCode
 import com.google.common.base.Charsets
 
-
 sealed trait MemoryType {
   def decodeModule(data: ByteString): MemoryModule
 }
 
 object MemoryType {
   implicit val decoder: Decoder[MemoryType] = new Decoder[MemoryType] {
+
     def decode(data: ByteString): MemoryType =
       data(0).toUnsignedInt match {
         case 0x06      => `DDR SGRAM`
@@ -40,6 +40,7 @@ object MemoryType {
   case object `DDR4 SDRAM` extends MemoryType with Type3MemoryDecoder
 
   case class Other(code: Int) extends MemoryType {
+
     def decodeModule(data: ByteString) = MemoryModule(
       memoryType = this,
       manufacturer = None,
@@ -68,32 +69,38 @@ trait StandardMemoryDecoder {
 
 trait Type1MemoryDecoder extends StandardMemoryDecoder {
   self: MemoryType =>
+
   def decodeModule(data: ByteString) =
     MemoryModule(
       memoryType = data(2).as[MemoryType],
       manufacturer = decodeManufacturerUsingContinuationFlag(data.take(64 to 71)),
       serialNumber = decodeSerialNumber(data.take(95 to 98)),
-      partNumber = decodePartNumber(data.take(73 to 90)))
+      partNumber = decodePartNumber(data.take(73 to 90))
+    )
 }
 
 trait Type2MemoryDecoder extends StandardMemoryDecoder {
   self: MemoryType =>
+
   def decodeModule(data: ByteString) =
     MemoryModule(
       memoryType = data(2).as[MemoryType],
       manufacturer = decodeManufacturerUsingContinuationCount(data.take(117 to 118)),
       serialNumber = decodeSerialNumber(data.take(122 to 125)),
-      partNumber = decodePartNumber(data.take(128 to 145)))
+      partNumber = decodePartNumber(data.take(128 to 145))
+    )
 }
 
 trait Type3MemoryDecoder extends StandardMemoryDecoder {
   self: MemoryType =>
+
   def decodeModule(data: ByteString) =
     MemoryModule(
       memoryType = data(2).as[MemoryType],
       manufacturer = decodeManufacturerUsingContinuationCount(data.take(320 to 321)),
       serialNumber = decodeSerialNumber(data.take(325 to 328)),
-      partNumber = decodePartNumber(data.take(329 to 348)))
+      partNumber = decodePartNumber(data.take(329 to 348))
+    )
 }
 
 case class MemoryModule(
@@ -105,6 +112,7 @@ case class MemoryModule(
 
 object MemoryModule {
   implicit val decoder: Decoder[MemoryModule] = new Decoder[MemoryModule] {
+
     def decode(data: ByteString): MemoryModule =
       data(2).as[MemoryType].decodeModule(data)
   }

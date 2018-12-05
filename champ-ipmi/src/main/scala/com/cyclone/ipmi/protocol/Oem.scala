@@ -7,6 +7,7 @@ case class Oem(value: Int, payloadId1: Byte, payloadId2: Byte)
 
 object Oem {
   implicit val codec: Codec[Oem] = new Codec[Oem] {
+
     def encode(a: Oem): ByteString = {
       import a._
       val b = new ByteStringBuilder
@@ -18,7 +19,6 @@ object Oem {
 
       b.result()
     }
-
 
     def decode(data: ByteString): Oem = {
       val is = data.iterator.asInputStream
@@ -33,5 +33,3 @@ object Oem {
     }
   }
 }
-
-

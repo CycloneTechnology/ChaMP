@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.util.ByteString
-import com.cyclone.akka.{ActorSystemShutdown, ActorMaterializerComponent, TestKitSupport}
+import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemShutdown, TestKitSupport}
 import com.cyclone.wsman.impl.subscription.push.RequestConverterComponent._
 import org.jmock.Mockery
 import org.junit.Test
@@ -19,7 +19,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import scala.xml.XML
 
 class RequestConverterTest
-  extends TestKitSupport
+    extends TestKitSupport
     with JUnitSuiteLike
     with ScalaFutures
     with GeneratorDrivenPropertyChecks
@@ -41,9 +41,8 @@ class RequestConverterTest
 
   @Test
   def singleRequestData_toXML(): Unit = {
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      entity = HttpEntity(ContentType(`application/octet-stream`), xmlBytes))
+    val request =
+      HttpRequest(method = HttpMethods.POST, entity = HttpEntity(ContentType(`application/octet-stream`), xmlBytes))
 
     val RequestData(_, _, body) = toXmlConverterPlain(requestData(request))
 
@@ -62,15 +61,15 @@ class RequestConverterTest
   @Test
   def multiPartData_getsLastPart_toXML(): Unit = {
 
-    val data = Multipart.FormData(
-      BodyPart.Strict("0", HttpEntity(ContentType(`application/octet-stream`), ByteString(1, 2, 3, 4, 5))),
-      BodyPart.Strict("1", HttpEntity(ContentType(`application/octet-stream`), xmlBytes))
-    ).toEntity("Boundary")
+    val data = Multipart
+      .FormData(
+        BodyPart.Strict("0", HttpEntity(ContentType(`application/octet-stream`), ByteString(1, 2, 3, 4, 5))),
+        BodyPart.Strict("1", HttpEntity(ContentType(`application/octet-stream`), xmlBytes))
+      )
+      .toEntity("Boundary")
 
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      headers = List(`Content-Type`(`multipart/form-data`)),
-      entity = data)
+    val request =
+      HttpRequest(method = HttpMethods.POST, headers = List(`Content-Type`(`multipart/form-data`)), entity = data)
 
     val RequestData(_, _, body) = toXmlConverterPlain(requestData(request))
 
@@ -82,7 +81,8 @@ class RequestConverterTest
     val request = HttpRequest(
       method = HttpMethods.POST,
       headers = List(RawHeader("Content-Type", "multipart/form-data; boundary=\"Boundary\"")),
-      entity = HttpEntity(readClassPathFile("multipartReq.dat")))
+      entity = HttpEntity(readClassPathFile("multipartReq.dat"))
+    )
 
     val RequestData(_, _, body) = toXmlConverterPlain(requestData(request))
 
@@ -112,9 +112,8 @@ class RequestConverterTest
 
   @Test
   def storesAppliedConversions_singleRequestData(): Unit = {
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      entity = HttpEntity(ContentType(`application/octet-stream`), xmlBytes))
+    val request =
+      HttpRequest(method = HttpMethods.POST, entity = HttpEntity(ContentType(`application/octet-stream`), xmlBytes))
 
     val RequestData(_, convs, _) = toXmlConverterPlain(requestData(request))
 
@@ -126,7 +125,8 @@ class RequestConverterTest
     val request = HttpRequest(
       method = HttpMethods.POST,
       headers = List(RawHeader("Content-Type", "multipart/form-data; boundary=\"Boundary\"")),
-      entity = HttpEntity(readClassPathFile("multipartReq.dat")))
+      entity = HttpEntity(readClassPathFile("multipartReq.dat"))
+    )
 
     val RequestData(_, convs, _) = toXmlConverterPlain(requestData(request))
 
@@ -140,14 +140,14 @@ class RequestConverterTest
   }
 
   private def multipartRequest(array: Array[Byte]) = {
-    val data = Multipart.FormData(
-      BodyPart.Strict("1", HttpEntity(ContentType(`application/octet-stream`), array))
-    ).toEntity("Boundary")
+    val data = Multipart
+      .FormData(
+        BodyPart.Strict("1", HttpEntity(ContentType(`application/octet-stream`), array))
+      )
+      .toEntity("Boundary")
 
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      headers = List(`Content-Type`(`multipart/form-data`)),
-      entity = data)
+    val request =
+      HttpRequest(method = HttpMethods.POST, headers = List(`Content-Type`(`multipart/form-data`)), entity = data)
     request
   }
 

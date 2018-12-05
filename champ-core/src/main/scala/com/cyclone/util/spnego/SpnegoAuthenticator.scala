@@ -32,7 +32,7 @@ import scala.util.control.NonFatal
   * With the following changes:
   * - removed cookie support
   * - allow Kerberos as well as Negotiate authorization header
-  * - do not dispose of the gcc context to allow later decrypts 
+  * - do not dispose of the gcc context to allow later decrypts
   */
 object SpnegoAuthenticator {
   private val Authorization = "authorization"
@@ -40,10 +40,11 @@ object SpnegoAuthenticator {
   private val kerberos = "Kerberos"
   private val wwwAuthenticate = "WWW-Authenticate"
 
-  private[spnego] def challengeHeader(maybeServerToken: Option[Array[Byte]] = None): HttpHeader = RawHeader(
-    wwwAuthenticate,
-    negotiate + maybeServerToken.map(" " + new Base64(0).encodeToString(_)).getOrElse("")
-  )
+  private[spnego] def challengeHeader(maybeServerToken: Option[Array[Byte]] = None): HttpHeader =
+    RawHeader(
+      wwwAuthenticate,
+      negotiate + maybeServerToken.map(" " + new Base64(0).encodeToString(_)).getOrElse("")
+    )
 
   def apply(
     config: Config = ConfigFactory.load(),
@@ -65,13 +66,15 @@ object SpnegoAuthenticator {
 
   def spnegoAuthenticate(
     config: Config = ConfigFactory.load(),
-    kerberosDeployment: KerberosDeployment): Directive1[Token] = {
+    kerberosDeployment: KerberosDeployment
+  ): Directive1[Token] = {
     extractExecutionContext.flatMap { implicit ec =>
       extractLog.flatMap { implicit log =>
         extract { ctx =>
           log.debug("creating spnego authenticator")
 
-          implicit val timeout: Timeout = Timeout(config.finiteDuration("cyclone.spnego.deploymentInfo.timeout"))
+          implicit val timeout: Timeout =
+            Timeout(config.finiteDuration("cyclone.spnego.deploymentInfo.timeout"))
 
           for {
             deploymentResult <- kerberosDeployment.latestArtifactDeploymentInfo
@@ -87,11 +90,18 @@ object SpnegoAuthenticator {
   }
 }
 
-class SpnegoAuthenticator(principal: String, keytab: String, debug: Boolean, tokens: Tokens)(implicit log: LoggingAdapter) {
+class SpnegoAuthenticator(principal: String, keytab: String, debug: Boolean, tokens: Tokens)(
+  implicit log: LoggingAdapter
+) {
 
   import SpnegoAuthenticator._
 
-  private val subject = new Subject(false, Set(new KerberosPrincipal(principal)).asJava, Set.empty[AnyRef].asJava, Set.empty[AnyRef].asJava)
+  private val subject = new Subject(
+    false,
+    Set(new KerberosPrincipal(principal)).asJava,
+    Set.empty[AnyRef].asJava,
+    Set.empty[AnyRef].asJava
+  )
   private val kerberosConfiguration = KerberosConfiguration(keytab, principal, debug)
 
   private val loginContext = new LoginContext("", subject, null, kerberosConfiguration)
@@ -115,32 +125,39 @@ class SpnegoAuthenticator(principal: String, keytab: String, debug: Boolean, tok
   private def kerberosCore(clientToken: Array[Byte]): Either[Rejection, Token] = {
     try {
       val (maybeServerToken, maybeToken) =
-        Subject.doAs(loginContext.getSubject,
+        Subject.doAs(
+          loginContext.getSubject,
           new PrivilegedExceptionAction[(Option[Array[Byte]], Option[Token])] {
             override def run: (Option[Array[Byte]], Option[Token]) = {
               val gssContext = gssManager.createContext(null: GSSCredential)
               try {
-                val maybeServerToken = Option(gssContext.acceptSecContext(clientToken, 0, clientToken.length))
+                val maybeServerToken =
+                  Option(gssContext.acceptSecContext(clientToken, 0, clientToken.length))
 
                 val maybeToken =
                   if (gssContext.isEstablished)
-                    Some(tokens.create(gssContext.getSrcName.toString, maybeServerToken, gssContext))
+                    Some(
+                      tokens.create(gssContext.getSrcName.toString, maybeServerToken, gssContext)
+                    )
                   else
                     None
 
                 (maybeServerToken, maybeToken)
-              }
-              catch {
+              } catch {
                 case NonFatal(e) =>
                   log.error(e, "error in establishing security context")
                   throw e
               }
             }
-          })
+          }
+        )
 
       if (log.isDebugEnabled)
-        log.debug("maybeServerToken {} maybeToken {}",
-          maybeServerToken.map(new Base64(0).encodeToString(_)), maybeToken)
+        log.debug(
+          "maybeServerToken {} maybeToken {}",
+          maybeServerToken.map(new Base64(0).encodeToString(_)),
+          maybeToken
+        )
 
       maybeToken
         .map { token =>
@@ -149,20 +166,25 @@ class SpnegoAuthenticator(principal: String, keytab: String, debug: Boolean, tok
         }
         .getOrElse {
           log.debug("no token received but if there is a serverToken then negotiations are ongoing")
-          Left(AuthenticationFailedRejection(
-            CredentialsMissing,
-            HttpChallenge(challengeHeader(maybeServerToken).value, None)))
+          Left(
+            AuthenticationFailedRejection(
+              CredentialsMissing,
+              HttpChallenge(challengeHeader(maybeServerToken).value, None)
+            )
+          )
         }
-    }
-    catch {
+    } catch {
       case e: PrivilegedActionException =>
         e.getException match {
           case e: IOException => throw e // server error
-          case NonFatal(t)    =>
+          case NonFatal(t) =>
             log.error(t, "negotiation failed")
-            Left(AuthenticationFailedRejection(
-              CredentialsRejected,
-              HttpChallenge(challengeHeader().value, None))) // rejected
+            Left(
+              AuthenticationFailedRejection(
+                CredentialsRejected,
+                HttpChallenge(challengeHeader().value, None)
+              )
+            ) // rejected
         }
     }
   }
@@ -172,12 +194,14 @@ class SpnegoAuthenticator(principal: String, keytab: String, debug: Boolean, tok
 
   private def initiateNegotiations: Either[Rejection, Token] = {
     log.debug("no negotiation header found, initiating negotiations")
-    Left(AuthenticationFailedRejection(
-      CredentialsMissing,
-      HttpChallenge(challengeHeader().value, None)))
+    Left(
+      AuthenticationFailedRejection(
+        CredentialsMissing,
+        HttpChallenge(challengeHeader().value, None)
+      )
+    )
   }
 
   def apply(ctx: RequestContext): Either[Rejection, Token] =
     kerberosNegotiate(ctx).getOrElse(initiateNegotiations)
 }
-

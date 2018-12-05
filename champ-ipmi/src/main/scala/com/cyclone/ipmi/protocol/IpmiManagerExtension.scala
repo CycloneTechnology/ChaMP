@@ -9,9 +9,7 @@ class IpmiManagerExtensionImpl(actorSystem: ActorSystem) extends Extension {
   val ipmiManager: ActorRef = actorSystem.actorOf(IpmiManager.props(), "IpmiManager")
 }
 
-object IpmiManagerExtension
-  extends ExtensionId[IpmiManagerExtensionImpl]
-    with ExtensionIdProvider {
+object IpmiManagerExtension extends ExtensionId[IpmiManagerExtensionImpl] with ExtensionIdProvider {
 
   def lookup(): ExtensionId[IpmiManagerExtensionImpl] = IpmiManagerExtension
 

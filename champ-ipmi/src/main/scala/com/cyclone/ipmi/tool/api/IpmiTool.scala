@@ -20,7 +20,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NonFatal
 
-
 /**
   * High-level command API for IPMI.
   */
@@ -33,8 +32,11 @@ trait IpmiTool {
     */
   def executeCommand[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](
     target: IpmiTarget,
-    command: Command)
-    (implicit timeoutContext: TimeoutContext, executor: CommandExecutor[Command, Result]): Future[Result] = {
+    command: Command
+  )(
+    implicit timeoutContext: TimeoutContext,
+    executor: CommandExecutor[Command, Result]
+  ): Future[Result] = {
     val raw = executeCommandOrError(target, command)
 
     Futures.disjunctionToFailedFuture(raw)(IpmiError.toThrowable)
@@ -43,8 +45,10 @@ trait IpmiTool {
   /**
     * Executes [[com.cyclone.ipmi.tool.command.IpmiToolCommand]] for a connection the result as a disjunction
     */
-  def executeCommand[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](command: Command)
-    (implicit executor: CommandExecutor[Command, Result], context: IpmiOperationContext): Future[Result] = {
+  def executeCommand[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](command: Command)(
+    implicit executor: CommandExecutor[Command, Result],
+    context: IpmiOperationContext
+  ): Future[Result] = {
     val raw = executeCommandOrError(command)
 
     Futures.disjunctionToFailedFuture(raw)(IpmiError.toThrowable)
@@ -55,30 +59,37 @@ trait IpmiTool {
     */
   def executeCommandOrError[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](
     target: IpmiTarget,
-    command: Command)
-    (implicit timeoutContext: TimeoutContext, executor: CommandExecutor[Command, Result]): Future[IpmiErrorOr[Result]]
+    command: Command
+  )(
+    implicit timeoutContext: TimeoutContext,
+    executor: CommandExecutor[Command, Result]
+  ): Future[IpmiErrorOr[Result]]
 
   /**
     * Executes [[com.cyclone.ipmi.tool.command.IpmiToolCommand]]
     *
     * Errors are converted to failed futures.
     */
-  def executeCommandOrError[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](command: Command)
-    (implicit executor: CommandExecutor[Command, Result], context: IpmiOperationContext): Future[IpmiErrorOr[Result]]
-
-
-  /**
-    * Utility to perform some operation (e.q. sequence of commands) with the same context.
-    */
-  def withContextOrError[T](target: IpmiTarget)(operation: IpmiOperationContext => Future[IpmiErrorOr[T]])
-    (implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[T]]
-
+  def executeCommandOrError[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](
+    command: Command
+  )(
+    implicit executor: CommandExecutor[Command, Result],
+    context: IpmiOperationContext
+  ): Future[IpmiErrorOr[Result]]
 
   /**
     * Utility to perform some operation (e.q. sequence of commands) with the same context.
     */
-  def withContext[T](target: IpmiTarget)(operation: IpmiOperationContext => Future[T])
-    (implicit timeoutContext: TimeoutContext): Future[T] = {
+  def withContextOrError[T](target: IpmiTarget)(
+    operation: IpmiOperationContext => Future[IpmiErrorOr[T]]
+  )(implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[T]]
+
+  /**
+    * Utility to perform some operation (e.q. sequence of commands) with the same context.
+    */
+  def withContext[T](target: IpmiTarget)(
+    operation: IpmiOperationContext => Future[T]
+  )(implicit timeoutContext: TimeoutContext): Future[T] = {
     val raw = withContextOrError(target)(ctx => rightT(operation(ctx)).run)
 
     Futures.disjunctionToFailedFuture(raw)(IpmiError.toThrowable)
@@ -96,11 +107,10 @@ trait IpmiTool {
 }
 
 object IpmiTool {
+
   def create(implicit system: ActorSystem): IpmiTool = {
-    val component = new DefaultIpmiToolComponent
-      with ActorIpmiClientComponent
-      with ExtensionIpmiManagerComponent
-      with ActorSystemComponent {
+    val component = new DefaultIpmiToolComponent with ActorIpmiClientComponent with ExtensionIpmiManagerComponent
+    with ActorSystemComponent {
       implicit def actorSystem: ActorSystem = system
     }
 
@@ -117,8 +127,9 @@ trait DefaultIpmiToolComponent extends IpmiToolComponent {
 
   lazy val ipmiTool: IpmiTool = new IpmiTool {
 
-    def withContextOrError[T](target: IpmiTarget)(operation: IpmiOperationContext => Future[IpmiErrorOr[T]])
-      (implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[T]] = {
+    def withContextOrError[T](target: IpmiTarget)(
+      operation: IpmiOperationContext => Future[IpmiErrorOr[T]]
+    )(implicit timeoutContext: TimeoutContext): Future[IpmiErrorOr[T]] = {
       target match {
         case lan: IpmiTarget.LAN =>
           import lan._
@@ -126,7 +137,9 @@ trait DefaultIpmiToolComponent extends IpmiToolComponent {
 
           val result = for {
             connection <- rightT(futureConnection)
-            _ <- eitherT(connection.negotiateSession(credentials, versionRequirement, privilegeLevel))
+            _ <- eitherT(
+              connection.negotiateSession(credentials, versionRequirement, privilegeLevel)
+            )
             result <- eitherT(operation(IpmiOperationContext(connection, timeoutContext)))
           } yield result
 
@@ -138,20 +151,29 @@ trait DefaultIpmiToolComponent extends IpmiToolComponent {
 
     def executeCommandOrError[Command <: IpmiToolCommand, Res <: IpmiToolCommandResult](
       target: IpmiTarget,
-      command: Command)
-      (implicit timeoutContext: TimeoutContext, executor: CommandExecutor[Command, Res]): Future[IpmiErrorOr[Res]] = {
+      command: Command
+    )(
+      implicit timeoutContext: TimeoutContext,
+      executor: CommandExecutor[Command, Res]
+    ): Future[IpmiErrorOr[Res]] = {
 
       withContextOrError(target) { implicit context =>
         executor.execute(command)
       }
     }
 
-    def executeCommandOrError[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](command: Command)
-      (implicit executor: IpmiCommands.CommandExecutor[Command, Result], context: IpmiOperationContext): Future[IpmiErrorOr[Result]] =
+    def executeCommandOrError[Command <: IpmiToolCommand, Result <: IpmiToolCommandResult](
+      command: Command
+    )(
+      implicit executor: IpmiCommands.CommandExecutor[Command, Result],
+      context: IpmiOperationContext
+    ): Future[IpmiErrorOr[Result]] =
       executor.execute(command)
 
     def testSupport(target: IpmiTarget, timeout: FiniteDuration): Future[Boolean] = {
-      implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(timeout))
+      implicit val timeoutContext: TimeoutContext = TimeoutContext(
+        OperationDeadline.fromNow(timeout)
+      )
 
       target match {
         case lan: IpmiTarget.LAN =>
@@ -160,7 +182,8 @@ trait DefaultIpmiToolComponent extends IpmiToolComponent {
           ipmiClient.withConnection(inetAddress, port) { connection =>
             // Spec says can use GetChannelAuthenticationCapabilities to discover support...
             val result = connection.executeCommandOrError(
-              GetChannelAuthenticationCapabilities.Command(PrivilegeLevel.User))
+              GetChannelAuthenticationCapabilities.Command(PrivilegeLevel.User)
+            )
 
             // Don't care what the result is just whether we get a good one...
             result.map(_.isRight).recover { case NonFatal(_) => false }
@@ -170,18 +193,19 @@ trait DefaultIpmiToolComponent extends IpmiToolComponent {
 
     def testNegotiateSession(
       target: IpmiTarget,
-      timeout: FiniteDuration): Future[IpmiErrorOr[Unit]] = {
-      implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(timeout))
+      timeout: FiniteDuration
+    ): Future[IpmiErrorOr[Unit]] = {
+      implicit val timeoutContext: TimeoutContext = TimeoutContext(
+        OperationDeadline.fromNow(timeout)
+      )
 
       target match {
         case lan: IpmiTarget.LAN =>
           import lan._
 
           ipmiClient.withConnection(inetAddress, port) { connection =>
-            val result = connection.negotiateSession(
-              credentials,
-              versionRequirement,
-              PrivilegeLevel.User)
+            val result =
+              connection.negotiateSession(credentials, versionRequirement, PrivilegeLevel.User)
 
             result.recover { case NonFatal(e) => IpmiExceptionError(e).left }
           }

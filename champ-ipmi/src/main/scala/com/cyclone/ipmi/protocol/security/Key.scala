@@ -17,6 +17,7 @@ object Key {
   }
 
   object UID {
+
     def fromCredentials(credentials: IpmiCredentials): UID =
       UID(credentials.password)
   }
@@ -26,13 +27,13 @@ object Key {
   }
 
   object KG {
+
     def fromCredentials(credentials: IpmiCredentials): KG =
       KG(credentials.password, credentials.bmcKey)
   }
 
-  case class SIK private[security](key: ByteString) extends Key {
+  case class SIK private[security] (key: ByteString) extends Key {
     private[security] def byteArray = key.toArray
   }
 
 }
-

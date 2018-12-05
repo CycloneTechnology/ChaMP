@@ -22,7 +22,7 @@ import scala.concurrent.duration._
   * Tests for [[RequestHandler]]
   */
 class RequestHandlerTest
-  extends TestKitSupport
+    extends TestKitSupport
     with WordSpecLike
     with Matchers
     with Inside
@@ -50,16 +50,11 @@ class RequestHandlerTest
     val maxAttempts = 2
     val version = IpmiVersion.V20
     val hub = TestProbe()
-    val timeoutContext = TimeoutContext(
-      OperationDeadline.fromNow(timeout),
-      RequestTimeouts.simple(attemptTimeout, maxAttempts))
 
-    val requester = system.actorOf(
-      RequestHandler.props(
-        hub.ref,
-        version,
-        sessionContext,
-        timeoutContext))
+    val timeoutContext =
+      TimeoutContext(OperationDeadline.fromNow(timeout), RequestTimeouts.simple(attemptTimeout, maxAttempts))
+
+    val requester = system.actorOf(RequestHandler.props(hub.ref, version, sessionContext, timeoutContext))
 
     val seqNo = SeqNo(12.toByte)
 
@@ -68,16 +63,16 @@ class RequestHandlerTest
       requester ! SessionHub.RequestHandlerRegistered
     }
 
-    def response[C <: IpmiStandardCommand](command: C, statusCode: StatusCode)
-      (implicit dummy: DummyResponseData[C]) = StandardCommandWrapper.ResponsePayload(
-      resultData = dummy.responseData,
-      statusCode = statusCode,
-      networkFunction = command.networkFunction,
-      seqNo = seqNo,
-      commandCode = command.commandCode,
-      requesterAddress = DeviceAddress.RemoteConsoleAddress,
-      responderAddress = DeviceAddress.BmcAddress
-    )
+    def response[C <: IpmiStandardCommand](command: C, statusCode: StatusCode)(implicit dummy: DummyResponseData[C]) =
+      StandardCommandWrapper.ResponsePayload(
+        resultData = dummy.responseData,
+        statusCode = statusCode,
+        networkFunction = command.networkFunction,
+        seqNo = seqNo,
+        commandCode = command.commandCode,
+        requesterAddress = DeviceAddress.RemoteConsoleAddress,
+        responderAddress = DeviceAddress.BmcAddress
+      )
   }
 
   "a request handler" when {
@@ -113,7 +108,8 @@ class RequestHandlerTest
         requester ! SessionHub.ReceivedIpmi(response(command, StatusCode(0xC0)).right)
 
         inside(expectMsgType[RequestResult]) {
-          case RequestResult(-\/(e)) => e.message shouldBe GenericStatusCodeErrors.lookup(StatusCode(0xC0.toByte)).message
+          case RequestResult(-\/(e)) =>
+            e.message shouldBe GenericStatusCodeErrors.lookup(StatusCode(0xC0.toByte)).message
         }
 
         hub.expectMsg(SessionHub.UnregisterRequestHandler(requester))

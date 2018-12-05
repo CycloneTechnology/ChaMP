@@ -10,67 +10,73 @@ import org.scalatest.{Matchers, WordSpec}
 class ReadingMaskTest extends WordSpec with Matchers {
   "a discrete states reading mask" must {
     "allow evaluation of offsets" in {
-      ReadingMask.DiscreteStates(EventBits.full, EventReadingType.Usage)
+      ReadingMask
+        .DiscreteStates(EventBits.full, EventReadingType.Usage)
         .evaluateOffsets(EventBits(0x5)) shouldBe
-        Set(Usage.UsageEventOffset.TransitionToIdle,
-          Usage.UsageEventOffset.TransitionToBusy)
+      Set(Usage.UsageEventOffset.TransitionToIdle, Usage.UsageEventOffset.TransitionToBusy)
     }
 
     "ignore non-masked offsets" in {
-      ReadingMask.DiscreteStates(EventBits(0x1), EventReadingType.Usage)
+      ReadingMask
+        .DiscreteStates(EventBits(0x1), EventReadingType.Usage)
         .evaluateOffsets(EventBits(0x5)) shouldBe
-        Set(Usage.UsageEventOffset.TransitionToIdle)
+      Set(Usage.UsageEventOffset.TransitionToIdle)
     }
   }
 
   "a digital (binary) reading mask" must {
     "use bit 0 value" in {
-      ReadingMask.DigitalStates(EventBits.full, EventReadingType.State)
+      ReadingMask
+        .DigitalStates(EventBits.full, EventReadingType.State)
         .evaluateOffsets(EventBits(0x0)) shouldBe
-        Set(State.StateEventOffset.StateDeasserted)
+      Set(State.StateEventOffset.StateDeasserted)
 
-
-      ReadingMask.DigitalStates(EventBits.full, EventReadingType.State)
+      ReadingMask
+        .DigitalStates(EventBits.full, EventReadingType.State)
         .evaluateOffsets(EventBits(0x1)) shouldBe
-        Set(State.StateEventOffset.StateAsserted)
+      Set(State.StateEventOffset.StateAsserted)
     }
 
     "ignore non-masked offsets" in {
-      ReadingMask.DigitalStates(EventBits.empty, EventReadingType.State)
+      ReadingMask
+        .DigitalStates(EventBits.empty, EventReadingType.State)
         .evaluateOffsets(EventBits(0x1)) shouldBe
-        Set.empty
+      Set.empty
     }
   }
 
   "a sensor-specific reading mask" must {
     "use sensor-specific offsets if required" in {
-      ReadingMask.SensorSpecificDiscreteStates(EventBits.full, SensorType.PhysicalSecurity)
+      ReadingMask
+        .SensorSpecificDiscreteStates(EventBits.full, SensorType.PhysicalSecurity)
         .evaluateOffsets(EventBits(0x9)) shouldBe
-        Set(
-          PhysicalSecurity.PhysicalSecurityEventOffset.GeneralChassisIntrusion,
-          PhysicalSecurity.PhysicalSecurityEventOffset.ProcessorAreaIntrusion)
+      Set(
+        PhysicalSecurity.PhysicalSecurityEventOffset.GeneralChassisIntrusion,
+        PhysicalSecurity.PhysicalSecurityEventOffset.ProcessorAreaIntrusion
+      )
     }
 
     "ignore non-masked offsets" in {
-      ReadingMask.SensorSpecificDiscreteStates(EventBits.full, SensorType.PhysicalSecurity)
+      ReadingMask
+        .SensorSpecificDiscreteStates(EventBits.full, SensorType.PhysicalSecurity)
         .evaluateOffsets(EventBits(0x1)) shouldBe
-        Set(
-          PhysicalSecurity.PhysicalSecurityEventOffset.GeneralChassisIntrusion)
+      Set(PhysicalSecurity.PhysicalSecurityEventOffset.GeneralChassisIntrusion)
     }
   }
 
   "a threshold reading mask" must {
     "allow evaluation of offsets" in {
-      ReadingMask.Threshold(EventBits.full)
+      ReadingMask
+        .Threshold(EventBits.full)
         .evaluateOffsets(EventBits(0x5)) shouldBe
-        Set(ThresholdComparison.LowerNonRecoverable,
-          ThresholdComparison.LowerNonCritical)
+      Set(ThresholdComparison.LowerNonRecoverable, ThresholdComparison.LowerNonCritical)
     }
 
     "ignore non-masked offsets" in {
-      ReadingMask.Threshold(EventBits(0x1))
+      ReadingMask
+        .Threshold(EventBits(0x1))
         .evaluateOffsets(EventBits(0x5)) shouldBe
-        Set(ThresholdComparison.LowerNonCritical)
+      Set(ThresholdComparison.LowerNonCritical)
     }
   }
 

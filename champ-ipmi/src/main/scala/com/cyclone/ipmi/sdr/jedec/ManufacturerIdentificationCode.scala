@@ -14,6 +14,7 @@ trait ManufacturerIdentificationCode {
 }
 
 object ManufacturerIdentificationCode {
+
   val banks = List(
     Bank01.bank,
     Bank02.bank,
@@ -24,7 +25,8 @@ object ManufacturerIdentificationCode {
     Bank07.bank,
     Bank08.bank,
     Bank09.bank,
-    Bank10.bank)
+    Bank10.bank
+  )
 
   def decodeUsingContinuationFlag(data: ByteString): Option[ManufacturerIdentificationCode] = {
     val bankSelection = banks.zip(data).dropWhile(_._2 == 0x7f.toByte)

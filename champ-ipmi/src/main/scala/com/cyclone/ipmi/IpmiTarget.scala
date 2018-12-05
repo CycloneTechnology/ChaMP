@@ -25,12 +25,14 @@ object IpmiTarget {
   ) extends IpmiTarget
 
   object LAN {
+
     def forHost(
       host: String,
       port: Int = IpmiTarget.defaultPort,
       credentials: IpmiCredentials,
       privilegeLevel: PrivilegeLevel = PrivilegeLevel.User,
-      versionRequirement: IpmiVersionRequirement = IpmiVersionRequirement.V20IfSupported): LAN =
+      versionRequirement: IpmiVersionRequirement = IpmiVersionRequirement.V20IfSupported
+    ): LAN =
       LAN(InetAddresses.forString(host), port, credentials, privilegeLevel, versionRequirement)
   }
 

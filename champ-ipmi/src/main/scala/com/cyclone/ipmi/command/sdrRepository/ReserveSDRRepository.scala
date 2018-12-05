@@ -16,7 +16,8 @@ object ReserveSDRRepository {
       def decode(data: ByteString) = CommandResult(data.take(2).as[SdrReservationId])
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(reservationId: SdrReservationId) extends IpmiCommandResult
@@ -26,12 +27,11 @@ object ReserveSDRRepository {
       def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.StorageRequest
     val commandCode = CommandCode(0x22)
   }
 
 }
-
-

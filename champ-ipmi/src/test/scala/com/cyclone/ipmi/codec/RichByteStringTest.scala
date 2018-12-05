@@ -19,12 +19,12 @@ class RichByteStringTest extends WordSpec with Matchers {
 
       "split before the predicate is true" in {
         ByteString(2, 3, 4, 5).splitWhenever(_ % 2 != 0) shouldBe
-          List(ByteString(2), ByteString(3, 4), ByteString(5))
+        List(ByteString(2), ByteString(3, 4), ByteString(5))
       }
 
       "split before the predicate is true (first element satisfies predicate)" in {
         ByteString(1, 2, 3, 4, 5).splitWhenever(_ % 2 != 0) shouldBe
-          List(ByteString(1, 2), ByteString(3, 4), ByteString(5))
+        List(ByteString(1, 2), ByteString(3, 4), ByteString(5))
       }
     }
   }

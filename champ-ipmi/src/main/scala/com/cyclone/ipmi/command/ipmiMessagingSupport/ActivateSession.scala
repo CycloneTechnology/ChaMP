@@ -17,11 +17,14 @@ object ActivateSession {
 
   case object NoSlotForUser extends StatusCodeError {
     val code = StatusCode(0x82.toByte)
-    val message = "No slot available for given user. (Limit of user sessions allowed under that name has been reached)"
+
+    val message =
+      "No slot available for given user. (Limit of user sessions allowed under that name has been reached)"
   }
 
   case object NoSlotForUserPrivilege extends StatusCodeError {
     val code = StatusCode(0x83.toByte)
+
     val message: String =
       """No slot available to support user due to maximum privilege capability.
         |(An implementation may only be able to support a certain number of
@@ -48,6 +51,7 @@ object ActivateSession {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -61,14 +65,15 @@ object ActivateSession {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult] {
-      case NoSessionSlotAvailable.code          => NoSessionSlotAvailable
-      case NoSlotForUser.code                   => NoSlotForUser
-      case NoSlotForUserPrivilege.code          => NoSlotForUserPrivilege
-      case SessionSequenceNumberOutOfRange.code => SessionSequenceNumberOutOfRange
-      case InvalidSessionId.code                => InvalidSessionId
-      case PrivilegeLevelTooHigh.code           => PrivilegeLevelTooHigh
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult] {
+        case NoSessionSlotAvailable.code          => NoSessionSlotAvailable
+        case NoSlotForUser.code                   => NoSlotForUser
+        case NoSlotForUserPrivilege.code          => NoSlotForUserPrivilege
+        case SessionSequenceNumberOutOfRange.code => SessionSequenceNumberOutOfRange
+        case InvalidSessionId.code                => InvalidSessionId
+        case PrivilegeLevelTooHigh.code           => PrivilegeLevelTooHigh
+      }
   }
 
   /**
@@ -83,6 +88,7 @@ object ActivateSession {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -97,7 +103,8 @@ object ActivateSession {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command(
@@ -105,8 +112,7 @@ object ActivateSession {
     maximumPrivilegeLevel: PrivilegeLevel,
     challengeString: ByteString,
     initialReceiveSequenceNumber: SessionSequenceNumber = SessionSequenceNumber(1)
-  )
-    extends IpmiStandardCommand {
+  ) extends IpmiStandardCommand {
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x3a)
   }

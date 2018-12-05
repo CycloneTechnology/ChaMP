@@ -15,6 +15,7 @@ object GetNicSelectionFailover {
   object Selection {
 
     implicit val decoder: Decoder[Selection] = new Decoder[Selection] {
+
       def decode(data: ByteString): Selection = data(0).toUnsignedInt match {
         case 0x01 => Dedicated
         case 0x02 => Lom1
@@ -25,6 +26,7 @@ object GetNicSelectionFailover {
     }
 
     implicit val encoder: Coder[Selection] = new Coder[Selection] {
+
       def encode(a: Selection): ByteString = {
         a match {
           case Dedicated => ByteString(0x01)
@@ -53,6 +55,7 @@ object GetNicSelectionFailover {
   object Failover {
 
     implicit val decoder: Decoder[Failover] = new Decoder[Failover] {
+
       def decode(data: ByteString): Failover = data(0).toUnsignedInt match {
         case 0x00 => None
         case 0x01 => Lom1
@@ -64,6 +67,7 @@ object GetNicSelectionFailover {
     }
 
     implicit val encoder: Coder[Failover] = new Coder[Failover] {
+
       def encode(a: Failover): ByteString = {
         a match {
           case None => ByteString(0x00)
@@ -92,6 +96,7 @@ object GetNicSelectionFailover {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -103,7 +108,8 @@ object GetNicSelectionFailover {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(nicSelection: Selection, nicFailover: Failover) extends IpmiCommandResult
@@ -113,7 +119,8 @@ object GetNicSelectionFailover {
       def encode(request: Command): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command() extends IpmiStandardCommand {

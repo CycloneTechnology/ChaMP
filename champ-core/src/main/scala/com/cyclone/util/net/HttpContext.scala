@@ -18,14 +18,16 @@ object HttpContext {
   def fromHostAndPort(
     hostAndPort: HostAndPort,
     secured: Boolean,
-    connectTimeout: FiniteDuration): HttpContext = {
+    connectTimeout: FiniteDuration
+  ): HttpContext = {
     val defaultPort = if (secured) 443 else 80
 
     HttpContext(
       hostAndPort.host,
       hostAndPort.getPortOrDefault(defaultPort),
       secured,
-      connectTimeout)
+      connectTimeout
+    )
   }
 }
 
@@ -41,4 +43,5 @@ case class HttpContext(
   hostName: String,
   port: Int = defaultPort,
   secured: Boolean = false,
-  connectTimeout: FiniteDuration = 10.seconds)
+  connectTimeout: FiniteDuration = 10.seconds
+)

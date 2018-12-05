@@ -14,6 +14,7 @@ object GetRemoteStorageStatus {
 
   object Connected {
     implicit val decoder: Decoder[Connected] = new Decoder[Connected] {
+
       def decode(data: ByteString): Connected = data(0).toUnsignedInt match {
         case 0x00 => No
         case 0x01 => Yes
@@ -21,6 +22,7 @@ object GetRemoteStorageStatus {
     }
 
     implicit val encoder: Coder[Connected] = new Coder[Connected] {
+
       def encode(a: Connected): ByteString = {
         a match {
           case No  => ByteString(0x00)
@@ -37,27 +39,32 @@ object GetRemoteStorageStatus {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val requestType = */is.readByte // Should match the value in the request (0x02 in this case)
+        /*val requestType = */
+        is.readByte // Should match the value in the request (0x02 in this case)
 
         val connectedState = is.readByte.as[Connected]
 
-        /*val unused = */is.read(2)
+        /*val unused = */
+        is.read(2)
 
         CommandResult(connectedState)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(connectedState: Connected) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -71,7 +78,8 @@ object GetRemoteStorageStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

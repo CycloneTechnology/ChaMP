@@ -8,6 +8,7 @@ object SessionActivationCommandWrapper {
 
   object RequestPayload {
     implicit def coder: Coder[RequestPayload] = new Coder[RequestPayload] {
+
       def encode(payload: RequestPayload): ByteString = {
         import payload._
 
@@ -22,13 +23,11 @@ object SessionActivationCommandWrapper {
     }
   }
 
-  case class RequestPayload(
-    payloadType: PayloadType,
-    seqNo: SeqNo,
-    commandData: ByteString) extends IpmiRequestPayload
+  case class RequestPayload(payloadType: PayloadType, seqNo: SeqNo, commandData: ByteString) extends IpmiRequestPayload
 
   object ResponsePayload {
     implicit def decoder: Decoder[ResponsePayload] = new Decoder[ResponsePayload] {
+
       def decode(data: ByteString): ResponsePayload = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -37,17 +36,11 @@ object SessionActivationCommandWrapper {
         val statusCode = is.readByte.as[StatusCode]
         val bs = iterator.toByteString
 
-        ResponsePayload(
-          resultData = bs,
-          statusCode = statusCode,
-          seqNo = seqNo)
+        ResponsePayload(resultData = bs, statusCode = statusCode, seqNo = seqNo)
       }
     }
   }
 
-  case class ResponsePayload(
-    resultData: ByteString,
-    statusCode: StatusCode,
-    seqNo: SeqNo) extends IpmiResponsePayload
+  case class ResponsePayload(resultData: ByteString, statusCode: StatusCode, seqNo: SeqNo) extends IpmiResponsePayload
 
 }

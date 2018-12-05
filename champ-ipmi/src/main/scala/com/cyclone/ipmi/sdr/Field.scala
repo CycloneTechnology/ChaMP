@@ -16,4 +16,3 @@ case class StringField(stringValue: String) extends Field
 case object NullField extends Field {
   val stringValue: String = "NULL"
 }
-

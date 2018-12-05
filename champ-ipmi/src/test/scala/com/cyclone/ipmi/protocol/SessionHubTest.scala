@@ -19,7 +19,7 @@ import scala.concurrent.duration._
   * Tests for [[SessionHub]]
   */
 class SessionHubTest
-  extends TestKitSupport
+    extends TestKitSupport
     with WordSpecLike
     with Matchers
     with ImplicitSender
@@ -32,12 +32,14 @@ class SessionHubTest
     // WLOG
     val sessionContext = SessionContext.NoSession
 
-    val hub = system.actorOf(SessionHub.props(
-      sessionManager.ref,
-      new Factory {
-        def createTransport(hub: ActorRef) = transport.ref
-      }
-    ))
+    val hub = system.actorOf(
+      SessionHub.props(
+        sessionManager.ref,
+        new Factory {
+          def createTransport(hub: ActorRef) = transport.ref
+        }
+      )
+    )
 
     val cmdCode = CommandCode(123)
 
@@ -58,7 +60,8 @@ class SessionHubTest
         commandCode = cmdCode,
         seqNo = SeqNo(1),
         targetAddress = DeviceAddress.BmcAddress,
-        commandData = ByteString.empty)
+        commandData = ByteString.empty
+      )
   }
 
   "a SessionHub" when {
@@ -108,7 +111,6 @@ class SessionHubTest
       }
     }
 
-
     "it receives an outgoing Send message" must {
       "tell the transport" in new Fixture {
         implicit val coder = implicitly[Coder[StandardCommandWrapper.RequestPayload]]
@@ -143,7 +145,6 @@ class SessionHubTest
       }
     }
   }
-
 
   "a session hub" must {
     "forward SetSessionContext messages to the transport" in new Fixture {

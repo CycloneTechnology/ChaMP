@@ -14,11 +14,10 @@ import org.apache.james.mime4j.field.ContentTypeFieldImpl
 import org.apache.james.mime4j.parser.{AbstractContentHandler, MimeStreamParser}
 import org.apache.james.mime4j.stream.{BodyDescriptor, Field, MimeConfig, RawField}
 
-import scala.collection.{Seq, mutable}
+import scala.collection.{mutable, Seq}
 import scala.xml.{Elem, XML}
 
-object MimeRequestConverter extends SimpleRequestConverter[ByteString, MultipartBody]
-  with LazyLogging {
+object MimeRequestConverter extends SimpleRequestConverter[ByteString, MultipartBody] with LazyLogging {
 
   import RequestData._
 
@@ -30,7 +29,8 @@ object MimeRequestConverter extends SimpleRequestConverter[ByteString, Multipart
         val config = new MimeConfig.Builder()
           .setHeadlessParsing(contentType.getBody)
           // Otherwise we don't get to know about problems
-          .setStrictParsing(true).build()
+          .setStrictParsing(true)
+          .build()
 
         val parser = new MimeStreamParser(config)
 
@@ -41,7 +41,8 @@ object MimeRequestConverter extends SimpleRequestConverter[ByteString, Multipart
         parser.setContentHandler(new AbstractContentHandler {
           override def body(desc: BodyDescriptor, is: InputStream): Unit = {
 
-            val body = ByteString(Stream.continually(is.read).takeWhile(-1 != _).map(_.toByte).toArray)
+            val body =
+              ByteString(Stream.continually(is.read).takeWhile(-1 != _).map(_.toByte).toArray)
 
             parts += DataPart(headers.toList, body)
             headers.clear
@@ -63,6 +64,7 @@ object MimeRequestConverter extends SimpleRequestConverter[ByteString, Multipart
 }
 
 object SinglePartRequestConverter extends SimpleRequestConverter[ByteString, String] {
+
   def isDefinedAt(requestData: UnparsedRequestData): Boolean =
     !requestData.isMultipart
 
@@ -70,8 +72,7 @@ object SinglePartRequestConverter extends SimpleRequestConverter[ByteString, Str
     new String(requestData.body.toArray, requestData.charset)
 }
 
-object MimeFixupRequestConverter extends SimpleRequestConverter[ByteString, ByteString]
-  with LazyLogging {
+object MimeFixupRequestConverter extends SimpleRequestConverter[ByteString, ByteString] with LazyLogging {
 
   import com.cyclone.wsman.impl.SeqUtils._
 
@@ -87,12 +88,12 @@ object MimeFixupRequestConverter extends SimpleRequestConverter[ByteString, Byte
   }
 
   private def fixup(requestData: UnparsedRequestData): ByteString = {
-    // Add crlf after last field of second (final) part which should always be "application/octet-stream" 
+    // Add crlf after last field of second (final) part which should always be "application/octet-stream"
     val appOct = "application/octet-stream"
 
     val fixed = for {
       boundary <- requestData.multipartBoundary
-      old <- oldBoundaryBytes(requestData).map(_.toArray)
+      old      <- oldBoundaryBytes(requestData).map(_.toArray)
     } yield {
       var data: Seq[Byte] = requestData.body
 
@@ -102,7 +103,12 @@ object MimeFixupRequestConverter extends SimpleRequestConverter[ByteString, Byte
       // Add CRLF before last boundary
       data = replaceIndexedOccurrenceFromEnd(0, data, old, bytes(requestData, "\r\n--" + boundary))
 
-      replaceIndexedOccurrenceFromEnd(0, data, bytes(requestData, appOct), bytes(requestData, appOct + "\r\n"))
+      replaceIndexedOccurrenceFromEnd(
+        0,
+        data,
+        bytes(requestData, appOct),
+        bytes(requestData, appOct + "\r\n")
+      )
     }
 
     ByteString(fixed.getOrElse(requestData.body): _*)
@@ -150,7 +156,8 @@ case class KerberosSessionDecryptRequestConverter(token: Token) extends SimpleRe
   private val tokenLengthByteCount = 4
 
   private def contentTypeProtocol(request: HttpRequest): Option[String] = {
-    val f = ContentTypeFieldImpl.PARSER.parse(new RawField("Content-Type", request.entity.contentType.value), null)
+    val f = ContentTypeFieldImpl.PARSER
+      .parse(new RawField("Content-Type", request.entity.contentType.value), null)
     Option(f.getParameter("protocol"))
   }
 
@@ -173,10 +180,8 @@ case class KerberosSessionDecryptRequestConverter(token: Token) extends SimpleRe
   }
 
   private def charset(metaPart: DataPart) = {
-    val charset = for (
-      header <- metaPart.header("OriginalContent");
-      charset <- header.getParameter("charset")
-    ) yield Charset.forName(charset)
+    val charset = for (header  <- metaPart.header("OriginalContent");
+                       charset <- header.getParameter("charset")) yield Charset.forName(charset)
 
     charset.getOrElse(Charset.defaultCharset())
   }
@@ -202,17 +207,29 @@ object ToXMLConverter extends SimpleRequestConverter[String, Elem] with LazyLogg
 
 object RequestConverterComponent {
 
-  def toXmlConverterPlain: RequestConverter.Converter[ByteString, Elem] = MimeFixupRequestConverter
-    .orElse(IdentityConverter[ByteString]())
-    .andThen(SinglePartRequestConverter
-      .orElse(MimeRequestConverter
-        .andThen(LastPartRequestConverter)))
-    .andThen(ToXMLConverter)
+  def toXmlConverterPlain: RequestConverter.Converter[ByteString, Elem] =
+    MimeFixupRequestConverter
+      .orElse(IdentityConverter[ByteString]())
+      .andThen(
+        SinglePartRequestConverter
+          .orElse(
+            MimeRequestConverter
+              .andThen(LastPartRequestConverter)
+          )
+      )
+      .andThen(ToXMLConverter)
 
-  def toXmlConverter(token: Token): RequestConverter.Converter[ByteString, Elem] = MimeFixupRequestConverter
-    .orElse(IdentityConverter[ByteString]())
-    .andThen(SinglePartRequestConverter
-      .orElse(MimeRequestConverter
-        .andThen(KerberosSessionDecryptRequestConverter(token).orElse(LastPartRequestConverter))))
-    .andThen(ToXMLConverter)
+  def toXmlConverter(token: Token): RequestConverter.Converter[ByteString, Elem] =
+    MimeFixupRequestConverter
+      .orElse(IdentityConverter[ByteString]())
+      .andThen(
+        SinglePartRequestConverter
+          .orElse(
+            MimeRequestConverter
+              .andThen(
+                KerberosSessionDecryptRequestConverter(token).orElse(LastPartRequestConverter)
+              )
+          )
+      )
+      .andThen(ToXMLConverter)
 }

@@ -26,8 +26,8 @@ class MockSessionNegotiatorComponent extends SessionNegotiatorComponent {
         `with`(aNonNull(classOf[RemoteConsoleSessionId])),
         `with`(aNonNull(classOf[IpmiCredentials])),
         `with`(aNonNull(classOf[PrivilegeLevel])),
-        `with`(aNonNull(classOf[Requester])))(
-        `with`(aNonNull(classOf[TimeoutContext])))
+        `with`(aNonNull(classOf[Requester]))
+      )(`with`(aNonNull(classOf[TimeoutContext])))
 
       will(returnValue(result))
     })

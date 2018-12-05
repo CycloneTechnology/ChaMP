@@ -27,14 +27,16 @@ object CloseSession {
       val message = "Invalid Session Handle in request"
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] = StatusCodeTranslator[CommandResult.type] {
-      case InvalidSessionId.code       => InvalidSessionId
-      case InvalidSessionHandleId.code => InvalidSessionHandleId
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type] {
+        case InvalidSessionId.code       => InvalidSessionId
+        case InvalidSessionHandleId.code => InvalidSessionHandleId
+      }
   }
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
         val b = new ByteStringBuilder
@@ -45,16 +47,13 @@ object CloseSession {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult.type] = CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
   }
 
-  case class Command(
-    managedSystemSessionId: ManagedSystemSessionId)
-    extends IpmiStandardCommand {
+  case class Command(managedSystemSessionId: ManagedSystemSessionId) extends IpmiStandardCommand {
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x3c)
   }
 
 }
-
-

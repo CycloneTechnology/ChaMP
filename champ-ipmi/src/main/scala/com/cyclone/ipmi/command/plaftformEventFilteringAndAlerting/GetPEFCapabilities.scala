@@ -12,6 +12,7 @@ object GetPEFCapabilities {
 
   object PEFCapabilities {
     implicit val decoder: Decoder[PEFCapabilities] = new Decoder[PEFCapabilities] {
+
       def decode(data: ByteString): PEFCapabilities = {
         val byte = data(0)
 
@@ -23,7 +24,8 @@ object GetPEFCapabilities {
           Powercycle = byte.bit3,
           Reset = byte.bit2,
           Powerdown = byte.bit1,
-          Alert = byte.bit0)
+          Alert = byte.bit0
+        )
       }
     }
   }
@@ -41,6 +43,7 @@ object GetPEFCapabilities {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -51,27 +54,27 @@ object GetPEFCapabilities {
 
         val numberOfEventFilterTableEntries = is.readByte.toUnsignedInt
 
-        CommandResult(
-          pefVersion,
-          capabilities,
-          numberOfEventFilterTableEntries)
+        CommandResult(pefVersion, capabilities, numberOfEventFilterTableEntries)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
     pefVersion: PefVersion,
     capabilities: Option[PEFCapabilities],
-    numberOfEventFilterTableEntries: Int) extends IpmiCommandResult
+    numberOfEventFilterTableEntries: Int
+  ) extends IpmiCommandResult
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
       def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.SensorRequest
     val commandCode = CommandCode(0x10)

@@ -20,8 +20,7 @@ trait MockIpmiClientComponent extends IpmiClientComponent {
 
   lazy val ipmiClient = mockery.mock(classOf[IpmiClient])
 
-  def willGetConnectionFor(
-    address: InetAddress, port: Int): Future[IpmiConnection] = {
+  def willGetConnectionFor(address: InetAddress, port: Int): Future[IpmiConnection] = {
     val futConnection = Future.successful(mockery.mock(classOf[IpmiConnection]))
 
     mockery.checking(new Expectations {
@@ -37,8 +36,8 @@ trait MockIpmiClientComponent extends IpmiClientComponent {
     ipmiCredentials: IpmiCredentials,
     versionRequirement: IpmiVersionRequirement,
     privilegeLevel: PrivilegeLevel = PrivilegeLevel.User,
-    result: IpmiErrorOr[Unit])
-    (implicit timeoutContext: TimeoutContext): Unit =
+    result: IpmiErrorOr[Unit]
+  )(implicit timeoutContext: TimeoutContext): Unit =
     mockery.checking(new Expectations {
       oneOf(ipmiConnection).negotiateSession(
         ipmiCredentials,
@@ -48,12 +47,11 @@ trait MockIpmiClientComponent extends IpmiClientComponent {
       will(returnValue(Future.successful(result)))
     })
 
-
   def willElevatePrivilegeLevel(
     ipmiConnection: IpmiConnection,
     privilegeLevel: PrivilegeLevel = PrivilegeLevel.User,
-    result: IpmiErrorOr[Option[PrivilegeLevel]])
-    (implicit ec: ExecutionContext, timeoutContext: TimeoutContext): Unit =
+    result: IpmiErrorOr[Option[PrivilegeLevel]]
+  )(implicit ec: ExecutionContext, timeoutContext: TimeoutContext): Unit =
     mockery.checking(new Expectations {
       oneOf(ipmiConnection).elevatePrivilegeLevel(
         privilegeLevel
@@ -64,8 +62,8 @@ trait MockIpmiClientComponent extends IpmiClientComponent {
   def willExecuteCommand[Cmd <: IpmiStandardCommand, Res <: IpmiCommandResult](
     ipmiConnection: IpmiConnection,
     command: Cmd,
-    result: IpmiErrorOr[Res])
-    (implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Cmd, Res]): Unit =
+    result: IpmiErrorOr[Res]
+  )(implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Cmd, Res]): Unit =
     mockery.checking(new Expectations {
       oneOf(ipmiConnection).executeCommandOrError(command)
       will(returnValue(Future.successful(result)))
@@ -76,6 +74,5 @@ trait MockIpmiClientComponent extends IpmiClientComponent {
       oneOf(ipmiConnection).closedown()
       will(returnValue(Future.successful(())))
     })
-
 
 }

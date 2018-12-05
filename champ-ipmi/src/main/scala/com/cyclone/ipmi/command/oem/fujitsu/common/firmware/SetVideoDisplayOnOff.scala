@@ -14,6 +14,7 @@ object SetVideoDisplayOnOff {
 
   object OnOff {
     implicit val decoder: Decoder[OnOff] = new Decoder[OnOff] {
+
       def decode(data: ByteString): OnOff = data(0).toUnsignedInt match {
         case 0x00 => On
         case 0x01 => Off
@@ -21,6 +22,7 @@ object SetVideoDisplayOnOff {
     }
 
     implicit val encoder: Coder[OnOff] = new Coder[OnOff] {
+
       def encode(a: OnOff): ByteString = {
         a match {
           case On  => ByteString(0x00)
@@ -37,19 +39,22 @@ object SetVideoDisplayOnOff {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
 
         CommandResult()
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -61,7 +66,8 @@ object SetVideoDisplayOnOff {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

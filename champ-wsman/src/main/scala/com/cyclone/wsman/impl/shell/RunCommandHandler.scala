@@ -22,12 +22,13 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.xml.{Elem, NodeSeq}
 
-class RunCommandHandler(commandQuery: WSManRunShellCommand, deadline: OperationDeadline)
-  (implicit context: WSManOperationContext) {
+class RunCommandHandler(commandQuery: WSManRunShellCommand, deadline: OperationDeadline)(
+  implicit context: WSManOperationContext
+) {
 
   def runToSource(): Source[(List[(ShellOutputStream, String)], Option[Int]), NotUsed] = {
     val result = for {
-      shell <- eitherT(startShell())
+      shell          <- eitherT(startShell())
       shellCommandId <- eitherT(runCommand(shell))
     } yield (shell, shellCommandId)
 
@@ -49,7 +50,10 @@ class RunCommandHandler(commandQuery: WSManRunShellCommand, deadline: OperationD
 
               case None => Future.successful(None)
             }
-            .alsoTo(Sink.onComplete(_ => WSManOperations.delete(shell, OperationDeadline.fromNow(1.second))))
+            .alsoTo(
+              Sink
+                .onComplete(_ => WSManOperations.delete(shell, OperationDeadline.fromNow(1.second)))
+            )
 
         case -\/(e) => throw WSManErrorException(e)
       }
@@ -64,35 +68,41 @@ class RunCommandHandler(commandQuery: WSManRunShellCommand, deadline: OperationD
   }
 
   private def runCommand(shell: ManagedReference): Future[WSManErrorOr[ShellCommandId]] = {
-    val result = for (
-      response <- eitherT(WSManOperations
-        .executeSoapRequest(ShellCommandXML(commandQuery, shell.getSelectorValue("ShellId"), deadline)))
-    ) yield
-      ShellCommandId((response \ "Body" \ "CommandResponse" \ "CommandId").text)
+    val result =
+      for (response <- eitherT(
+             WSManOperations
+               .executeSoapRequest(
+                 ShellCommandXML(commandQuery, shell.getSelectorValue("ShellId"), deadline)
+               )
+           )) yield ShellCommandId((response \ "Body" \ "CommandResponse" \ "CommandId").text)
 
     result.run
   }
 
-  private def getSingleResponse(shellId: ShellId, seqId: Int, commandId: ShellCommandId): Future[WSManErrorOr[(List[(ShellOutputStream, String)], Option[Int])]] = {
-    val result = for (
-      // TODO seqId not used (works without?)
-      response <- eitherT(WSManOperations.executeSoapRequest(ShellReceiveXML(shellId, commandId, deadline)))
-    ) yield {
-      val receiveResp = response \ "Body" \ "ReceiveResponse"
-      val cmdStateElt = singleElement(receiveResp \ "CommandState")
+  private def getSingleResponse(
+    shellId: ShellId,
+    seqId: Int,
+    commandId: ShellCommandId
+  ): Future[WSManErrorOr[(List[(ShellOutputStream, String)], Option[Int])]] = {
+    val result =
+      for (// TODO seqId not used (works without?)
+           response <- eitherT(
+             WSManOperations.executeSoapRequest(ShellReceiveXML(shellId, commandId, deadline))
+           )) yield {
+        val receiveResp = response \ "Body" \ "ReceiveResponse"
+        val cmdStateElt = singleElement(receiveResp \ "CommandState")
 
-      (streamDataFrom(receiveResp), exitCodeFrom(cmdStateElt))
-    }
+        (streamDataFrom(receiveResp), exitCodeFrom(cmdStateElt))
+      }
 
     result.run
   }
 
   private def streamDataFrom(responseElt: NodeSeq): List[(ShellOutputStream, String)] = {
     val streamData = ListBuffer[(ShellOutputStream, String)]()
-    for (
-      streamElt <- elements(responseElt \ "Stream");
-      commandStream <- commandStreamWithName(attributeValue(streamElt, "Name").get)
-    ) streamData += ((commandStream, decode(streamElt)))
+    for (streamElt     <- elements(responseElt \ "Stream");
+         commandStream <- commandStreamWithName(attributeValue(streamElt, "Name").get))
+      streamData += ((commandStream, decode(streamElt)))
 
     streamData.toList
   }

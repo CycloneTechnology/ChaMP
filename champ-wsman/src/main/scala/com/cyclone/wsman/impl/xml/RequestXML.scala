@@ -15,7 +15,7 @@ object RequestXML {
 
   def selectorSetElt(selectorClause: SelectorClause): Elem =
     if (selectorClause.isEmpty) {
-        <w:SelectorSet/>
+      <w:SelectorSet/>
     } else {
       // @formatter:off
       <w:SelectorSet>{for (
@@ -39,7 +39,8 @@ trait RequestXML {
 
   def optionalDeadline: Option[OperationDeadline]
 
-  def optionalTimeRemaining: Option[FiniteDuration] = optionalDeadline map (_.timeRemaining max minTimeout)
+  def optionalTimeRemaining: Option[FiniteDuration] =
+    optionalDeadline map (_.timeRemaining max minTimeout)
 
   // @formatter:off
   protected def timeoutElt: Elem =

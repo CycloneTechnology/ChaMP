@@ -13,17 +13,21 @@ class FieldsIteratorTest extends WordSpec with Matchers {
 
   "a FieldsIterator" must {
     "decode bytes to a sequence of a single fields" in {
-      FieldsIterator.from(
-        ByteString(5, 1, 2, 3, 4, 5) ++
-          noMore)
+      FieldsIterator
+        .from(
+          ByteString(5, 1, 2, 3, 4, 5) ++
+          noMore
+        )
         .toSeq shouldBe Seq(BinaryField(ByteString(1, 2, 3, 4, 5)))
     }
 
     "decode bytes to a sequence of a multiple fields" in {
-      FieldsIterator.from(
-        ByteString(5, 1, 2, 3, 4, 5) ++
+      FieldsIterator
+        .from(
+          ByteString(5, 1, 2, 3, 4, 5) ++
           ByteString(2, 1, 2) ++
-          noMore)
+          noMore
+        )
         .toSeq shouldBe Seq(
         BinaryField(ByteString(1, 2, 3, 4, 5)),
         BinaryField(ByteString(1, 2))
@@ -32,10 +36,10 @@ class FieldsIteratorTest extends WordSpec with Matchers {
 
     val iterator = FieldsIterator.from(
       ByteString(5, 1, 2, 3, 4, 5) ++
-        ByteString(2, 1, 2) ++
-        ByteString(3, 1, 2, 3) ++
-        ByteString(4, 1, 2, 3, 4) ++
-        noMore
+      ByteString(2, 1, 2) ++
+      ByteString(3, 1, 2, 3) ++
+      ByteString(4, 1, 2, 3, 4) ++
+      noMore
     )
 
     "allow iteration" in {
@@ -44,15 +48,14 @@ class FieldsIteratorTest extends WordSpec with Matchers {
     }
 
     "support getting the remainder after iteration" in {
-      iterator.toSeq shouldBe Seq(
-        BinaryField(ByteString(1, 2, 3)),
-        BinaryField(ByteString(1, 2, 3, 4)))
+      iterator.toSeq shouldBe Seq(BinaryField(ByteString(1, 2, 3)), BinaryField(ByteString(1, 2, 3, 4)))
     }
 
     "allow optional iteration" in {
       val it = FieldsIterator.from(
         ByteString(5, 1, 2, 3, 4, 5) ++
-          noMore)
+        noMore
+      )
       it.nextOpt() shouldBe Some(BinaryField(ByteString(1, 2, 3, 4, 5)))
       it.nextOpt() shouldBe None
       it.nextOpt() shouldBe None

@@ -12,6 +12,7 @@ import com.cyclone.ipmi.protocol.packet._
 import scalaz.Scalaz._
 
 object UDPTransport {
+
   def props(address: InetAddress, port: Int, hub: ActorRef) =
     Props(new UDPTransport(address, port, hub))
 
@@ -59,10 +60,11 @@ class UDPTransport(address: InetAddress, port: Int, hub: ActorRef) extends Actor
         sessionSequenceNumber = Some(ctx.initialSendSequenceNumber)
         sender ! SetSessionContextAck
 
-      case s@SendIpmi(payload, version, ctx) =>
+      case s @ SendIpmi(payload, version, ctx) =>
         implicit val coder: Coder[IpmiRequestPayload] = s.coder
 
-        val wrapper = IpmiSessionWrapper.wrapperFor(payload, version, nextSessionSequenceNumber, ctx)
+        val wrapper =
+          IpmiSessionWrapper.wrapperFor(payload, version, nextSessionSequenceNumber, ctx)
         val rmcpMessage = RmcpMessage(IpmiSessionWrapper.encode(wrapper), MessageClass.Ipmi)
 
         val data = RmcpMessage.encode(rmcpMessage)
@@ -75,7 +77,7 @@ class UDPTransport(address: InetAddress, port: Int, hub: ActorRef) extends Actor
 
         val payloadOrError = for {
           rmcpMessage <- RmcpMessage.decode(data)
-          wrapper <- IpmiSessionWrapper.decode(rmcpMessage.sessionWrapper, receiveSessionContext)
+          wrapper     <- IpmiSessionWrapper.decode(rmcpMessage.sessionWrapper, receiveSessionContext)
           _ <- if (rmcpMessage.messageClass == MessageClass.Ipmi) ().right
           else
             IpmiDecodeError(s"Unsupported message class ${rmcpMessage.messageClass}").left
@@ -90,7 +92,7 @@ class UDPTransport(address: InetAddress, port: Int, hub: ActorRef) extends Actor
 
   def nextSessionSequenceNumber: SessionSequenceNumber =
     sessionSequenceNumber match {
-      case None        => SessionSequenceNumber.NoSession
+      case None => SessionSequenceNumber.NoSession
       case Some(seqNo) =>
         sessionSequenceNumber = Some(seqNo + 1)
         seqNo

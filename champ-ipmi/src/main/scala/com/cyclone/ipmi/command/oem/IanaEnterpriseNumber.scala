@@ -9,6 +9,7 @@ sealed trait IanaEnterpriseNumber {
 
 object IanaEnterpriseNumber {
   implicit val decoder: Decoder[IanaEnterpriseNumber] = new Decoder[IanaEnterpriseNumber] {
+
     def decode(data: ByteString): IanaEnterpriseNumber = (data :+ 0x0.toByte).as[Int] match {
       case Ibm.number                  => Ibm
       case Hp.number                   => Hp
@@ -28,6 +29,7 @@ object IanaEnterpriseNumber {
   }
 
   implicit val encoder: Coder[IanaEnterpriseNumber] = new Coder[IanaEnterpriseNumber] {
+
     def encode(a: IanaEnterpriseNumber): ByteString =
       a.number.toBin.take(3)
   }

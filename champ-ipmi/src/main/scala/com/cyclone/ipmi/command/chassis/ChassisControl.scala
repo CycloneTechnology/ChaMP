@@ -15,7 +15,8 @@ object ChassisControl {
       def decode(data: ByteString): CommandResult.type = CommandResult
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] = StatusCodeTranslator[CommandResult.type]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
 
   sealed trait Control
@@ -23,6 +24,7 @@ object ChassisControl {
   object Control {
 
     implicit val coder: Coder[Control] = new Coder[Control] {
+
       def encode(a: Control): ByteString = {
         a match {
           case PowerDown                   => ByteString(0x00)
@@ -54,6 +56,7 @@ object ChassisControl {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -65,7 +68,8 @@ object ChassisControl {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult.type] = CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
 
   }
 

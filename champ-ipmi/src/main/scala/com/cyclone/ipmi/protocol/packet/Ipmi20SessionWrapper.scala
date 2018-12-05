@@ -16,6 +16,7 @@ object Ipmi20SessionWrapper {
 
   object Request {
     implicit def coder: Coder[Request] = new Coder[Request] {
+
       def encode(message: Request): ByteString = {
         import message._
 
@@ -40,20 +41,22 @@ object Ipmi20SessionWrapper {
 
         val baseMessage = b.result()
 
-        val trailer = if (payloadAuthenticated && managedSystemSessionId.isSession)
-          requestHashMaker(managedSystemSessionId, sessionSequenceNumber, baseMessage)
-        else
-          ByteString.empty
+        val trailer =
+          if (payloadAuthenticated && managedSystemSessionId.isSession)
+            requestHashMaker(managedSystemSessionId, sessionSequenceNumber, baseMessage)
+          else
+            ByteString.empty
 
         baseMessage ++ trailer
       }
     }
 
-    def fromContext[P <: IpmiRequestPayload : Coder](
+    def fromContext[P <: IpmiRequestPayload: Coder](
       payload: P,
       sessionSequenceNumber: SessionSequenceNumber,
       sessionContext: SessionContext,
-      oem: Option[Oem] = None): Request = {
+      oem: Option[Oem] = None
+    ): Request = {
       val coder = implicitly[Coder[P]]
 
       Request(
@@ -79,7 +82,8 @@ object Ipmi20SessionWrapper {
     requestHashMaker: SessionContext.ReqHashMaker,
     payloadEncrypted: Boolean = false,
     payloadAuthenticated: Boolean = false,
-    oem: Option[Oem] = None) extends IpmiSessionWrapperRequest {
+    oem: Option[Oem] = None
+  ) extends IpmiSessionWrapperRequest {
     val authenticationType: AuthenticationType = AuthenticationType.RmcpPlus
   }
 
@@ -96,7 +100,10 @@ object Ipmi20SessionWrapper {
           val padLen = is.readByte.toUnsignedInt
           is.skip(1)
 
-          require(padLen == skipAndTrailer.length - padLenAndTrailer.length, "Corrupted: Pad length does not equal bytes skipped")
+          require(
+            padLen == skipAndTrailer.length - padLenAndTrailer.length,
+            "Corrupted: Pad length does not equal bytes skipped"
+          )
 
           val trailer = iterator.toByteString
           val baseMessage = data.take(data.length - skipAndTrailer.length)
@@ -125,7 +132,7 @@ object Ipmi20SessionWrapper {
 
         val baseMessageAndTrailer =
           if (sessId.isSession && authType != AuthenticationType.NoAuth &&
-            !(authType == AuthenticationType.RmcpPlus && !isPayloadAuth))
+              !(authType == AuthenticationType.RmcpPlus && !isPayloadAuth))
             Some(getBaseMessageAndTrailer(iterator.toByteString))
           else None
 
@@ -151,7 +158,8 @@ object Ipmi20SessionWrapper {
     payloadType: PayloadType = PayloadType.Ipmi,
     payloadEncrypted: Boolean = false,
     payloadAuthenticated: Boolean = false,
-    oem: Option[Oem] = None) extends IpmiSessionWrapperRawResponse {
+    oem: Option[Oem] = None
+  ) extends IpmiSessionWrapperRawResponse {
     val authenticationType: AuthenticationType = AuthenticationType.RmcpPlus
 
     def authenticatedResponse(sessionContext: SessionContext): IntegrityCheckError \/ Response = {
@@ -162,13 +170,17 @@ object Ipmi20SessionWrapper {
 
       val optErrMsg = for {
         (baseMessage, trailer) <- baseMessageAndTrailer
-        hash <- sessionContext.responseHashMaker(managedSystemSessionId, sessionSequenceNumber, baseMessage)
+        hash <- sessionContext.responseHashMaker(
+          managedSystemSessionId,
+          sessionSequenceNumber,
+          baseMessage
+        )
         errorMsg <- (hash != trailer).option(s"Integrity check failed $hash != $trailer")
       } yield errorMsg
 
       optErrMsg match {
         case Some(msg) => IntegrityCheckError(msg).left
-        case None      =>
+        case None =>
           Response(
             managedSystemSessionId = managedSystemSessionId,
             sessionSequenceNumber = sessionSequenceNumber,
@@ -185,8 +197,7 @@ object Ipmi20SessionWrapper {
     sessionSequenceNumber: SessionSequenceNumber,
     payload: ByteString,
     payloadType: PayloadType = PayloadType.Ipmi,
-    oem: Option[Oem] = None) extends IpmiSessionWrapperResponse
+    oem: Option[Oem] = None
+  ) extends IpmiSessionWrapperResponse
 
 }
-
-

@@ -7,8 +7,8 @@ import com.cyclone.wsman.impl.Namespace
 import com.cyclone.wsman.impl.EnumerationParameters
 import com.cyclone.wsman.impl.model.ManagedReference
 
-case class PullXML(ref: ManagedReference, context: String,
-  parameters: EnumerationParameters) extends RequestXMLWithDeadline {
+case class PullXML(ref: ManagedReference, context: String, parameters: EnumerationParameters)
+    extends RequestXMLWithDeadline {
 
   import RequestXML._
 

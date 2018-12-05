@@ -26,7 +26,6 @@ object SensorDataRecordType {
     val code: Byte = 0x02.toByte
   }
 
-
   case object EventOnly extends SensorDataRecordType {
     val code: Byte = 0x03.toByte
   }

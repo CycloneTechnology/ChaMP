@@ -18,18 +18,20 @@ import scala.concurrent.Future
 object ChassisRestartCauseTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetSystemRestartCause.Command))
-        } yield Result(cmdResult.restartCause, cmdResult.channelNumber)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(connection.executeCommandOrError(GetSystemRestartCause.Command))
+          } yield Result(cmdResult.restartCause, cmdResult.channelNumber)
+
+          result.run
+        }
       }
-    }
 
     def description() = "chassis restart_cause"
   }

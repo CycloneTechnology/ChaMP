@@ -21,6 +21,7 @@ object GetDeviceId {
     case object DeviceFirmware extends DeviceAvailable
 
     implicit val codec: Decoder[DeviceAvailable] = new Decoder[DeviceAvailable] {
+
       def decode(data: ByteString): DeviceAvailable =
         if (data(0).bit7) DeviceFirmware else NormalOperation
     }
@@ -28,6 +29,7 @@ object GetDeviceId {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -65,11 +67,13 @@ object GetDeviceId {
           additionalDeviceSupport,
           manufacturerId,
           productId,
-          auxillaryFirmwareRevisionInformation)
+          auxillaryFirmwareRevisionInformation
+        )
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
@@ -82,20 +86,21 @@ object GetDeviceId {
     deviceCapabilities: DeviceCapabilities,
     manufacturerId: IanaEnterpriseNumber,
     productId: ProductId,
-    auxiliaryFirmwareRevisionInformation: Option[ByteString]) extends IpmiCommandResult
+    auxiliaryFirmwareRevisionInformation: Option[ByteString]
+  ) extends IpmiCommandResult
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+
       def encode(request: Command.type): ByteString =
         ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x01)
   }
 
 }
-
-

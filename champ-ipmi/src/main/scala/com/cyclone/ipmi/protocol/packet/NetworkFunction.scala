@@ -10,6 +10,7 @@ sealed trait NetworkFunction {
 object NetworkFunction {
 
   implicit val decoder: Decoder[NetworkFunction] = new Decoder[NetworkFunction] {
+
     def decode(data: ByteString): NetworkFunction =
       fromCode(data(0).bits2To7)
   }

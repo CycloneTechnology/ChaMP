@@ -14,13 +14,21 @@ import scalaz.{-\/, \/-}
 object SessionHub {
 
   trait SessionHubFactory {
-    def createHub(context: ActorContext,
+
+    def createHub(
+      context: ActorContext,
       sessionManager: ActorRef,
-      transportFactory: Transport.Factory): ActorRef
+      transportFactory: Transport.Factory
+    ): ActorRef
   }
 
   object DefaultSessionHubFactory extends SessionHubFactory {
-    def createHub(context: ActorContext, sessionManager: ActorRef, transportFactory: Factory): ActorRef =
+
+    def createHub(
+      context: ActorContext,
+      sessionManager: ActorRef,
+      transportFactory: Factory
+    ): ActorRef =
       context.actorOf(props(sessionManager, transportFactory))
   }
 
@@ -38,8 +46,8 @@ object SessionHub {
   case class SendIpmi[P <: IpmiRequestPayload](
     payload: P,
     ipmiVersion: IpmiVersion,
-    sessionContext: SessionContext)
-    (implicit val coder: Coder[P])
+    sessionContext: SessionContext
+  )(implicit val coder: Coder[P])
 
   case class ReceivedIpmi(payloadOrError: IpmiErrorOr[IpmiResponsePayload])
 
@@ -85,20 +93,19 @@ class SessionHub(sessionManager: ActorRef, transportFactory: Transport.Factory) 
           // TODO can we do better than this ^^?
           if (inSession) {
             e match {
-              case IpmiExceptionError(ex) => log.error(ex, "Ignoring error with no sequence number: {}", e)
-              case _                      => log.warning("Ignoring error with no sequence number: {}", e)
+              case IpmiExceptionError(ex) =>
+                log.error(ex, "Ignoring error with no sequence number: {}", e)
+              case _ => log.warning("Ignoring error with no sequence number: {}", e)
             }
-          }
-          else {
-            seqNoToRequestHandlerMap
-              .values
+          } else {
+            seqNoToRequestHandlerMap.values
               .foreach { requestHandler =>
                 requestHandler ! ReceivedIpmi(payloadOrError)
               }
           }
       }
 
-    case s@SendIpmi(payload, version, sessionContext) =>
+    case s @ SendIpmi(payload, version, sessionContext) =>
       implicit val coder: Coder[IpmiRequestPayload] = s.coder
       transport ! Transport.SendIpmi(payload, version, sessionContext)
 
@@ -112,4 +119,3 @@ class SessionHub(sessionManager: ActorRef, transportFactory: Transport.Factory) 
   private def unregisterRequestHandler(requestHandler: ActorRef): Unit =
     seqNoToRequestHandlerMap = seqNoToRequestHandlerMap.filter(_._2 != requestHandler)
 }
-

@@ -20,6 +20,8 @@ case class ResourceUri(uri: String) extends AnyVal {
 object ResourceUri {
 
   // See https://msdn.microsoft.com/en-us/library/ee896656.aspx ...
-  val defaultBase: ResourceUri = ResourceUri("http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/")
+  val defaultBase: ResourceUri = ResourceUri(
+    "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/"
+  )
 
 }

@@ -7,7 +7,11 @@ import com.cyclone.util.{AbsoluteDeadline, OperationDeadline}
 import com.cyclone.util.net.{AuthenticationMethod, HttpUrl, JavaNamingDnsLookupComponent, PasswordSecurityContext}
 import com.cyclone.wsman.impl.http.{DefaultWSManConnectionFactoryComponent, DefaultWSManNetworkingComponent}
 import com.cyclone.wsman.impl.model._
-import com.cyclone.wsman.impl.subscription.push.{DefaultPushDeliveryRouterComponent, GuavaKerberosTokenCacheComponent, KerberosStateHousekeeperComponent}
+import com.cyclone.wsman.impl.subscription.push.{
+  DefaultPushDeliveryRouterComponent,
+  GuavaKerberosTokenCacheComponent,
+  KerberosStateHousekeeperComponent
+}
 import org.hamcrest.Matchers._
 import org.hamcrest.{FeatureMatcher, Matcher}
 import org.jmock.AbstractExpectations._
@@ -29,12 +33,13 @@ import scala.language.postfixOps
   *
   * @author Jeremy.Stone
   */
-class WSManOperationContextTest extends TestKitSupport
-  with JUnitSuiteLike
-  with ScalaFutures
-  with Matchers
-  with Inside
-  with ActorSystemShutdown {
+class WSManOperationContextTest
+    extends TestKitSupport
+    with JUnitSuiteLike
+    with ScalaFutures
+    with Matchers
+    with Inside
+    with ActorSystemShutdown {
 
   import ManagedInstanceTest._
 
@@ -51,16 +56,10 @@ class WSManOperationContextTest extends TestKitSupport
     val referenceResolver = mockery.mock(classOf[ReferenceResolver])
 
     implicit val context: WSManOperationContext =
-      new DefaultWSManContextFactoryComponent
-        with DefaultWSManConnectionFactoryComponent
-        with DefaultWSManNetworkingComponent
-        with DefaultPushDeliveryRouterComponent
-        with KerberosStateHousekeeperComponent
-        with GuavaKerberosTokenCacheComponent
-        with ReferenceResolveComponent
-        with ActorSystemComponent
-        with ActorMaterializerComponent
-        with JavaNamingDnsLookupComponent {
+      new DefaultWSManContextFactoryComponent with DefaultWSManConnectionFactoryComponent
+      with DefaultWSManNetworkingComponent with DefaultPushDeliveryRouterComponent
+      with KerberosStateHousekeeperComponent with GuavaKerberosTokenCacheComponent with ReferenceResolveComponent
+      with ActorSystemComponent with ActorMaterializerComponent with JavaNamingDnsLookupComponent {
         val referenceResolver = self.referenceResolver
 
         implicit def actorSystem: ActorSystem = self.actorSystem
@@ -78,7 +77,9 @@ class WSManOperationContextTest extends TestKitSupport
     def willFailToGetReference(ref: ManagedReference, err: WSManError) = {
       mockery.checking(new Expectations {
         e =>
-        oneOf(referenceResolver).get(`with`(managedReferenceWithUrl(ref)), `with`(equalTo(dl)))(`with`(equalTo(context)))
+        oneOf(referenceResolver).get(`with`(managedReferenceWithUrl(ref)), `with`(equalTo(dl)))(
+          `with`(equalTo(context))
+        )
         will(returnValue(Future.successful(err.left)))
       })
     }
@@ -93,7 +94,8 @@ class WSManOperationContextTest extends TestKitSupport
   def resolveAllReferences_getsReference(): Unit = new Fixture {
     val ref = newReference("http://refUri")
 
-    val instRaw = newInstance("a").withProperty("name", StringPropertyValue("value"))
+    val instRaw = newInstance("a")
+      .withProperty("name", StringPropertyValue("value"))
       .withProperty("ref", ReferencePropertyValue(ref))
 
     val referenced = newInstance("refd1").withProperty("r1", "v1")
@@ -191,7 +193,8 @@ class WSManOperationContextTest extends TestKitSupport
       case \/-(instResolved) =>
         assert(instResolved.getPropertyValue("name").get === StringPropertyValue("value"))
 
-        val ListPropertyValue(List(InstancePropertyValue(refd1), InstancePropertyValue(refd2))) = instResolved.getPropertyValue("list").get
+        val ListPropertyValue(List(InstancePropertyValue(refd1), InstancePropertyValue(refd2))) =
+          instResolved.getPropertyValue("list").get
 
         assert(refd1.getPropertyValue("r1").get === StringPropertyValue("v1"))
         assert(refd2.getPropertyValue("r2").get === StringPropertyValue("v2"))
@@ -214,7 +217,8 @@ class WSManOperationContextTest extends TestKitSupport
       case \/-(instResolved) =>
         assert(instResolved.getPropertyValue("name").get === StringPropertyValue("value"))
 
-        val ListPropertyValue(List(InstancePropertyValue(refd1), InstancePropertyValue(refd2))) = instResolved.getPropertyValue("list").get
+        val ListPropertyValue(List(InstancePropertyValue(refd1), InstancePropertyValue(refd2))) =
+          instResolved.getPropertyValue("list").get
 
         assert(refd1.getPropertyValue("r1").get === StringPropertyValue("v1"))
         assert(refd2.getPropertyValue("r1").get === StringPropertyValue("v1"))
@@ -317,7 +321,7 @@ class WSManOperationContextTest extends TestKitSupport
       .withProperty("name3", StringPropertyValue("value3"))
 
     deepInstanceValues(a, PropertyRestriction.restrictedTo("name3", "name1")) shouldBe
-      List("name3" -> "value3", "name1" -> "value1")
+    List("name3" -> "value3", "name1" -> "value1")
   }
 
   @Test
@@ -328,7 +332,7 @@ class WSManOperationContextTest extends TestKitSupport
       .withProperty("name3", StringPropertyValue("value3"))
 
     deepInstanceValues(a, PropertyRestriction.restrictedTo("name3", "name1")) shouldBe
-      List("name3" -> "value3", "name1" -> "value1")
+    List("name3" -> "value3", "name1" -> "value1")
   }
 
   @Test
@@ -373,7 +377,7 @@ class WSManOperationContextTest extends TestKitSupport
       .withProperty("b", InstancePropertyValue(b))
 
     deepInstanceValues(a, PropertyRestriction.restrictedTo("name", "b")) shouldBe
-      List("name" -> "value", "b.b_name" -> "b_value")
+    List("name" -> "value", "b.b_name" -> "b_value")
   }
 
   @Test
@@ -385,13 +389,9 @@ class WSManOperationContextTest extends TestKitSupport
     // Add with same name to create list
     val a = newInstance("a")
       .withProperty("name", StringPropertyValue("value"))
-      .withProperty("b", ListPropertyValue(InstancePropertyValue(b0),
-        InstancePropertyValue(b1)))
+      .withProperty("b", ListPropertyValue(InstancePropertyValue(b0), InstancePropertyValue(b1)))
 
-    deepInstanceValues(a) shouldBe List(
-      "name" -> "value",
-      "b[0].b0_name" -> "b0_value",
-      "b[1].b1_name" -> "b1_value")
+    deepInstanceValues(a) shouldBe List("name" -> "value", "b[0].b0_name" -> "b0_value", "b[1].b1_name" -> "b1_value")
   }
 
   @Test

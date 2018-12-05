@@ -85,6 +85,7 @@ object SensorUnit {
 
   case object Lumen extends SensorUnit {
     val code: Byte = 11.toByte
+
     val message =
       "lumen"
     val abbreviation = "lm"
@@ -92,6 +93,7 @@ object SensorUnit {
 
   case object Lux extends SensorUnit {
     val code: Byte = 12.toByte
+
     val message =
       "lux"
     val abbreviation = "lux"
@@ -123,6 +125,7 @@ object SensorUnit {
 
   case object CFM extends SensorUnit {
     val code: Byte = 17.toByte
+
     val message =
       "CFM"
     val abbreviation = "CFM"

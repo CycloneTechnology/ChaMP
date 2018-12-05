@@ -10,6 +10,7 @@ import scala.xml.transform.{RewriteRule, RuleTransformer}
 import scala.xml.{Elem, Node}
 
 private[wsman] object ManagedReference {
+
   def apply(resourceUri: ResourceUri): ManagedReference =
     ManagedReference(EprXML.forResource(resourceUri))
 
@@ -18,7 +19,7 @@ private[wsman] object ManagedReference {
   }
 }
 
-private[wsman] class ManagedReference private(protected[impl] val root: Elem) {
+private[wsman] class ManagedReference private (protected[impl] val root: Elem) {
 
   def getResourceURI: String =
     (root \ "ReferenceParameters" \ "ResourceURI").text
@@ -37,15 +38,15 @@ private[wsman] class ManagedReference private(protected[impl] val root: Elem) {
     val res = singleElement(root \ "ReferenceParameters" \ "ResourceURI")
 
     def addSelectors(existing: Seq[Node]): Seq[Node] =
-    // @formatter:off
+      // @formatter:off
       existing ++ <Selector Name={name}>{value}</Selector>.copy(prefix = res.prefix)
     // @formatter:on
 
     object selectionAdder extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
-        case Elem(prefix, "SelectorSet", attribs, scope, existingSelectors@_*) =>
+        case Elem(prefix, "SelectorSet", attribs, scope, existingSelectors @ _*) =>
           Elem(prefix, "SelectorSet", attribs, scope, false, addSelectors(existingSelectors): _*)
-        case other: Node                                                       => other
+        case other: Node => other
       }
     }
 

@@ -20,16 +20,12 @@ import scala.concurrent.duration._
 /**
   * Test for [[IpmiTool]]
   */
-class IpmiToolTest
-  extends WordSpec
-    with Matchers
-    with Inside
-    with ScalaFutures
-    with IntegrationPatience {
+class IpmiToolTest extends WordSpec with Matchers with Inside with ScalaFutures with IntegrationPatience {
 
-  class Fixture(deadlineTimeout: FiniteDuration = 10.seconds) extends DefaultIpmiToolComponent
-    with MockIpmiClientComponent
-    with SynchronizedMockeryComponent {
+  class Fixture(deadlineTimeout: FiniteDuration = 10.seconds)
+      extends DefaultIpmiToolComponent
+      with MockIpmiClientComponent
+      with SynchronizedMockeryComponent {
 
     // WLOG
     val address = InetAddresses.forString("1.2.3.4")

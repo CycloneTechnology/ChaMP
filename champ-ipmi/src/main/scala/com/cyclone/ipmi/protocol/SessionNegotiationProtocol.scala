@@ -5,7 +5,12 @@ import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError.{IpmiErrorOr, StatusCodeErrorOr}
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command._
-import com.cyclone.ipmi.command.ipmiMessagingSupport.{ActivateSession, GetChannelAuthenticationCapabilities, GetChannelCipherSuites, GetSessionChallenge}
+import com.cyclone.ipmi.command.ipmiMessagingSupport.{
+  ActivateSession,
+  GetChannelAuthenticationCapabilities,
+  GetChannelCipherSuites,
+  GetSessionChallenge
+}
 import com.cyclone.ipmi.protocol.packet.IpmiVersion
 import com.cyclone.ipmi.protocol.packet.SessionId.{ManagedSystemSessionId, RemoteConsoleSessionId}
 import com.cyclone.ipmi.protocol.rakp.{OpenSession, Rakp1_2, Rakp3_4, RmcpPlusAndRakpStatusCodeErrors}
@@ -17,7 +22,6 @@ import scala.concurrent.Future
 import scalaz.EitherT._
 import scalaz.Scalaz._
 import scalaz._
-
 
 /**
   * Performs message exchanges for session activation for a specific version or protocol.
@@ -44,7 +48,8 @@ object SessionNegotiationProtocol {
     credentials: IpmiCredentials,
     privilegeLevel: PrivilegeLevel,
     requester: Requester
-  )(implicit timeoutContext: TimeoutContext) extends SessionNegotiationProtocol {
+  )(implicit timeoutContext: TimeoutContext)
+      extends SessionNegotiationProtocol {
 
     val kuid: Key.UID = Key.UID.fromCredentials(credentials)
     val kg: Key.KG = Key.KG.fromCredentials(credentials)
@@ -55,7 +60,9 @@ object SessionNegotiationProtocol {
     def negotiateSession(): Future[IpmiError \/ V20SessionContext] = {
       val result = for {
         cipherSuite <- eitherT(bestChannelCipherSuite)
-        openSessionResult <- eitherT(openSession(remoteConsoleSessionId, cipherSuite, privilegeLevel))
+        openSessionResult <- eitherT(
+          openSession(remoteConsoleSessionId, cipherSuite, privilegeLevel)
+        )
         sik <- doRakpExchanges(openSessionResult.managedSystemSessionId, cipherSuite)
       } yield V20SessionContext(openSessionResult.managedSystemSessionId, cipherSuite, Some(sik))
 
@@ -68,26 +75,28 @@ object SessionNegotiationProtocol {
         (bytes, res.last)
       }
 
-      val futSuites = (0 to 0x3f).foldLeft(Future.successful((Vector.empty[Byte], false).right[IpmiError])) { case (f, index) =>
-        f.flatMap {
-          case \/-((acc, done)) =>
-            if (!done)
-              requester.makeRequest(GetChannelCipherSuites.Command(index), version).map {
-                case \/-(res) =>
-                  val (bytes, newDone) = cipherSuiteBytesFor(res)
-                  (acc ++ bytes, newDone).right
+      val futSuites = (0 to 0x3f)
+        .foldLeft(Future.successful((Vector.empty[Byte], false).right[IpmiError])) {
+          case (f, index) =>
+            f.flatMap {
+              case \/-((acc, done)) =>
+                if (!done)
+                  requester.makeRequest(GetChannelCipherSuites.Command(index), version).map {
+                    case \/-(res) =>
+                      val (bytes, newDone) = cipherSuiteBytesFor(res)
+                      (acc ++ bytes, newDone).right
 
-                case -\/(e) => e.left
-              }
-            else
-              Future.successful((acc, done).right)
+                    case -\/(e) => e.left
+                  } else
+                  Future.successful((acc, done).right)
 
-          case -\/(e) => Future.successful(e.left)
+              case -\/(e) => Future.successful(e.left)
+            }
         }
-      }.map {
-        case \/-((data, _)) => CipherSuite.decode(ByteString(data: _*)).right
-        case -\/(e)         => e.left
-      }
+        .map {
+          case \/-((data, _)) => CipherSuite.decode(ByteString(data: _*)).right
+          case -\/(e)         => e.left
+        }
 
       futSuites.map {
         case \/-(suites) => CipherSuite.bestOf(suites).toRightDisjunction(NoSupportedCipherSuites)
@@ -95,28 +104,40 @@ object SessionNegotiationProtocol {
       }
     }
 
-    private def openSession(remoteConsoleSessionId: RemoteConsoleSessionId, cipherSuite: CipherSuite, privilegeLevel: PrivilegeLevel) =
+    private def openSession(
+      remoteConsoleSessionId: RemoteConsoleSessionId,
+      cipherSuite: CipherSuite,
+      privilegeLevel: PrivilegeLevel
+    ) =
       requester.makeRequest(
         OpenSession.Command(remoteConsoleSessionId, cipherSuite, privilegeLevel),
-        version)
+        version
+      )
 
     private def getAuthenticationCapabilities(requestedPrivilegeLevel: PrivilegeLevel) =
       requester.makeRequest(
         GetChannelAuthenticationCapabilities.Command(requestedPrivilegeLevel),
-        version)
+        version
+      )
 
-    private def doRakpExchanges(managedSystemSessionId: ManagedSystemSessionId, cipherSuite: CipherSuite) = {
+    private def doRakpExchanges(
+      managedSystemSessionId: ManagedSystemSessionId,
+      cipherSuite: CipherSuite
+    ) = {
       val rakp1 = Rakp1_2.Command(
         managedSystemSessionId,
         Randomizer.randomBytes(16),
         privilegeLevel,
-        username)
+        username
+      )
 
       for {
         rakp2Result <- eitherT(sendRacp1(rakp1))
         rakp4Result <- eitherT(sendRacp3(rakp1, rakp2Result, cipherSuite))
         sik = calulateSik(rakp1, rakp2Result, cipherSuite)
-        _ <- eitherT(validateRakp4Response(rakp1, rakp2Result, rakp4Result, cipherSuite, sik).point[Future])
+        _ <- eitherT(
+          validateRakp4Response(rakp1, rakp2Result, rakp4Result, cipherSuite, sik).point[Future]
+        )
       } yield sik
     }
 
@@ -126,7 +147,8 @@ object SessionNegotiationProtocol {
     private def sendRacp3(
       rakp1: Rakp1_2.Command,
       rakp2Result: Rakp1_2.CommandResult,
-      cipherSuite: CipherSuite): Future[IpmiErrorOr[Rakp3_4.CommandResult]] = {
+      cipherSuite: CipherSuite
+    ): Future[IpmiErrorOr[Rakp3_4.CommandResult]] = {
 
       val keyExchangeAuthCode = {
         // See spec section 13.31
@@ -145,10 +167,7 @@ object SessionNegotiationProtocol {
 
       val statusCode = rakp2Validation.leftMap(_.code).swap.getOrElse(StatusCode.NoErrors)
 
-      val msg = Rakp3_4.Command(
-        statusCode,
-        rakp1.managedSystemSessionId,
-        keyExchangeAuthCode)
+      val msg = Rakp3_4.Command(statusCode, rakp1.managedSystemSessionId, keyExchangeAuthCode)
 
       val sendResult = requester.makeRequest(msg, version)
 
@@ -167,7 +186,8 @@ object SessionNegotiationProtocol {
     private def validateRakp2Response(
       rakp1: Rakp1_2.Command,
       rakp2Result: Rakp1_2.CommandResult,
-      cipherSuite: CipherSuite): StatusCodeErrorOr[Unit] = {
+      cipherSuite: CipherSuite
+    ): StatusCodeErrorOr[Unit] = {
       if (rakp2Result.remoteConsoleSessionId != remoteConsoleSessionId)
         RmcpPlusAndRakpStatusCodeErrors.InvalidSessionId.left
       else {
@@ -196,7 +216,8 @@ object SessionNegotiationProtocol {
     private def calulateSik(
       rakp1: Rakp1_2.Command,
       rakp2Result: Rakp1_2.CommandResult,
-      cipherSuite: CipherSuite) = {
+      cipherSuite: CipherSuite
+    ) = {
       def sikBase() = {
         val b = new ByteStringBuilder
         b ++= rakp1.consoleRandomNumber
@@ -215,7 +236,8 @@ object SessionNegotiationProtocol {
       rakp2Result: Rakp1_2.CommandResult,
       rakp4Result: Rakp3_4.CommandResult,
       cipherSuite: CipherSuite,
-      sik: Key.SIK): IpmiErrorOr[Unit] = {
+      sik: Key.SIK
+    ): IpmiErrorOr[Unit] = {
 
       if (rakp4Result.remoteConsoleSessionId != remoteConsoleSessionId)
         RmcpPlusAndRakpStatusCodeErrors.InvalidSessionId.left
@@ -242,21 +264,40 @@ object SessionNegotiationProtocol {
     credentials: IpmiCredentials,
     privilegeLevel: PrivilegeLevel,
     authenticationTypes: AuthenticationTypes,
-    requester: Requester)
-    (implicit timeoutContext: TimeoutContext) extends SessionNegotiationProtocol {
+    requester: Requester
+  )(implicit timeoutContext: TimeoutContext)
+      extends SessionNegotiationProtocol {
+
     def negotiateSession(): Future[IpmiError \/ V15SessionContext] = {
       AuthenticationType.mostSecureOf(authenticationTypes.types) match {
         case Some(authType) =>
           val result = for {
-            challenge <- eitherT(requester.makeRequest(
-              GetSessionChallenge.Command(authType, credentials.usernameV15),
-              IpmiVersion.V15))
+            challenge <- eitherT(
+              requester.makeRequest(
+                GetSessionChallenge.Command(authType, credentials.usernameV15),
+                IpmiVersion.V15
+              )
+            )
 
-            activation <- eitherT(requester.makeRequest(
-              ActivateSession.Command(authType, privilegeLevel, challenge.challengeData),
-              IpmiVersion.V15,
-              V15SessionContext(challenge.managedSystemSessionId, Some(credentials), authType, sessionEstablished = false)))
-          } yield V15SessionContext(activation.managedSystemSessionId, Some(credentials), authType, sessionEstablished = true)
+            activation <- eitherT(
+              requester.makeRequest(
+                ActivateSession.Command(authType, privilegeLevel, challenge.challengeData),
+                IpmiVersion.V15,
+                V15SessionContext(
+                  challenge.managedSystemSessionId,
+                  Some(credentials),
+                  authType,
+                  sessionEstablished = false
+                )
+              )
+            )
+          } yield
+            V15SessionContext(
+              activation.managedSystemSessionId,
+              Some(credentials),
+              authType,
+              sessionEstablished = true
+            )
 
           result.run
 

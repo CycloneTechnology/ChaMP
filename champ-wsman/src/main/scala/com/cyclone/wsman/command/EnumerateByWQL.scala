@@ -10,8 +10,8 @@ case class EnumerateByWQL(
   maxElementsPerEnumeration: Int = 10,
   resolveReferences: Boolean = false,
   baseResourceUri: ResourceUri = ResourceUri.defaultBase,
-  cimNamespace: Option[String] = None)
-  extends WSManEnumerationQueryDefn
+  cimNamespace: Option[String] = None
+) extends WSManEnumerationQueryDefn
 
 object EnumerateByWQL {
 

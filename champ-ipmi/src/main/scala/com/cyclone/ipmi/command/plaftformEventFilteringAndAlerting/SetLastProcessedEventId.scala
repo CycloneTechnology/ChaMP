@@ -21,9 +21,10 @@ object SetLastProcessedEventId {
       val message = "Cannot execute command, SEL erase in progress"
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] = StatusCodeTranslator[CommandResult.type] {
-      case CannotExecuteCommand.code => CannotExecuteCommand
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type] {
+        case CannotExecuteCommand.code => CannotExecuteCommand
+      }
   }
 
   sealed trait ProcessdBy
@@ -35,6 +36,7 @@ object SetLastProcessedEventId {
     case object BMC extends ProcessdBy
 
     implicit val codec: Coder[ProcessdBy] = new Coder[ProcessdBy] {
+
       def encode(s: ProcessdBy): ByteString = {
         s match {
           case Software => ByteString(0)
@@ -47,6 +49,7 @@ object SetLastProcessedEventId {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -60,7 +63,8 @@ object SetLastProcessedEventId {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult.type] = CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
   }
 
   case class Command(processedBy: ProcessdBy, recordId: Short) extends IpmiStandardCommand {

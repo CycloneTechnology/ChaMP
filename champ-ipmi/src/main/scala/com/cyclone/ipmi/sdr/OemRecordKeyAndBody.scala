@@ -4,13 +4,10 @@ import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.oem.IanaEnterpriseNumber
 
-
 /**
   * Contains the data of an OEM Record
   */
-case class OemRecordKeyAndBody(
-                                manufacturerId: IanaEnterpriseNumber,
-                                data: ByteString) extends SdrKeyAndBody {
+case class OemRecordKeyAndBody(manufacturerId: IanaEnterpriseNumber, data: ByteString) extends SdrKeyAndBody {
   val sensorIds: Seq[SensorId] = Nil
   val sensorNumbers: Seq[SensorNumber] = Nil
 
@@ -20,6 +17,7 @@ case class OemRecordKeyAndBody(
 
 object OemRecordKeyAndBody {
   implicit val decoder: Decoder[OemRecordKeyAndBody] = new Decoder[OemRecordKeyAndBody] {
+
     def decode(data: ByteString): OemRecordKeyAndBody = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -31,4 +29,3 @@ object OemRecordKeyAndBody {
     }
   }
 }
-

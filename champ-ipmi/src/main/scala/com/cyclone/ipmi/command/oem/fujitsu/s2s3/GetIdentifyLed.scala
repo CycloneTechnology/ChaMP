@@ -15,6 +15,7 @@ object GetIdentifyLed {
 
   object OnOff {
     implicit val decoder: Decoder[OnOff] = new Decoder[OnOff] {
+
       def decode(data: ByteString): OnOff = data(0).toUnsignedInt match {
         case 0x00 => Off
         case 0x01 => On
@@ -22,6 +23,7 @@ object GetIdentifyLed {
     }
 
     implicit val encoder: Coder[OnOff] = new Coder[OnOff] {
+
       def encode(a: OnOff): ByteString = {
         a match {
           case Off => ByteString(0x00)
@@ -38,11 +40,14 @@ object GetIdentifyLed {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        /*val requestType = */is.read(3).as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
+        /*val requestType = */
+        is.read(3)
+          .as[IanaEnterpriseNumber] // Should match the IANA value present in the request (0x80 0x28 0x00 in this case)
 
         val ledState = is.readByte.as[OnOff]
 
@@ -50,13 +55,15 @@ object GetIdentifyLed {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(ledState: OnOff) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -70,7 +77,8 @@ object GetIdentifyLed {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

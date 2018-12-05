@@ -13,6 +13,7 @@ object GetSensorHysteresis {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -21,21 +22,19 @@ object GetSensorHysteresis {
 
         val negativeGoingThreshold = is.readByte.toUnsignedInt
 
-        CommandResult(
-          positiveGoingThreshold,
-          negativeGoingThreshold)
+        CommandResult(positiveGoingThreshold, negativeGoingThreshold)
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
-  case class CommandResult(
-    positiveGoingThreshold: Int,
-    negativeGoingThreshold: Int) extends IpmiCommandResult
+  case class CommandResult(positiveGoingThreshold: Int, negativeGoingThreshold: Int) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -48,7 +47,8 @@ object GetSensorHysteresis {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command(sensorNumber: SensorNumber) extends IpmiStandardCommand {
@@ -58,5 +58,3 @@ object GetSensorHysteresis {
   }
 
 }
-
-

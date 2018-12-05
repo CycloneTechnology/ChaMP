@@ -24,14 +24,14 @@ import scala.concurrent.duration._
   * Tests for [[SessionManager]]
   */
 class SessionManagerTest
-  extends TestKitSupport
+    extends TestKitSupport
     with WordSpecLike
     with Matchers
     with ImplicitSender
     with ActorSystemShutdown {
 
   class Fixture(inactivityTimeout: FiniteDuration = 1.minute)
-    extends MockSessionNegotiatorComponent
+      extends MockSessionNegotiatorComponent
       with MockRequesterFactoryComponent
       with SynchronizedMockeryComponent {
 
@@ -53,14 +53,17 @@ class SessionManagerTest
     val seqNoManagerFactory = TestProbe()
     val seqNoManager = TestProbe()
 
-    val sessionManager = system.actorOf(SessionManager.props(
-      seqNoManagerFactory.ref,
-      address, port,
-      inactivityTimeout,
-      hubFactory,
-      sessionNegotiator = sessionNegotiator,
-      requesterFactory = requesterFactory
-    ))
+    val sessionManager = system.actorOf(
+      SessionManager.props(
+        seqNoManagerFactory.ref,
+        address,
+        port,
+        inactivityTimeout,
+        hubFactory,
+        sessionNegotiator = sessionNegotiator,
+        requesterFactory = requesterFactory
+      )
+    )
 
     val command = WarmReset.Command
 
@@ -173,9 +176,13 @@ class SessionManagerTest
         sessionManager ! Transport.SetSessionContextAck
         expectMsg(SessionManager.SessionNegotiationSuccess)
 
-        willMakeRequestWithContext(CloseSession.Command(sessionContext.managedSystemSessionId),
+        willMakeRequestWithContext(
+          CloseSession.Command(sessionContext.managedSystemSessionId),
           SessionManager.ClosedowntimeoutContext,
-          version, sessionContext, Future.successful(CloseSession.CommandResult.right))
+          version,
+          sessionContext,
+          Future.successful(CloseSession.CommandResult.right)
+        )
 
         sessionManager ! SessionManager.Closedown
         expectMsg(SessionManager.ClosedDown)
@@ -192,9 +199,13 @@ class SessionManagerTest
         sessionManager ! Transport.SetSessionContextAck
         expectMsg(SessionManager.SessionNegotiationSuccess)
 
-        willMakeRequestWithContext(CloseSession.Command(sessionContext.managedSystemSessionId),
+        willMakeRequestWithContext(
+          CloseSession.Command(sessionContext.managedSystemSessionId),
           SessionManager.ClosedowntimeoutContext,
-          version, sessionContext, Future.successful(CloseSession.CommandResult.right))
+          version,
+          sessionContext,
+          Future.successful(CloseSession.CommandResult.right)
+        )
 
         expectTerminated(sessionManager)
       }

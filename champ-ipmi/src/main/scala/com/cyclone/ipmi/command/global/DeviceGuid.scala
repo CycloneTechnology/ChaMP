@@ -7,6 +7,7 @@ case class DeviceGuid(guid: String)
 
 object DeviceGuid {
   implicit val decoder: Decoder[DeviceGuid] = new Decoder[DeviceGuid] {
+
     def decode(data: ByteString): DeviceGuid = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -25,8 +26,18 @@ object DeviceGuid {
       DeviceGuid(
         "%08x-%04x-%04x-%04x-%02x%02x%02x%02x%02x%02x"
           .format(
-            timelow, timeMid, timeHighAndVersion, clockSeqAndReserver,
-            node1, node2, node3, node4, node5, node6))
+            timelow,
+            timeMid,
+            timeHighAndVersion,
+            clockSeqAndReserver,
+            node1,
+            node2,
+            node3,
+            node4,
+            node5,
+            node6
+          )
+      )
     }
   }
 }

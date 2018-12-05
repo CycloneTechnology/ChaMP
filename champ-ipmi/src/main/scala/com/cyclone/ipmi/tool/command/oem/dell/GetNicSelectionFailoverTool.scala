@@ -19,18 +19,22 @@ import scala.concurrent.Future
 object GetNicSelectionFailoverTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetNicSelectionFailover.Command()))
-        } yield Result(cmdResult.nicSelection, cmdResult.nicFailover)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(
+              connection.executeCommandOrError(GetNicSelectionFailover.Command())
+            )
+          } yield Result(cmdResult.nicSelection, cmdResult.nicFailover)
+
+          result.run
+        }
       }
-    }
 
     def description() = "dell get nic-selection-failover"
   }

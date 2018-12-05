@@ -8,6 +8,7 @@ import org.apache.commons.codec.binary.Base64
   * @author Jeremy.Stone
   */
 object Base64Utils {
+
   /**
     * Encodes binary data to a (non-chunked) base64 string
     *

@@ -1,7 +1,7 @@
 package com.cyclone.wsman
 
 import com.cyclone.wsman.impl.WSManAvailability
-import scalaz.{EitherT, \/}
+import scalaz.{\/, EitherT}
 
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace
@@ -30,7 +30,6 @@ object WSManError {
   */
 case class WSManErrorException(err: WSManError) extends Exception with NoStackTrace
 
-
 /**
   * An error from an exception
   */
@@ -45,16 +44,14 @@ case class WSManAvailabilityTestError(availability: WSManAvailability) extends W
 /**
   * An error from IO-related exception
   */
-case class WSManIOError(
-  reason: Option[String],
-  cause: Option[Throwable]) extends WSManError {
+case class WSManIOError(reason: Option[String], cause: Option[Throwable]) extends WSManError {
+
   def message: String =
     "IO error:" + reason.getOrElse("No further info")
 }
 
-case class WSManAuthenticationError(
-  reason: Option[String],
-  cause: Option[Throwable]) extends WSManError {
+case class WSManAuthenticationError(reason: Option[String], cause: Option[Throwable]) extends WSManError {
+
   def message: String =
     "Authentication error:" + reason.getOrElse("No further info")
 }
@@ -75,6 +72,7 @@ case class WSManQueryError(
 ) extends WSManError
 
 object WSManQueryError {
+
   def apply(response: Node): WSManQueryError = {
 
     lazy val faultNode = response \ "Body" \ "Fault"
@@ -82,7 +80,7 @@ object WSManQueryError {
     def message: String =
       reason
         .getOrElse("Unknown") + "\nDetail: " +
-        detailProviderFaultMessage.orElse(detailFaultMessage).getOrElse("Unknown")
+      detailProviderFaultMessage.orElse(detailFaultMessage).getOrElse("Unknown")
 
     def code: Option[String] =
       optionalText(faultNode \ "Code" \ "Value")

@@ -14,6 +14,7 @@ object SetPowerRestorePolicy {
 
   object PowerRestorePolicy {
     implicit val encoder: Coder[PowerRestorePolicy] = new Coder[PowerRestorePolicy] {
+
       def encode(a: PowerRestorePolicy): ByteString = {
         a match {
           case ChassisAlwaysOffAfterAcApplied      => ByteString(0x00)
@@ -35,25 +36,30 @@ object SetPowerRestorePolicy {
   }
 
   object PowerRestorePolicySupport {
-    implicit val decoder: Decoder[PowerRestorePolicySupport] = new Decoder[PowerRestorePolicySupport] {
-      def decode(data: ByteString): PowerRestorePolicySupport = {
-        val byte = data(0)
+    implicit val decoder: Decoder[PowerRestorePolicySupport] =
+      new Decoder[PowerRestorePolicySupport] {
 
-        PowerRestorePolicySupport(
-          chassisSupportsAlwaysPoweringUpAfterAcReturns = byte.bit2,
-          chassisSupportsAlwaysRestoringPowerToStateBeforeAcLost = byte.bit1,
-          chassisSupportsPowerRemainingOffAfterAcReturns = byte.bit0)
+        def decode(data: ByteString): PowerRestorePolicySupport = {
+          val byte = data(0)
+
+          PowerRestorePolicySupport(
+            chassisSupportsAlwaysPoweringUpAfterAcReturns = byte.bit2,
+            chassisSupportsAlwaysRestoringPowerToStateBeforeAcLost = byte.bit1,
+            chassisSupportsPowerRemainingOffAfterAcReturns = byte.bit0
+          )
+        }
       }
-    }
   }
 
   case class PowerRestorePolicySupport(
     chassisSupportsAlwaysPoweringUpAfterAcReturns: Boolean,
     chassisSupportsAlwaysRestoringPowerToStateBeforeAcLost: Boolean,
-    chassisSupportsPowerRemainingOffAfterAcReturns: Boolean)
+    chassisSupportsPowerRemainingOffAfterAcReturns: Boolean
+  )
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -64,13 +70,15 @@ object SetPowerRestorePolicy {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(powerRestorePolicySupport: Option[PowerRestorePolicySupport]) extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -82,7 +90,8 @@ object SetPowerRestorePolicy {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 
@@ -93,5 +102,3 @@ object SetPowerRestorePolicy {
   }
 
 }
-
-

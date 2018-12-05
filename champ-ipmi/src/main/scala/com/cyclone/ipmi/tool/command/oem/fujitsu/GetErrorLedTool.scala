@@ -21,18 +21,20 @@ import scala.concurrent.Future
 object GetErrorLedTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetErrorLed.Command()))
-        } yield Result(cmdResult.ledState)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(connection.executeCommandOrError(GetErrorLed.Command()))
+          } yield Result(cmdResult.ledState)
+
+          result.run
+        }
       }
-    }
 
     def description() = "fujitsu get error-led"
   }

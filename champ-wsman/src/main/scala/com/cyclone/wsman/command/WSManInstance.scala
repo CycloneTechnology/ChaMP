@@ -3,8 +3,8 @@ package com.cyclone.wsman.command
 import com.cyclone.command.PropertyRestriction
 import com.cyclone.util.CaseInsensitive
 
-case class WSManInstance(
-  properties: Map[String, WSManPropertyValue]) {
+case class WSManInstance(properties: Map[String, WSManPropertyValue]) {
+
   def stringProperty(name: String): Option[String] =
     properties.get(name).flatMap {
       case WSManPropertyValue.ForString(v) => Some(v)
@@ -13,7 +13,7 @@ case class WSManInstance(
 
   def restrictedTo(propertyRestriction: PropertyRestriction): WSManInstance =
     propertyRestriction match {
-      case PropertyRestriction.NoRestriction       => this
+      case PropertyRestriction.NoRestriction => this
       case PropertyRestriction.RestrictedTo(names) =>
         val ciNames = names.map(CaseInsensitive(_)).toSet
         WSManInstance(properties.filterKeys(name => ciNames.contains(CaseInsensitive(name))))
@@ -21,8 +21,8 @@ case class WSManInstance(
 }
 
 object WSManInstance {
-  def apply(
-    properties: (String, WSManPropertyValue)*): WSManInstance =
+
+  def apply(properties: (String, WSManPropertyValue)*): WSManInstance =
     new WSManInstance(Map(properties: _*))
 }
 

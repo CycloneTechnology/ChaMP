@@ -18,6 +18,7 @@ object GetSelfTestResults {
 
   object Corrupted {
     implicit val decoder: Decoder[Corrupted] = new Decoder[Corrupted] {
+
       def decode(data: ByteString): Corrupted = {
         val byte = data(0)
 
@@ -52,9 +53,9 @@ object GetSelfTestResults {
 
   case class DeviceSpecificInternalFailure(deviceSpecificCode: Byte) extends SelfTestStatus
 
-
   object SelfTestStatus {
     implicit val decoder: Decoder[SelfTestStatus] = new Decoder[SelfTestStatus] {
+
       def decode(data: ByteString): SelfTestStatus = data(0).toUnsignedInt match {
         case 0x55 => NoError
         case 0x56 => NotImplemented
@@ -68,6 +69,7 @@ object GetSelfTestResults {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -78,23 +80,24 @@ object GetSelfTestResults {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(selfTestStatus: SelfTestStatus) extends IpmiCommandResult
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+
       def encode(request: Command.type): ByteString =
         ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x04)
   }
 
 }
-
-

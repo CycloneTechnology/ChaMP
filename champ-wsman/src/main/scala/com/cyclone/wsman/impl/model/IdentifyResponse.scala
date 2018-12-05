@@ -10,6 +10,7 @@ import scala.xml.Elem
   * Raw response to an Identify operation
   */
 case class IdentifyResponse(identifyResponse: Elem) {
+
   def external: WSManIdentifyResult =
     WSManIdentifyResult(
       protocolVersion = protocolVersion,

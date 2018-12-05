@@ -13,24 +13,27 @@ case class SubscribeBySelector(
   selectorClause: SelectorClause = SelectorClause.empty,
   resolveReferences: Boolean = false,
   resolutionTimeout: FiniteDuration = 5.seconds,
-  cimNamespace: Option[String] = None)
-  extends WSManFilteredSubscriptionDefn
+  cimNamespace: Option[String] = None
+) extends WSManFilteredSubscriptionDefn
 
 object SubscribeBySelector {
 
-  def fromClassName(className: String,
+  def fromClassName(
+    className: String,
     propertyRestriction: PropertyRestriction = PropertyRestriction.NoRestriction,
     selectorClause: SelectorClause = SelectorClause.empty,
     resolveReferences: Boolean = false,
     resolutionTimeout: FiniteDuration = 5.seconds,
-    cimNamespace: Option[String] = None): SubscribeBySelector =
+    cimNamespace: Option[String] = None
+  ): SubscribeBySelector =
     SubscribeBySelector(
       ResourceUri.defaultBase.applyRelative(className),
       propertyRestriction,
       selectorClause,
       resolveReferences,
       resolutionTimeout,
-      cimNamespace)
+      cimNamespace
+    )
 
   implicit object Executor extends WSManFilteredSubscriptionDefn.Executor[SubscribeBySelector] {
 

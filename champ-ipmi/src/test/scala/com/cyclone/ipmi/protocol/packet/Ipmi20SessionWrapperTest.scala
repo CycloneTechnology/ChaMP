@@ -53,11 +53,13 @@ class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
     }
 
     "encode and decode an encrypted, authenticated session wrapper" in {
-      val sik = AuthenticationAlgorithm.RakpHmacSha1.determineSik(Key.KG.fromCredentials(IpmiCredentials("root", "password")), ByteString(1, 2, 3))
+      val sik = AuthenticationAlgorithm.RakpHmacSha1
+        .determineSik(Key.KG.fromCredentials(IpmiCredentials("root", "password")), ByteString(1, 2, 3))
 
       val sessionId = ManagedSystemSessionId(123)
       val ctx =
-        V20SessionContext(sessionId,
+        V20SessionContext(
+          sessionId,
           cipherSuite = CipherSuite(
             AuthenticationAlgorithm.NoAuth,
             ConfidentialityAlgorithm.AesCbc128,

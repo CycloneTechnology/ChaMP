@@ -19,7 +19,8 @@ class SdrFilterTest extends WordSpec with Matchers {
     sensorInitialization = SensorInitialization(0),
     sensorCapabilities = SensorCapabilities(0),
     sensorType = SensorType.Voltage,
-    sensorMasks = SensorMasks(ReadingMask.DiscreteStates(EventBits.empty, EventReadingType.Performance), EventMask.empty),
+    sensorMasks =
+      SensorMasks(ReadingMask.DiscreteStates(EventBits.empty, EventReadingType.Performance), EventMask.empty),
     sensorUnits = SensorUnits.Simple(SensorUnit.Volts),
     linearization = Linearization.Linear,
     analogDataFormat = AnalogDataFormat.Unsigned,
@@ -44,7 +45,8 @@ class SdrFilterTest extends WordSpec with Matchers {
     sensorInitialization = SensorInitialization(0),
     sensorCapabilities = SensorCapabilities(0),
     sensorType = SensorType.Voltage,
-    sensorMasks = SensorMasks(ReadingMask.DiscreteStates(EventBits.empty, EventReadingType.Performance), EventMask.empty),
+    sensorMasks =
+      SensorMasks(ReadingMask.DiscreteStates(EventBits.empty, EventReadingType.Performance), EventMask.empty),
     sensorUnits = SensorUnits.Simple(SensorUnit.Volts),
     sensorDirection = SensorDirection.Output,
     sensorRecordSharing = SensorRecordSharing.NoSharing,
@@ -65,10 +67,8 @@ class SdrFilterTest extends WordSpec with Matchers {
     "used for a compact/event record with alphabetic modification" must {
       val record = compactRecord.copy(
         baseSensorId = SensorId("abcde "),
-        sensorRecordSharing = SensorRecordSharing(
-          shareCount = 2,
-          SharingModifierType.Alpha,
-          sensorIdOffset = 26))
+        sensorRecordSharing = SensorRecordSharing(shareCount = 2, SharingModifierType.Alpha, sensorIdOffset = 26)
+      )
 
       "include only if the share count includes" in {
         BySensorIds(SensorId("abcde AA")).predicate(record) shouldBe true
@@ -80,10 +80,8 @@ class SdrFilterTest extends WordSpec with Matchers {
     "used for a compact/event record with numeric modification" must {
       val record = compactRecord.copy(
         baseSensorId = SensorId("abcde "),
-        sensorRecordSharing = SensorRecordSharing(
-          shareCount = 2,
-          SharingModifierType.Numeric,
-          sensorIdOffset = 5))
+        sensorRecordSharing = SensorRecordSharing(shareCount = 2, SharingModifierType.Numeric, sensorIdOffset = 5)
+      )
 
       "include only if the share count includes" in {
         BySensorIds(SensorId("abcde 5")).predicate(record) shouldBe true
@@ -106,7 +104,8 @@ class SdrFilterTest extends WordSpec with Matchers {
     "used for a compact/event record" must {
       val record = compactRecord.copy(
         baseSensorNumber = SensorNumber(10),
-        sensorRecordSharing = SensorRecordSharing(shareCount = 2))
+        sensorRecordSharing = SensorRecordSharing(shareCount = 2)
+      )
 
       "include only if the share count includes" in {
         BySensorNumbers(SensorNumber(10)).predicate(record) shouldBe true

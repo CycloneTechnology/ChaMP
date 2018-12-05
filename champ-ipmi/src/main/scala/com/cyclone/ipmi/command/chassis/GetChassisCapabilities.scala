@@ -13,6 +13,7 @@ object GetChassisCapabilities {
 
   object Capabilities {
     implicit val decoder: Decoder[Capabilities] = new Decoder[Capabilities] {
+
       def decode(data: ByteString): Capabilities = {
         val byte = data(0)
 
@@ -20,7 +21,8 @@ object GetChassisCapabilities {
           powerProvidesInterlock = byte.bit3,
           providesDiagnosticInterrupt = byte.bit2,
           providesFrontPanelLockout = byte.bit1,
-          chassisProvidesIntrusion = byte.bit0)
+          chassisProvidesIntrusion = byte.bit0
+        )
       }
     }
   }
@@ -29,10 +31,12 @@ object GetChassisCapabilities {
     powerProvidesInterlock: Boolean,
     providesDiagnosticInterrupt: Boolean,
     providesFrontPanelLockout: Boolean,
-    chassisProvidesIntrusion: Boolean)
+    chassisProvidesIntrusion: Boolean
+  )
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -58,7 +62,8 @@ object GetChassisCapabilities {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
@@ -67,14 +72,16 @@ object GetChassisCapabilities {
     chassisSDRDeviceAddress: DeviceAddress,
     chassisSELDeviceAddress: DeviceAddress,
     chassisSystemManagementDeviceAddress: DeviceAddress,
-    chassisBridgeDeviceAddress: Option[DeviceAddress]) extends IpmiCommandResult
+    chassisBridgeDeviceAddress: Option[DeviceAddress]
+  ) extends IpmiCommandResult
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
       def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.ChassisRequest
     val commandCode = CommandCode(0x00)

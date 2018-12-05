@@ -11,17 +11,14 @@ import org.scalatest.{Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
-class PushDeliveryRouterTest
-  extends TestKitSupport
-    with WordSpecLike
-    with Matchers
-    with ActorSystemShutdown {
+class PushDeliveryRouterTest extends TestKitSupport with WordSpecLike with Matchers with ActorSystemShutdown {
 
-  class Fixture extends DefaultPushDeliveryRouterComponent
-    with KerberosStateHousekeeperComponent
-    with GuavaKerberosTokenCacheComponent
-    with TestActorSystemComponent
-    with ActorMaterializerComponent {
+  class Fixture
+      extends DefaultPushDeliveryRouterComponent
+      with KerberosStateHousekeeperComponent
+      with GuavaKerberosTokenCacheComponent
+      with TestActorSystemComponent
+      with ActorMaterializerComponent {
 
     val subsIdA = SubscriptionId("A")
     val subsIdB = SubscriptionId("B")
@@ -42,10 +39,12 @@ class PushDeliveryRouterTest
       val itemB = enumItem("B")
 
       Source
-        .single(List(
-          PushedMessage.Item(itemA, subsIdA),
-          PushedMessage.Item(itemB, subsIdB)
-        ))
+        .single(
+          List(
+            PushedMessage.Item(itemA, subsIdA),
+            PushedMessage.Item(itemB, subsIdB)
+          )
+        )
         .runWith(pushDeliveryRouter.inputSink)
 
       subsA.requestNext() shouldBe itemA
@@ -55,8 +54,7 @@ class PushDeliveryRouterTest
     "expire subscriptions when no data received within expiry at all" in new Fixture {
       lazy val itemA = enumItem("A")
 
-      Source
-        .maybe
+      Source.maybe
         .runWith(pushDeliveryRouter.inputSink)
 
       val sourceB = pushDeliveryRouter.newSubscriberSource(subsIdB, Some(100.millis))
@@ -111,7 +109,7 @@ class PushDeliveryRouterTest
       lazy val itemA = enumItem("A")
 
       (Source.tick(15.millis, 15.millis, List(PushedMessage.Heartbeat(subsIdA))).take(10) ++
-        Source.single(List(PushedMessage.Item(itemA, subsIdA))))
+      Source.single(List(PushedMessage.Item(itemA, subsIdA))))
         .runWith(pushDeliveryRouter.inputSink)
 
       val sourceA = pushDeliveryRouter.newSubscriberSource(subsIdA, Some(100.millis))
@@ -124,7 +122,9 @@ class PushDeliveryRouterTest
     "not expire if no expiry set" in new Fixture {
       lazy val itemA = enumItem("A")
 
-      Source.tick(150.millis, 10.millis, List(PushedMessage.Item(itemA, subsIdA))).take(1)
+      Source
+        .tick(150.millis, 10.millis, List(PushedMessage.Item(itemA, subsIdA)))
+        .take(1)
         .runWith(pushDeliveryRouter.inputSink)
 
       val sourceA = pushDeliveryRouter.newSubscriberSource(subsIdA, None)

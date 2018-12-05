@@ -11,16 +11,14 @@ trait RequestTimeouts {
 }
 
 object RequestTimeouts {
+
   val default: RequestTimeouts =
     Exponential(initialTimeout = 2.seconds, timeoutFactor = 2, maxAttempts = 4)
 
   def simple(timeout: FiniteDuration = 2.seconds, maxAttempts: Int = 4): RequestTimeouts =
     Exponential(initialTimeout = timeout, timeoutFactor = 1, maxAttempts = maxAttempts)
 
-  case class Exponential(
-    initialTimeout: FiniteDuration,
-    timeoutFactor: Int,
-    maxAttempts: Int) extends RequestTimeouts {
+  case class Exponential(initialTimeout: FiniteDuration, timeoutFactor: Int, maxAttempts: Int) extends RequestTimeouts {
     require(maxAttempts > 0)
 
     def next: (FiniteDuration, Option[Exponential]) = (

@@ -14,7 +14,7 @@ object OperationDeadline {
   /**
     * A deadline that can be re-used as a fixed timeout for multiple commands in an operation.
     */
-  def reusableTimeout(timeout: FiniteDuration) : ResettingDeadline = ResettingDeadline(timeout)
+  def reusableTimeout(timeout: FiniteDuration): ResettingDeadline = ResettingDeadline(timeout)
 
   /**
     * The status (as an immutable snapshot at a point in time) of a deadline
@@ -33,7 +33,9 @@ object OperationDeadline {
   }
 
   case class TimeRemains(timeRemaining: FiniteDuration) extends DeadlineState with NotReachedDeadline {
-    def shortestOfTimeRemainingAnd(timeout: FiniteDuration): FiniteDuration = timeout min timeRemaining
+
+    def shortestOfTimeRemainingAnd(timeout: FiniteDuration): FiniteDuration =
+      timeout min timeRemaining
   }
 
   case object NoDeadline extends DeadlineState with NotReachedDeadline {
@@ -47,10 +49,16 @@ object OperationDeadline {
   /**
     * Similar to OperationDeadline.currentState but allows an optional deadline that evaluates to no deadline.
     */
-  def currentState(operationDeadline: Option[OperationDeadline], smallestTimeout: FiniteDuration): DeadlineState =
+  def currentState(
+    operationDeadline: Option[OperationDeadline],
+    smallestTimeout: FiniteDuration
+  ): DeadlineState =
     operationDeadline.map(_.currentState(smallestTimeout)).getOrElse(NoDeadline)
 
-  def currentState(operationDeadline: Option[OperationDeadline], timeUnit: TimeUnit): DeadlineState =
+  def currentState(
+    operationDeadline: Option[OperationDeadline],
+    timeUnit: TimeUnit
+  ): DeadlineState =
     operationDeadline.map(_.currentState(timeUnit)).getOrElse(NoDeadline)
 }
 
@@ -93,7 +101,6 @@ trait OperationDeadline {
   def currentState(timeUnit: TimeUnit): DeadlineState =
     currentState(Duration(1, timeUnit))
 }
-
 
 case class AbsoluteDeadline(deadline: Deadline) extends OperationDeadline {
   def timeRemaining: FiniteDuration = deadline.timeLeft max 0.nanos

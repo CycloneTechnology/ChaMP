@@ -12,6 +12,7 @@ sealed trait SensorType {
 object SensorType {
 
   implicit val decoder: Decoder[SensorType] = new Decoder[SensorType] {
+
     def decode(data: ByteString): SensorType =
       data(0).toUnsignedInt match {
         case Temperature.code                  => Temperature
@@ -1188,7 +1189,8 @@ object SensorType {
 
       case object EntityIsInvalidOrUnsupportedHardwareVersion extends EventReadingOffset
 
-      case object EntityContainsInvalidOrUnsupportedFirmwareOrSoftwareVersionWithAssociatedEntity extends EventReadingOffset
+      case object EntityContainsInvalidOrUnsupportedFirmwareOrSoftwareVersionWithAssociatedEntity
+          extends EventReadingOffset
 
       case object HardwareChangeDetectedWithAssociatedEntityWasSuccessful extends EventReadingOffset
 
@@ -1204,7 +1206,8 @@ object SensorType {
       case 0x02 => Some(HardwareIncompatibilityDetectedWithAssociatedEntity)
       case 0x03 => Some(FirmwareOrSoftwareIncompatibilityDetectedWithAssociatedEntity)
       case 0x04 => Some(EntityIsInvalidOrUnsupportedHardwareVersion)
-      case 0x05 => Some(EntityContainsInvalidOrUnsupportedFirmwareOrSoftwareVersionWithAssociatedEntity)
+      case 0x05 =>
+        Some(EntityContainsInvalidOrUnsupportedFirmwareOrSoftwareVersionWithAssociatedEntity)
       case 0x06 => Some(HardwareChangeDetectedWithAssociatedEntityWasSuccessful)
       case 0x07 => Some(SoftwareOrFirmwareChangeDetectedWithAssociatedEntity)
       case _    => None
@@ -1254,4 +1257,3 @@ object SensorType {
   }
 
 }
-

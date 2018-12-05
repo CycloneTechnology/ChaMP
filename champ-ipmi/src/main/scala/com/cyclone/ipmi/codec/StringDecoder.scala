@@ -13,6 +13,7 @@ trait StringDecoder extends Decoder[String]
 object StringDecoder {
 
   case class WithCharacterDecoder(charset: Charset, trim: Boolean) extends StringDecoder {
+
     def decode(bs: ByteString): String = {
       val s = bs.decodeString(charset.name)
 
@@ -32,15 +33,23 @@ object StringDecoder {
     * 6-bit ASCII string encoding (see section 13)
     */
   object SixBitAsciiDecoder extends StringDecoder {
+
     def decode(data: ByteString): String = {
       // 6-bit ascii packs first character into least sig bits of first bytes
       // with the remaining two bits forming the least significant bits of the next character, etc
-      val binaryChars = data.reverse.flatMap(b => Integer.toBinaryString(b.toUnsignedInt + 0x100).substring(1))
+      val binaryChars =
+        data.reverse.flatMap(b => Integer.toBinaryString(b.toUnsignedInt + 0x100).substring(1))
 
-      binaryChars.grouped(6).map { chars =>
-        val bin = chars.mkString("")
-        (Integer.parseInt(bin, 2) + ' ').toChar
-      }.toSeq.reverse.mkString("").trim
+      binaryChars
+        .grouped(6)
+        .map { chars =>
+          val bin = chars.mkString("")
+          (Integer.parseInt(bin, 2) + ' ').toChar
+        }
+        .toSeq
+        .reverse
+        .mkString("")
+        .trim
     }
   }
 
@@ -48,13 +57,17 @@ object StringDecoder {
     * A BCD numeric string encoding
     */
   object BcdDecoder extends StringDecoder {
+
     def decode(data: ByteString): String = {
-      val chars = data.map(_.toUnsignedInt).collect {
-        case 0xa                         => ' '
-        case 0xb                         => '-'
-        case 0xc                         => '.'
-        case i: Int if 0 to 9 contains i => (i + '0').toChar
-      }.toArray
+      val chars = data
+        .map(_.toUnsignedInt)
+        .collect {
+          case 0xa                         => ' '
+          case 0xb                         => '-'
+          case 0xc                         => '.'
+          case i: Int if 0 to 9 contains i => (i + '0').toChar
+        }
+        .toArray
 
       new String(chars)
     }

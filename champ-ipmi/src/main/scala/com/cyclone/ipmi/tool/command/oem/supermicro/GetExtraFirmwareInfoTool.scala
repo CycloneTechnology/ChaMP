@@ -19,28 +19,39 @@ import scala.concurrent.Future
 object GetExtraFirmwareInfoTool {
 
   object Command extends IpmiToolCommand {
-    implicit val executor: CommandExecutor[Command.type, Result] = new CommandExecutor[Command.type, Result] {
-      def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command.type, Result] =
+      new CommandExecutor[Command.type, Result] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(GetExtraFirmwareInfo.Command()))
-        } yield Result(
-          cmdResult.firmwareMajorVersion,
-          cmdResult.firmwareMinorVersion,
-          cmdResult.firmwareSubVersion,
-          cmdResult.firmwareBuildNumber,
-          cmdResult.hardwareId,
-          cmdResult.firmwareTag)
+        def execute(command: Command.type)(implicit ctx: Ctx): Future[IpmiError \/ Result] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(connection.executeCommandOrError(GetExtraFirmwareInfo.Command()))
+          } yield
+            Result(
+              cmdResult.firmwareMajorVersion,
+              cmdResult.firmwareMinorVersion,
+              cmdResult.firmwareSubVersion,
+              cmdResult.firmwareBuildNumber,
+              cmdResult.hardwareId,
+              cmdResult.firmwareTag
+            )
+
+          result.run
+        }
       }
-    }
 
     def description() = "supermicro extra-firmware-info"
   }
 
-  case class Result(firmwareMajorVersion: Int, firmwareMinorVersion: Int, firmwareSubVersion: Int, firmwareBuildNumber: Int, hardwareId: Byte, firmwareTag: String) extends IpmiToolCommandResult
+  case class Result(
+    firmwareMajorVersion: Int,
+    firmwareMinorVersion: Int,
+    firmwareSubVersion: Int,
+    firmwareBuildNumber: Int,
+    hardwareId: Byte,
+    firmwareTag: String
+  ) extends IpmiToolCommandResult
 
 }

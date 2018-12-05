@@ -51,9 +51,11 @@ class ManagedInstanceTest extends WordSpec with Matchers {
           .withProperty("b", InstancePropertyValue(b))
 
         a.external shouldBe WSManInstance(
-          "b" -> WSManPropertyValue.ForInstance(WSManInstance(
-            "b_name" -> WSManPropertyValue.ForString("b_value")
-          ))
+          "b" -> WSManPropertyValue.ForInstance(
+            WSManInstance(
+              "b_name" -> WSManPropertyValue.ForString("b_value")
+            )
+          )
         )
       }
 
@@ -72,7 +74,8 @@ class ManagedInstanceTest extends WordSpec with Matchers {
       "work for references" in {
         val r2 = newReference("http://refUri")
 
-        val a = newInstance("a").withProperty("name", StringPropertyValue("value"))
+        val a = newInstance("a")
+          .withProperty("name", StringPropertyValue("value"))
           .withProperty("ref", ReferencePropertyValue(r2))
 
         val ReferencePropertyValue(r2_got) = a.getPropertyValue("ref").get
@@ -81,15 +84,13 @@ class ManagedInstanceTest extends WordSpec with Matchers {
 
         a.external shouldBe WSManInstance(
           "name" -> WSManPropertyValue.ForString("value"),
-          "ref" -> WSManPropertyValue.ForReference("http://refUri")
+          "ref"  -> WSManPropertyValue.ForReference("http://refUri")
         )
       }
 
       "work for lists of simple values" in {
         val a = newInstance("a")
-          .withProperty("name",
-            ListPropertyValue(StringPropertyValue("value1"), StringPropertyValue("value2"))
-          )
+          .withProperty("name", ListPropertyValue(StringPropertyValue("value1"), StringPropertyValue("value2")))
 
         a.external shouldBe WSManInstance(
           "name" -> WSManPropertyValue.ForArray(
@@ -105,8 +106,8 @@ class ManagedInstanceTest extends WordSpec with Matchers {
         val b2 = newInstance("b")
           .withProperty("b2_name", StringPropertyValue("b2_value"))
 
-        val a = newInstance("a").withProperty("name",
-          ListPropertyValue(InstancePropertyValue(b1), InstancePropertyValue(b2)))
+        val a =
+          newInstance("a").withProperty("name", ListPropertyValue(InstancePropertyValue(b1), InstancePropertyValue(b2)))
 
         a.external shouldBe WSManInstance(
           "name" -> WSManPropertyValue.ForArray(
@@ -121,8 +122,8 @@ class ManagedInstanceTest extends WordSpec with Matchers {
 
         val r2 = newReference("http://uri2")
 
-        val a = newInstance("a").withProperty("name",
-          ListPropertyValue(ReferencePropertyValue(r1), ReferencePropertyValue(r2)))
+        val a = newInstance("a")
+          .withProperty("name", ListPropertyValue(ReferencePropertyValue(r1), ReferencePropertyValue(r2)))
 
         a.external shouldBe WSManInstance(
           "name" -> WSManPropertyValue.ForArray(
@@ -166,7 +167,8 @@ class ManagedInstanceTest extends WordSpec with Matchers {
       "work for references" in {
         val r2 = newReference("http://refUri")
 
-        val a = newInstance("a").withProperty("name", StringPropertyValue("value"))
+        val a = newInstance("a")
+          .withProperty("name", StringPropertyValue("value"))
           .withProperty("ref", ReferencePropertyValue(r2))
 
         val ReferencePropertyValue(r2_got) = a.getPropertyValue("ref").get
@@ -180,8 +182,8 @@ class ManagedInstanceTest extends WordSpec with Matchers {
         val b2 = newInstance("b")
           .withProperty("b2_name", StringPropertyValue("b2_value"))
 
-        val a = newInstance("a").withProperty("name", ListPropertyValue(InstancePropertyValue(b1),
-          InstancePropertyValue(b2)))
+        val a =
+          newInstance("a").withProperty("name", ListPropertyValue(InstancePropertyValue(b1), InstancePropertyValue(b2)))
 
         val Some(ListPropertyValue(b1_got :: b2_got :: _)) = a.getPropertyValue("name")
 
@@ -190,8 +192,7 @@ class ManagedInstanceTest extends WordSpec with Matchers {
       }
 
       "hold list properties" in {
-        val p = ListPropertyValue(StringPropertyValue("value_1"),
-          StringPropertyValue("value_2"))
+        val p = ListPropertyValue(StringPropertyValue("value_1"), StringPropertyValue("value_2"))
 
         val a = newInstance("a").withProperty("name", p)
 
@@ -203,8 +204,8 @@ class ManagedInstanceTest extends WordSpec with Matchers {
 
         val r2 = newReference("http://uri2")
 
-        val a = newInstance("a").withProperty("name", ListPropertyValue(ReferencePropertyValue(r1),
-          ReferencePropertyValue(r2)))
+        val a = newInstance("a")
+          .withProperty("name", ListPropertyValue(ReferencePropertyValue(r1), ReferencePropertyValue(r2)))
 
         val Some(ListPropertyValue(r1_got :: r2_got :: _)) = a.getPropertyValue("name")
 
@@ -216,18 +217,18 @@ class ManagedInstanceTest extends WordSpec with Matchers {
     "disallow heterogeneous lists" in {
       // Won't be able to discern instance without it having a property..      .      intercept[IllegalArgumentException] {
       intercept[IllegalArgumentException] {
-        ListPropertyValue(InstancePropertyValue(newInstance("b")),
-          ReferencePropertyValue(newReference("http://refUri")))
+        ListPropertyValue(
+          InstancePropertyValue(newInstance("b")),
+          ReferencePropertyValue(newReference("http://refUri"))
+        )
       }
 
       intercept[IllegalArgumentException] {
-        ListPropertyValue(StringPropertyValue("value"),
-          ReferencePropertyValue(newReference("http://refUri")))
+        ListPropertyValue(StringPropertyValue("value"), ReferencePropertyValue(newReference("http://refUri")))
       }
 
       intercept[IllegalArgumentException] {
-        ListPropertyValue(InstancePropertyValue(newInstance("b")),
-          StringPropertyValue("value"))
+        ListPropertyValue(InstancePropertyValue(newInstance("b")), StringPropertyValue("value"))
       }
     }
 
@@ -237,13 +238,14 @@ class ManagedInstanceTest extends WordSpec with Matchers {
           .withProperty("name1", StringPropertyValue("value1"))
           .withProperty("name2", StringPropertyValue("value2"))
 
-        assert(a.propertyNamesAndValues((n, _) => n == "name1") ===
-          List(("name1", StringPropertyValue("value1"))))
+        assert(
+          a.propertyNamesAndValues((n, _) => n == "name1") ===
+            List(("name1", StringPropertyValue("value1")))
+        )
       }
 
       "get all properties" in {
-        val p = ListPropertyValue(StringPropertyValue("value_1"),
-          StringPropertyValue("value_2"))
+        val p = ListPropertyValue(StringPropertyValue("value_1"), StringPropertyValue("value_2"))
 
         val a = newInstance("a").withProperty("name", p)
 
@@ -255,8 +257,10 @@ class ManagedInstanceTest extends WordSpec with Matchers {
           .withProperty("name1", StringPropertyValue("value1"))
           .withProperty("name2", StringPropertyValue("value2"))
 
-        assert(a.allPropertyNamesAndValues ===
-          List(("name1", StringPropertyValue("value1")), ("name2", StringPropertyValue("value2"))))
+        assert(
+          a.allPropertyNamesAndValues ===
+            List(("name1", StringPropertyValue("value1")), ("name2", StringPropertyValue("value2")))
+        )
       }
     }
 

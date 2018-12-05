@@ -32,6 +32,7 @@ object GetHddLightpathStatus {
 
   object SignalStatus {
     implicit val decoder: Decoder[SignalStatus] = new Decoder[SignalStatus] {
+
       def decode(data: ByteString): SignalStatus = data(0).toUnsignedInt match {
         case 0x00 => Ok
         case 0x01 => Identify
@@ -41,6 +42,7 @@ object GetHddLightpathStatus {
     }
 
     implicit val encoder: Coder[SignalStatus] = new Coder[SignalStatus] {
+
       def encode(a: SignalStatus): ByteString = {
         a match {
           case Ok                => ByteString(0x00)
@@ -63,6 +65,7 @@ object GetHddLightpathStatus {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         //        val iterator = data.iterator
         //        val is = iterator.asInputStream
@@ -77,16 +80,18 @@ object GetHddLightpathStatus {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult] {
-      case SignalNotAvailable.code  => SignalNotAvailable
-      case ComponentNotPresent.code => ComponentNotPresent
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult] {
+        case SignalNotAvailable.code  => SignalNotAvailable
+        case ComponentNotPresent.code => ComponentNotPresent
+      }
   }
 
   case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
 
         val b = new ByteStringBuilder
@@ -102,7 +107,8 @@ object GetHddLightpathStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
 
   }
 

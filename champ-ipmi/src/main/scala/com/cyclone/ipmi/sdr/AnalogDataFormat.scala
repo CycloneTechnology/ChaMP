@@ -7,6 +7,7 @@ sealed trait AnalogDataFormat
 
 object AnalogDataFormat {
   implicit val decoder: Decoder[AnalogDataFormat] = new Decoder[AnalogDataFormat] {
+
     def decode(data: ByteString): AnalogDataFormat = data(0).bits6To7.toUnsignedInt match {
       case 0 => Unsigned
       case 1 => OnesComplement

@@ -20,10 +20,7 @@ trait MockRequesterFactoryComponent extends RequesterFactoryComponent {
   val requester = mockery.mock(classOf[Requester])
 
   def requesterFactory = new RequesterFactory {
-    def requester(
-      actorContext: ActorContext,
-      hub: ActorRef,
-      seqNoManager: ActorRef) = self.requester
+    def requester(actorContext: ActorContext, hub: ActorRef, seqNoManager: ActorRef) = self.requester
   }
 
   def willMakeRequest[Cmd <: IpmiCommand, Res <: IpmiCommandResult](
@@ -31,13 +28,10 @@ trait MockRequesterFactoryComponent extends RequesterFactoryComponent {
     version: IpmiVersion,
     sessionContext: SessionContext,
     result: Future[IpmiErrorOr[Res]],
-    targetAddress: DeviceAddress = DeviceAddress.BmcAddress)
-    (implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Cmd, Res]) =
+    targetAddress: DeviceAddress = DeviceAddress.BmcAddress
+  )(implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Cmd, Res]) =
     mockery.checking(new Expectations {
-      oneOf(requester).makeRequest(command,
-        version,
-        sessionContext,
-        targetAddress)
+      oneOf(requester).makeRequest(command, version, sessionContext, targetAddress)
       will(returnValue(result))
     })
 
@@ -46,7 +40,7 @@ trait MockRequesterFactoryComponent extends RequesterFactoryComponent {
     timeoutContext: TimeoutContext,
     version: IpmiVersion,
     sessionContext: SessionContext,
-    result: Future[IpmiErrorOr[Res]])
-    (implicit codec: CommandResultCodec[Cmd, Res]): Unit =
+    result: Future[IpmiErrorOr[Res]]
+  )(implicit codec: CommandResultCodec[Cmd, Res]): Unit =
     willMakeRequest(command, version, sessionContext, result)(timeoutContext, codec)
 }

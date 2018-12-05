@@ -22,46 +22,57 @@ import scala.concurrent.duration.FiniteDuration
 trait WSManSubscriptionDefn {
   def resolutionTimeout: FiniteDuration
 
-  //NB this is a function not a value so that we get a fresh deadline 
+  //NB this is a function not a value so that we get a fresh deadline
   // (that is absolute so that it spans getting all references)
   // for each event we receive (since receiving events is open-ended).
   def resolutionDeadline: OperationDeadline = OperationDeadline.fromNow(resolutionTimeout)
 }
 
-protected trait WSManFilteredSubscriptionDefn
-  extends WSManSubscriptionDefn {
+protected trait WSManFilteredSubscriptionDefn extends WSManSubscriptionDefn {
 
   def cimNamespace: Option[String]
 }
 
 object WSManFilteredSubscriptionDefn {
 
-  trait Executor[S <: WSManFilteredSubscriptionDefn]
-    extends SubscriptionExecutor[S]
-      with WSManInstancesResolver[S] {
+  trait Executor[S <: WSManFilteredSubscriptionDefn] extends SubscriptionExecutor[S] with WSManInstancesResolver[S] {
 
     protected def instanceFilter(sub: S): InstanceFilter
 
     protected def resourceUriReference(sub: S): ManagedReference
 
-    def source(sub: S, deliveryHandler: DeliveryHandler)(implicit context: WSManOperationContext): Source[SubscriptionItem, SubscriptionId] = {
+    def source(sub: S, deliveryHandler: DeliveryHandler)(
+      implicit context: WSManOperationContext
+    ): Source[SubscriptionItem, SubscriptionId] = {
 
       lazy val localSubscriptionId = SubscriptionId.newId
 
-      Source.fromFuture(
-        deliveryHandler.register(
-          localSubscriptionId, resourceUriReference(sub), sub.cimNamespace, instanceFilter(sub)))
+      Source
+        .fromFuture(
+          deliveryHandler.register(
+            localSubscriptionId,
+            resourceUriReference(sub),
+            sub.cimNamespace,
+            instanceFilter(sub)
+          )
+        )
         .flatMapConcat {
           case \/-(subsRegistration) =>
-            val instances = deliveryHandler.setupDelivery(context, subsRegistration)
+            val instances = deliveryHandler
+              .setupDelivery(context, subsRegistration)
               .map(_.managedInstance)
               .collect { case Some(x) => x }
               .mapAsync(1) { instance =>
-                resolveReferencesIfReqd(sub, context, instance, sub.cimNamespace, sub.resolutionDeadline)
-                  .map {
-                    case \/-(item) => item
-                    case -\/(e)    => throw WSManErrorException(e)
-                  }
+                resolveReferencesIfReqd(
+                  sub,
+                  context,
+                  instance,
+                  sub.cimNamespace,
+                  sub.resolutionDeadline
+                ).map {
+                  case \/-(item) => item
+                  case -\/(e)    => throw WSManErrorException(e)
+                }
               }
               .alsoTo(Sink.onComplete(_ => subsRegistration.unsubscribe))
               .map(SubscriptionItem.Instance)
@@ -75,10 +86,3 @@ object WSManFilteredSubscriptionDefn {
   }
 
 }
-
-
-
-
-
-
-

@@ -18,6 +18,7 @@ import scala.util.{Failure, Success}
   * Deploys Kerberos artifacts and sets system properties etc.
   */
 trait KerberosDeployer {
+
   /**
     * Deploys artifacts and returns the deployment result
     *
@@ -27,7 +28,8 @@ trait KerberosDeployer {
     */
   def deploy(
     kerberosArtifacts: KerberosArtifacts,
-    deployLocation: Option[ArtifactDeploymentInfo] = None): Future[ArtifactDeploymentResult]
+    deployLocation: Option[ArtifactDeploymentInfo] = None
+  ): Future[ArtifactDeploymentResult]
 }
 
 object KerberosDeployer {
@@ -61,6 +63,7 @@ trait DefaultKerberosDeployerComponent extends KerberosDeployerComponent {
       }
 
     case class NewTempFile(prefix: String) extends DeploymentPath {
+
       def path: Path = {
         val tempPath = Files.createTempFile(prefix, "conf")
         tempPath.toFile.deleteOnExit()
@@ -77,7 +80,8 @@ trait DefaultKerberosDeployerComponent extends KerberosDeployerComponent {
 
     def deploy(
       kerberosArtifacts: KerberosArtifacts,
-      locations: Option[ArtifactDeploymentInfo]): Future[ArtifactDeploymentResult] = {
+      locations: Option[ArtifactDeploymentInfo]
+    ): Future[ArtifactDeploymentResult] = {
 
       // Otherwise will not callback to get credentials
       System.setProperty("javax.security.auth.useSubjectCredsOnly", "false")
@@ -86,12 +90,14 @@ trait DefaultKerberosDeployerComponent extends KerberosDeployerComponent {
         kerb5Path <- deployAndSetProp(
           kerberosArtifacts.kerb5ConfContent,
           DeploymentPath.from(locations.map(_.kerb5ConfPath), "kerb5"),
-          "java.security.krb5.conf")
+          "java.security.krb5.conf"
+        )
 
         loginPath <- deployAndSetProp(
           kerberosArtifacts.loginConfContent,
           DeploymentPath.from(locations.map(_.loginConfPath), "login"),
-          "java.security.auth.login.config")
+          "java.security.auth.login.config"
+        )
 
         keyTabPath <- deployFile(
           kerberosArtifacts.keyTabContent,
@@ -103,10 +109,15 @@ trait DefaultKerberosDeployerComponent extends KerberosDeployerComponent {
             kerb5ConfPath = kerb5Path,
             loginConfPath = loginPath,
             kerberosArtifacts.servicePrincipalName,
-            keyTabPath = keyTabPath))
+            keyTabPath = keyTabPath
+          )
+        )
     }
 
-    private def deployFile(content: Source[ByteString, _], deploymentPath: DeploymentPath): Future[Path] = {
+    private def deployFile(
+      content: Source[ByteString, _],
+      deploymentPath: DeploymentPath
+    ): Future[Path] = {
       val path = deploymentPath.path
 
       val result = content.runWith(FileIO.toPath(path))
@@ -120,7 +131,8 @@ trait DefaultKerberosDeployerComponent extends KerberosDeployerComponent {
     private def deployAndSetProp(
       content: Source[ByteString, NotUsed],
       deploymentPath: DeploymentPath,
-      systemPropertyName: String): Future[Path] = {
+      systemPropertyName: String
+    ): Future[Path] = {
 
       deployFile(content, deploymentPath)
         .map { path =>

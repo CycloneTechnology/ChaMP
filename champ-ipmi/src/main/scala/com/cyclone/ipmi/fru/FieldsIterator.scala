@@ -11,10 +11,12 @@ import scala.collection.mutable.ListBuffer
   * Not thread safe.
   */
 object FieldsIterator {
-  def from(data: ByteString)(implicit languageCode: LanguageCode): FieldsIterator = new FieldsIterator(data)
+
+  def from(data: ByteString)(implicit languageCode: LanguageCode): FieldsIterator =
+    new FieldsIterator(data)
 }
 
-class FieldsIterator private(data: ByteString)(implicit languageCode: LanguageCode) {
+class FieldsIterator private (data: ByteString)(implicit languageCode: LanguageCode) {
   private val iterator = data.iterator
   private val is = iterator.asInputStream
 
@@ -59,9 +61,10 @@ class FieldsIterator private(data: ByteString)(implicit languageCode: LanguageCo
     for {
       prefix <- is.readByteOptional.as[FruFieldPrefix]
       field <- prefix match {
-        case FruFieldPrefix.FixedLengthField(tpe, len) => Some(tpe.decode(is.read(len), treatAsEnglish))
-        case FruFieldPrefix.EmptyField                 => Some(NullField)
-        case FruFieldPrefix.NoMoreFields               => None
+        case FruFieldPrefix.FixedLengthField(tpe, len) =>
+          Some(tpe.decode(is.read(len), treatAsEnglish))
+        case FruFieldPrefix.EmptyField   => Some(NullField)
+        case FruFieldPrefix.NoMoreFields => None
       }
     } yield field
 }

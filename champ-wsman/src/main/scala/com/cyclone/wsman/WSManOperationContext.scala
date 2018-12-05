@@ -20,7 +20,10 @@ import scala.concurrent.Future
 
 object WSManOperationContext {
 
-  def deepInstanceValues(inst: ManagedInstance, propertyRestriction: PropertyRestriction): List[(String, String)] = {
+  def deepInstanceValues(
+    inst: ManagedInstance,
+    propertyRestriction: PropertyRestriction
+  ): List[(String, String)] = {
     val list = ListBuffer[(String, String)]()
 
     add(inst, list, "", propertyRestriction)
@@ -33,8 +36,10 @@ object WSManOperationContext {
 
   private def add(
     inst: ManagedInstance,
-    list: ListBuffer[(String, String)], prefix: String,
-    propertyRestriction: PropertyRestriction = PropertyRestriction.NoRestriction): Unit = {
+    list: ListBuffer[(String, String)],
+    prefix: String,
+    propertyRestriction: PropertyRestriction = PropertyRestriction.NoRestriction
+  ): Unit = {
 
     def addStringValue(name: String, value: PropertyValue): Unit =
       value match {
@@ -46,7 +51,7 @@ object WSManOperationContext {
 
     for {
       name <- propertyRestriction.filterProperties(inst.propertyNames)
-      pv <- inst.getPropertyValue(name)
+      pv   <- inst.getPropertyValue(name)
     } pv match {
       case ListPropertyValue(values) =>
         var index = 0
@@ -54,7 +59,7 @@ object WSManOperationContext {
           addStringValue(prefix + name + "[" + index + "]", value)
           index += 1
         }
-      case _: PropertyValue          => addStringValue(prefix + name, pv)
+      case _: PropertyValue => addStringValue(prefix + name, pv)
     }
   }
 }
@@ -94,12 +99,16 @@ trait WSManOperationContext {
     * @return a future for the instance with the references filled in
     */
   def resolveReferences(inst: ManagedInstance, deadline: OperationDeadline)(
-    predicate: (String, ManagedReference) => Boolean): Future[WSManErrorOr[ManagedInstance]]
+    predicate: (String, ManagedReference) => Boolean
+  ): Future[WSManErrorOr[ManagedInstance]]
 
   /**
     * Resolves all references. Again non-recursively.
     */
-  def resolveAllReferences(inst: ManagedInstance, deadline: OperationDeadline): Future[WSManErrorOr[ManagedInstance]] =
+  def resolveAllReferences(
+    inst: ManagedInstance,
+    deadline: OperationDeadline
+  ): Future[WSManErrorOr[ManagedInstance]] =
     resolveReferences(inst, deadline)((_, _) => true)
 
   // TODO ?maybe provide fully recursive method (that uses this one?) for a specd recursion depth?
@@ -117,13 +126,17 @@ trait WSManOperationContext {
   * Factory for [[WSManOperationContext]]s
   */
 trait WSManOperationContextFactory {
+
   def wsmanContextFor(
-    httpUrl: HttpUrl, securityContext: SecurityContext,
-    operationDeadline: OperationDeadline): WSManOperationContext
+    httpUrl: HttpUrl,
+    securityContext: SecurityContext,
+    operationDeadline: OperationDeadline
+  ): WSManOperationContext
 
   def wsmanContextFor(
     target: WSManTarget,
-    operationDeadline: OperationDeadline): WSManOperationContext =
+    operationDeadline: OperationDeadline
+  ): WSManOperationContext =
     wsmanContextFor(target.httpUrl, target.securityContext, operationDeadline)
 }
 
@@ -137,26 +150,32 @@ trait DefaultWSManContextFactoryComponent extends WSManOperationContextFactoryCo
     with MaterializerComponent
     with WSManConnectionFactoryComponent =>
 
-  lazy val wsmanOperationContextFactory: WSManOperationContextFactory = new WSManOperationContextFactory {
-    def wsmanContextFor(
-      httpUrl: HttpUrl, securityContext: SecurityContext,
-      operationDeadline: OperationDeadline): DefaultWSManOperationContext = {
-      val connection = wsManConnectionFactory.createConnection(httpUrl, securityContext)
+  lazy val wsmanOperationContextFactory: WSManOperationContextFactory =
+    new WSManOperationContextFactory {
 
-      DefaultWSManOperationContext(connection, operationDeadline, materializer)
+      def wsmanContextFor(
+        httpUrl: HttpUrl,
+        securityContext: SecurityContext,
+        operationDeadline: OperationDeadline
+      ): DefaultWSManOperationContext = {
+        val connection = wsManConnectionFactory.createConnection(httpUrl, securityContext)
+
+        DefaultWSManOperationContext(connection, operationDeadline, materializer)
+      }
     }
-  }
 
   private case class DefaultWSManOperationContext(
     connection: WSManConnection,
     operationDeadline: OperationDeadline,
-    materializer: Materializer) extends WSManOperationContext {
+    materializer: Materializer
+  ) extends WSManOperationContext {
     ctx =>
 
     def pushDeliveryHub: PushDeliveryRouter = self.pushDeliveryRouter
 
     def resolveReferences(inst: ManagedInstance, deadline: OperationDeadline)(
-      predicate: (String, ManagedReference) => Boolean): Future[WSManErrorOr[ManagedInstance]] = {
+      predicate: (String, ManagedReference) => Boolean
+    ): Future[WSManErrorOr[ManagedInstance]] = {
 
       val lookupRef: ManagedReference => Future[WSManErrorOr[ManagedInstance]] =
         Memo.immutableHashMapMemo { mr =>
@@ -164,8 +183,10 @@ trait DefaultWSManContextFactoryComponent extends WSManOperationContextFactoryCo
         }
 
       def replaceWithReferred(
-        mi: ManagedInstance, name: String,
-        rpv: ReferencePropertyValue): Future[WSManErrorOr[ManagedInstance]] = {
+        mi: ManagedInstance,
+        name: String,
+        rpv: ReferencePropertyValue
+      ): Future[WSManErrorOr[ManagedInstance]] = {
         val ReferencePropertyValue(ref) = rpv
 
         val result =
@@ -176,19 +197,21 @@ trait DefaultWSManContextFactoryComponent extends WSManOperationContextFactoryCo
         result.run
       }
 
-      def replaceListWithReferred[V <: PropertyValue](mi: ManagedInstance, name: String,
-        lpv: ListPropertyValue[V]): Future[WSManErrorOr[ManagedInstance]] = {
+      def replaceListWithReferred[V <: PropertyValue](
+        mi: ManagedInstance,
+        name: String,
+        lpv: ListPropertyValue[V]
+      ): Future[WSManErrorOr[ManagedInstance]] = {
         val ListPropertyValue(pvs) = lpv
 
         // List property values are homogeneous so the 'collect' call will not filter
         // out just *some* list items: will do all or none...
         pvs.collect {
-          case rpv@ReferencePropertyValue(ref) if predicate(name, ref) => rpv
+          case rpv @ ReferencePropertyValue(ref) if predicate(name, ref) => rpv
         } match {
           case Nil => Future.successful(mi.right)
 
           case l: List[PropertyValue] =>
-
             val result = for (outPvs <- eitherT(refsToInstances(l))) yield {
               mi.withProperty(name, ListPropertyValue(outPvs: _*))
             }
@@ -197,7 +220,9 @@ trait DefaultWSManContextFactoryComponent extends WSManOperationContextFactoryCo
         }
       }
 
-      def refsToInstances(pvsIn: List[ReferencePropertyValue]): Future[WSManErrorOr[Seq[InstancePropertyValue]]] =
+      def refsToInstances(
+        pvsIn: List[ReferencePropertyValue]
+      ): Future[WSManErrorOr[Seq[InstancePropertyValue]]] =
         Futures.traverseSerially[ReferencePropertyValue, WSManError, InstancePropertyValue](pvsIn) { pv =>
           val ReferencePropertyValue(ref) = pv
 
@@ -218,7 +243,7 @@ trait DefaultWSManContextFactoryComponent extends WSManOperationContextFactoryCo
         .foldLeft(Future.successful(inst.right[WSManError])) {
           case (future, (name, rpv: ReferencePropertyValue)) =>
             val result = for {
-              mi <- eitherT(future)
+              mi       <- eitherT(future)
               replaced <- eitherT(replaceWithReferred(mi, name, rpv))
             } yield replaced
 
@@ -226,7 +251,7 @@ trait DefaultWSManContextFactoryComponent extends WSManOperationContextFactoryCo
 
           case (future, (name, lpv: ListPropertyValue[_])) =>
             val result = for {
-              mi <- eitherT(future)
+              mi       <- eitherT(future)
               replaced <- eitherT(replaceListWithReferred(mi, name, lpv))
             } yield replaced
 

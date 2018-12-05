@@ -20,21 +20,28 @@ import scala.concurrent.Future
 object ChassisIdentifyTool {
 
   object Command {
-    implicit val executor: CommandExecutor[Command, ChassisIdentified.type] = new CommandExecutor[Command, ChassisIdentified.type] {
-      def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ ChassisIdentifyTool.ChassisIdentified.type] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command, ChassisIdentified.type] =
+      new CommandExecutor[Command, ChassisIdentified.type] {
 
-        val result = for {
-          cmdResult <- eitherT(connection.executeCommandOrError(ChassisIdentify.Command(command.interval)))
-        } yield ChassisIdentified
+        def execute(
+          command: Command
+        )(implicit ctx: Ctx): Future[IpmiError \/ ChassisIdentifyTool.ChassisIdentified.type] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
 
-        result.run
+          val result = for {
+            cmdResult <- eitherT(
+              connection.executeCommandOrError(ChassisIdentify.Command(command.interval))
+            )
+          } yield ChassisIdentified
+
+          result.run
+        }
       }
-    }
   }
 
   case class Command(interval: IdentifyInterval) extends IpmiToolCommand {
+
     def description(): String = {
       val intervalParam = interval match {
         case Off         => "0"

@@ -7,7 +7,12 @@ case class Password(pwd: String) extends AnyVal {
 /**
   * Represents password-based credentials with an optional domain.
   */
-case class PasswordCredentials(username: String, password: Password, optDomain: Option[String] = None) {
+case class PasswordCredentials(
+  username: String,
+  password: Password,
+  optDomain: Option[String] = None
+) {
+
   def fullyQualifiedUsername(format: FQNFormat): String = {
     optDomain match {
       case Some(domain) => format.doFormatUsername(username, domain)
@@ -25,6 +30,7 @@ case class PasswordCredentials(username: String, password: Password, optDomain: 
 }
 
 object PasswordCredentials {
+
   /**
     * Java friendly factory for [[PasswordCredentials]] that allows a null or empty domain
     */
@@ -41,7 +47,10 @@ object PasswordCredentials {
     * Parse a user name to determine whether it has a domain and then wraps
     * as an appropriate [[PasswordCredentials]] along with the specified password.
     */
-  def parseFullyQualifiedUser(fullyQualifiedUsername: String, password: String): PasswordCredentials = {
+  def parseFullyQualifiedUser(
+    fullyQualifiedUsername: String,
+    password: String
+  ): PasswordCredentials = {
     val (user, optDomain) = {
       val atIdx = fullyQualifiedUsername.indexOf('@')
 

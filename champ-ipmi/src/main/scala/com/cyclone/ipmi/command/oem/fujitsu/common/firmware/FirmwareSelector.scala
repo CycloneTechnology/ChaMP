@@ -7,6 +7,7 @@ sealed trait FirmwareSelector
 
 object FirmwareSelector {
   implicit val decoder: Decoder[FirmwareSelector] = new Decoder[FirmwareSelector] {
+
     def decode(data: ByteString): FirmwareSelector = data(0).toUnsignedInt match {
       case 0x00 => Auto
       case 0x01 => LowFirmwareImage
@@ -18,6 +19,7 @@ object FirmwareSelector {
   }
 
   implicit val encoder: Coder[FirmwareSelector] = new Coder[FirmwareSelector] {
+
     def encode(a: FirmwareSelector): ByteString = {
       a match {
         case Auto                            => ByteString(0x00)

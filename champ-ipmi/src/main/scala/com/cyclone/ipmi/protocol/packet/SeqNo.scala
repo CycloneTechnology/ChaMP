@@ -18,6 +18,7 @@ object SeqNo {
 
     def decode(data: ByteString) = SeqNo(data(0).bits2To7)
   }
+
   /**
     * All available sequence numbers (6 bits)
     */

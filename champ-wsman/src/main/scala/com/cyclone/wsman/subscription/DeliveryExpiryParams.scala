@@ -18,9 +18,7 @@ object DeliveryExpiryParams {
     val expiry: Option[FiniteDuration] = None
   }
 
-  case class Expiring(
-    heartbeatDuration: FiniteDuration,
-    expiryFactor: Int) extends DeliveryExpiryParams {
+  case class Expiring(heartbeatDuration: FiniteDuration, expiryFactor: Int) extends DeliveryExpiryParams {
     def heartbeat = Some(heartbeatDuration)
 
     val expiry = Some(heartbeatDuration * expiryFactor)

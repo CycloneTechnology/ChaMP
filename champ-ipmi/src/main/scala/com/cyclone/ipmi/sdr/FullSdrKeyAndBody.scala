@@ -32,8 +32,8 @@ case class FullSdrKeyAndBody(
   positiveGoingThresholdHysteresis: Hysteresis,
   negativeGoingThresholdHysteresis: Hysteresis
 ) extends SdrKeyAndBody
-  with AnalogSdrKeyAndBody
-  with EventSdrKeyAndBody {
+    with AnalogSdrKeyAndBody
+    with EventSdrKeyAndBody {
   val sensorIds: Seq[SensorId] = Seq(sensorId)
   val sensorNumbers: Seq[SensorNumber] = Seq(sensorNumber)
   val recordType: SensorDataRecordType = SensorDataRecordType.Full
@@ -42,6 +42,7 @@ case class FullSdrKeyAndBody(
 
 object FullSdrKeyAndBody {
   implicit val decoder: Decoder[FullSdrKeyAndBody] = new Decoder[FullSdrKeyAndBody] {
+
     def decode(data: ByteString): FullSdrKeyAndBody = {
       val iterator = data.iterator
       val is = iterator.asInputStream
@@ -59,7 +60,8 @@ object FullSdrKeyAndBody {
 
       val eventReadingType = is.readByte.as[EventReadingType]
 
-      val sensorMasks = is.read(6).as[SensorMasks](SensorMasks.decoder(eventReadingType, sensorType))
+      val sensorMasks =
+        is.read(6).as[SensorMasks](SensorMasks.decoder(eventReadingType, sensorType))
 
       val sensorUnitsBytes = is.read(3)
 
@@ -75,9 +77,13 @@ object FullSdrKeyAndBody {
       val sensorDirection = readingFactorBytes(4).as[SensorDirection]
 
       val analogCharacteristics = is.readByte.as[AnalogCharacteristics]
-      val nominalReading = is.readByte.map(b => analogCharacteristics.nominalReadingSpecified.option(b.as[RawSensorValue]))
-      val normalMaximum = is.readByte.map(b => analogCharacteristics.normalMaxSpecified.option(b.as[RawSensorValue]))
-      val normalMinimum = is.readByte.map(b => analogCharacteristics.normalMinSpecified.option(b.as[RawSensorValue]))
+      val nominalReading = is.readByte.map(
+        b => analogCharacteristics.nominalReadingSpecified.option(b.as[RawSensorValue])
+      )
+      val normalMaximum =
+        is.readByte.map(b => analogCharacteristics.normalMaxSpecified.option(b.as[RawSensorValue]))
+      val normalMinimum =
+        is.readByte.map(b => analogCharacteristics.normalMinSpecified.option(b.as[RawSensorValue]))
 
       val sensorMaximum = is.readByte.as[RawSensorValue]
       val sensorMinimum = is.readByte.as[RawSensorValue]

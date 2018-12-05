@@ -43,30 +43,35 @@ trait PushDeliveryRouter {
     * @param expiry optional expiry whereby the subscription ends should no heartbeats occur for the subscription
     *               within this time
     */
-  def newSubscriberSource(id: SubscriptionId, expiry: Option[FiniteDuration]): Source[WSManEnumItem, NotUsed]
+  def newSubscriberSource(
+    id: SubscriptionId,
+    expiry: Option[FiniteDuration]
+  ): Source[WSManEnumItem, NotUsed]
 }
 
 trait PushDeliveryRouterComponent {
   def pushDeliveryRouter: PushDeliveryRouter
 }
 
-trait DefaultPushDeliveryRouterComponent
-  extends PushDeliveryRouterComponent {
-  self: MaterializerComponent
-    with StateHousekeeperComponent =>
+trait DefaultPushDeliveryRouterComponent extends PushDeliveryRouterComponent {
+  self: MaterializerComponent with StateHousekeeperComponent =>
 
   // TODO ideally something like PartitionHub required so that each source does not have to
   // filter. However with PartitionHub seems to be no way to influence of get at the identifiers from the outside...?
   lazy val (sink, hub) =
-  MergeHub.source[List[PushedMessage]](perProducerBufferSize = 1)
-    .flatMapConcat(Source(_))
-    .toMat(BroadcastHub.sink)(Keep.both)
-    .run
+    MergeHub
+      .source[List[PushedMessage]](perProducerBufferSize = 1)
+      .flatMapConcat(Source(_))
+      .toMat(BroadcastHub.sink)(Keep.both)
+      .run
 
   lazy val pushDeliveryRouter: PushDeliveryRouter = new PushDeliveryRouter {
     def inputSink: Sink[List[PushedMessage], NotUsed] = sink
 
-    def newSubscriberSource(id: SubscriptionId, expiry: Option[FiniteDuration]): Source[WSManEnumItem, NotUsed] =
+    def newSubscriberSource(
+      id: SubscriptionId,
+      expiry: Option[FiniteDuration]
+    ): Source[WSManEnumItem, NotUsed] =
       hub
         .filter(_.localSubscriptionId == id)
         .via(expiryStage(expiry))
@@ -76,34 +81,36 @@ trait DefaultPushDeliveryRouterComponent
         .alsoTo(Sink.onComplete(_ => stateHousekeeper.cleanupStateFor(id)))
   }
 
-  private def expiryStage(expiry: Option[FiniteDuration]) = new GraphStage[FlowShape[PushedMessage, PushedMessage]] {
-    val in: Inlet[PushedMessage] = Inlet("Expiry")
-    val out: Outlet[PushedMessage] = Outlet("Expiry")
-    override val shape: FlowShape[PushedMessage, PushedMessage] = FlowShape(in, out)
+  private def expiryStage(expiry: Option[FiniteDuration]) =
+    new GraphStage[FlowShape[PushedMessage, PushedMessage]] {
+      val in: Inlet[PushedMessage] = Inlet("Expiry")
+      val out: Outlet[PushedMessage] = Outlet("Expiry")
+      override val shape: FlowShape[PushedMessage, PushedMessage] = FlowShape(in, out)
 
-    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
-      new TimerGraphStageLogic(shape) {
+      override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
+        new TimerGraphStageLogic(shape) {
 
-        override def preStart(): Unit =
-          startExpiryTimer()
-
-        private def startExpiryTimer(): Unit =
-          expiry.foreach(scheduleOnce(None, _))
-
-        setHandler(in, new InHandler {
-          def onPush(): Unit = {
-            push(out, grab(in))
-
+          override def preStart(): Unit =
             startExpiryTimer()
-          }
-        })
 
-        setHandler(out, new OutHandler {
-          override def onPull(): Unit = pull(in)
-        })
+          private def startExpiryTimer(): Unit =
+            expiry.foreach(scheduleOnce(None, _))
 
-        override protected def onTimer(timerKey: Any): Unit =
-          failStage(WSManSubscriptionExpiryException)
-      }
-  }
+          setHandler(in, new InHandler {
+
+            def onPush(): Unit = {
+              push(out, grab(in))
+
+              startExpiryTimer()
+            }
+          })
+
+          setHandler(out, new OutHandler {
+            override def onPull(): Unit = pull(in)
+          })
+
+          override protected def onTimer(timerKey: Any): Unit =
+            failStage(WSManSubscriptionExpiryException)
+        }
+    }
 }

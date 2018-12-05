@@ -27,23 +27,25 @@ object ResetType {
 object ResetTool {
 
   object Command {
-    implicit val executor: CommandExecutor[Command, Reset.type] = new CommandExecutor[Command, Reset.type] {
-      def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ Reset.type] = {
-        implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
-        import ctx._
+    implicit val executor: CommandExecutor[Command, Reset.type] =
+      new CommandExecutor[Command, Reset.type] {
 
-        def exec = command.resetType match {
-          case ResetType.cold => connection.executeCommandOrError(ColdReset.Command)
-          case ResetType.warm => connection.executeCommandOrError(WarmReset.Command)
+        def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ Reset.type] = {
+          implicit val timeoutContext: TimeoutContext = ctx.timeoutContext
+          import ctx._
+
+          def exec = command.resetType match {
+            case ResetType.cold => connection.executeCommandOrError(ColdReset.Command)
+            case ResetType.warm => connection.executeCommandOrError(WarmReset.Command)
+          }
+
+          val result = for {
+            _ <- eitherT(exec)
+          } yield Reset
+
+          result.run
         }
-
-        val result = for {
-          _ <- eitherT(exec)
-        } yield Reset
-
-        result.run
       }
-    }
   }
 
   case class Command(resetType: ResetType) extends IpmiToolCommand {

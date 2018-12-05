@@ -3,7 +3,6 @@ package com.cyclone.ipmi.sdr
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 
-
 sealed trait ThresholdComparison extends EventReadingOffset
 
 object ThresholdComparison {
@@ -17,16 +16,19 @@ object ThresholdComparison {
     0x00 -> LowerNonCritical
   )
 
-  implicit val setDecoder: Decoder[Set[ThresholdComparison]] = new Decoder[Set[ThresholdComparison]] {
+  implicit val setDecoder: Decoder[Set[ThresholdComparison]] =
+    new Decoder[Set[ThresholdComparison]] {
 
-    import scala.collection._
+      import scala.collection._
 
-    def decode(data: ByteString): Predef.Set[ThresholdComparison] =
-      immutable.BitSet.fromBitMask(Array(data(0).bits0To5.toUnsignedInt))
-        .foldLeft(Set.empty[ThresholdComparison]) { (acc, bitNum) =>
-          acc + readingOffsets(bitNum)
-        }.toSet
-  }
+      def decode(data: ByteString): Predef.Set[ThresholdComparison] =
+        immutable.BitSet
+          .fromBitMask(Array(data(0).bits0To5.toUnsignedInt))
+          .foldLeft(Set.empty[ThresholdComparison]) { (acc, bitNum) =>
+            acc + readingOffsets(bitNum)
+          }
+          .toSet
+    }
 
   case object LowerNonCritical extends ThresholdComparison
 
@@ -39,6 +41,5 @@ object ThresholdComparison {
   case object UpperCritical extends ThresholdComparison
 
   case object UpperNonRecoverable extends ThresholdComparison
-
 
 }

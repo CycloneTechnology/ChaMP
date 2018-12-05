@@ -10,7 +10,8 @@ import org.scalatest.{Matchers, WordSpec}
   */
 class PushEventXmlParserTest extends WordSpec with Matchers {
 
-  val noEventDoc = <s:Envelope xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  val noEventDoc =
+    <s:Envelope xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s="http://www.w3.org/2003/05/soap-envelope">
     <s:Header>
       <a:To>http://js.cyclone-technology.com:81/wsman/event_receiver/receive?pushId=fd720033-c8fb-43e6-8d6b-644efd0f411e</a:To>
       <a:ReplyTo>
@@ -38,7 +39,8 @@ class PushEventXmlParserTest extends WordSpec with Matchers {
   </s:Envelope>
   // @formatter:on
 
-  val singleEventDoc = <s:Envelope xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  val singleEventDoc =
+    <s:Envelope xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s="http://www.w3.org/2003/05/soap-envelope">
     <s:Header>
       <a:To>http://js.cyclone-technology.com:81/wsman/event_receiver/receive?pushId=fd720033-c8fb-43e6-8d6b-644efd0f411e</a:To>
       <a:ReplyTo>
@@ -55,7 +57,8 @@ class PushEventXmlParserTest extends WordSpec with Matchers {
     </s:Body>
   </s:Envelope>
 
-  val twoEventDoc = <s:Envelope xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  val twoEventDoc =
+    <s:Envelope xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:e="http://schemas.xmlsoap.org/ws/2004/08/eventing" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:s="http://www.w3.org/2003/05/soap-envelope">
     <s:Header>
       <a:To>http://js.cyclone-technology.com:81/wsman/event_receiver/receive?pushId=fd720033-c8fb-43e6-8d6b-644efd0f411e</a:To>
       <a:ReplyTo>

@@ -22,6 +22,7 @@ object GetSessionChallenge {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -33,10 +34,11 @@ object GetSessionChallenge {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult] {
-      case InvalidUserName.code      => InvalidUserName
-      case NullUserNameDisabled.code => NullUserNameDisabled
-    }
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult] {
+        case InvalidUserName.code      => InvalidUserName
+        case NullUserNameDisabled.code => NullUserNameDisabled
+      }
   }
 
   /**
@@ -49,6 +51,7 @@ object GetSessionChallenge {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -61,14 +64,14 @@ object GetSessionChallenge {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
   case class Command(
     authType: AuthenticationType,
     username: UsernameV15
-  )
-    extends IpmiStandardCommand {
+  ) extends IpmiStandardCommand {
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x39)
   }

@@ -16,10 +16,7 @@ import scala.concurrent.Future
 /**
   * Route that handles POSTed WSMan push events.
   */
-trait EventService
-  extends Directives
-    with SpnegoDirectives
-    with LazyLogging {
+trait EventService extends Directives with SpnegoDirectives with LazyLogging {
   self: PushDeliveryRouterComponent
     with MaterializerComponent
     with PushEventXmlParserComponent
@@ -33,14 +30,15 @@ trait EventService
     val localSubscriptionId = SubscriptionId(id)
 
     kerberosTokenCache.getTokenFor(localSubscriptionId) match {
-      case None => spnegoAuthenticate() { token =>
-        respondWithHeaders(token.challengeHeader) {
-          logger.debug("Authenticated")
+      case None =>
+        spnegoAuthenticate() { token =>
+          respondWithHeaders(token.challengeHeader) {
+            logger.debug("Authenticated")
 
-          kerberosTokenCache.putTokenFor(localSubscriptionId, token)
-          handle(token, localSubscriptionId)
+            kerberosTokenCache.putTokenFor(localSubscriptionId, token)
+            handle(token, localSubscriptionId)
+          }
         }
-      }
 
       case Some(token) =>
         logger.debug("Token found in cache")
@@ -53,8 +51,8 @@ trait EventService
     (entity(as[ByteString]) & extractRequest) { (body, req) =>
       // Ignore initial empty connection request (e.g. from Microsoft WinRM client)...
       if (body.nonEmpty) {
-        val optXmlRequestData = RequestConverterComponent.toXmlConverter(token).lift(
-          RequestData(req, Nil, body))
+        val optXmlRequestData =
+          RequestConverterComponent.toXmlConverter(token).lift(RequestData(req, Nil, body))
 
         optXmlRequestData match {
           case Some(RequestData(_, _, document)) =>
@@ -64,12 +62,11 @@ trait EventService
               complete(StatusCodes.NoContent)
             else
               complete(forwardToSubscribers(messages, localSubscriptionId))
-          case _                                 =>
+          case _ =>
             logger.warn(s"Unsupported request $optXmlRequestData")
             complete(StatusCodes.BadRequest)
         }
-      }
-      else {
+      } else {
         logger.debug("Received empty request")
         complete(StatusCodes.OK)
       }
@@ -77,7 +74,8 @@ trait EventService
 
   private def forwardToSubscribers(
     messages: List[PushedMessage],
-    localSubscriptionId: SubscriptionId): Future[StatusCode] = {
+    localSubscriptionId: SubscriptionId
+  ): Future[StatusCode] = {
 
     Source
       .single(messages)

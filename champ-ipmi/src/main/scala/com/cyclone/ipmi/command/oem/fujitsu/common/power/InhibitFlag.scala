@@ -7,6 +7,7 @@ sealed trait InhibitFlag
 
 object InhibitFlag {
   implicit val decoder: Decoder[InhibitFlag] = new Decoder[InhibitFlag] {
+
     def decode(data: ByteString): InhibitFlag = data(0).toUnsignedInt match {
       case 0x00 => NoInhibit
       case 0x01 => Inhibit
@@ -14,6 +15,7 @@ object InhibitFlag {
   }
 
   implicit val encoder: Coder[InhibitFlag] = new Coder[InhibitFlag] {
+
     def encode(a: InhibitFlag): ByteString = {
       a match {
         case NoInhibit => ByteString(0x00)

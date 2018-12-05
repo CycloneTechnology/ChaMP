@@ -15,15 +15,17 @@ object GetSDRRepositoryInfo {
   sealed trait RepositoryUpdateOperationSupport
 
   object RepositoryUpdateOperationSupport {
-    implicit val decoder: Decoder[RepositoryUpdateOperationSupport] = new Decoder[RepositoryUpdateOperationSupport] {
-      def decode(data: ByteString): RepositoryUpdateOperationSupport =
-        data(0).toUnsignedInt match {
-          case 0 => ModalNonModalSDRRepositoryUpdateOperationUnspecified
-          case 1 => NonModalSDRRepositoryUpdateOperationSupported
-          case 2 => ModalSDRRepositoryUpdateOperationSupported
-          case 3 => BothModalAndNonModalSDRRepositoryUpdateOperationSupported
-        }
-    }
+    implicit val decoder: Decoder[RepositoryUpdateOperationSupport] =
+      new Decoder[RepositoryUpdateOperationSupport] {
+
+        def decode(data: ByteString): RepositoryUpdateOperationSupport =
+          data(0).toUnsignedInt match {
+            case 0 => ModalNonModalSDRRepositoryUpdateOperationUnspecified
+            case 1 => NonModalSDRRepositoryUpdateOperationSupported
+            case 2 => ModalSDRRepositoryUpdateOperationSupported
+            case 3 => BothModalAndNonModalSDRRepositoryUpdateOperationSupported
+          }
+      }
 
     case object ModalNonModalSDRRepositoryUpdateOperationUnspecified extends RepositoryUpdateOperationSupport
 
@@ -37,6 +39,7 @@ object GetSDRRepositoryInfo {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -51,7 +54,8 @@ object GetSDRRepositoryInfo {
 
         val operationSupport = is.readByte
         val overflowFlag = operationSupport.bit7
-        val repositoryUpdateOperationSupport = operationSupport.bits5To6.as[RepositoryUpdateOperationSupport]
+        val repositoryUpdateOperationSupport =
+          operationSupport.bits5To6.as[RepositoryUpdateOperationSupport]
 
         CommandResult(
           sdrVersion,
@@ -60,11 +64,13 @@ object GetSDRRepositoryInfo {
           mostRecentAdditionTimestamp,
           mostRecentEraseTimestamp,
           overflowFlag,
-          repositoryUpdateOperationSupport)
+          repositoryUpdateOperationSupport
+        )
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   case class CommandResult(
@@ -74,20 +80,21 @@ object GetSDRRepositoryInfo {
     mostRecentAdditionTimestamp: Instant,
     mostRecentEraseTimestamp: Instant,
     overflowFlag: Boolean,
-    repositoryUpdateOperationSupport: RepositoryUpdateOperationSupport) extends IpmiCommandResult
+    repositoryUpdateOperationSupport: RepositoryUpdateOperationSupport
+  ) extends IpmiCommandResult
 
   object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+
       def encode(request: Command.type): ByteString =
         ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command.type, CommandResult] = CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.StorageRequest
     val commandCode = CommandCode(0x20)
   }
 
 }
-
-

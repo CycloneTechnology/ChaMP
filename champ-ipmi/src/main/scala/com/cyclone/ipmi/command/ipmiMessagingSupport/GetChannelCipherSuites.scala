@@ -12,6 +12,7 @@ object GetChannelCipherSuites {
 
   object CommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+
       def decode(data: ByteString): CommandResult = {
         val iterator = data.iterator
         val is = iterator.asInputStream
@@ -26,7 +27,8 @@ object GetChannelCipherSuites {
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] = StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
+      StatusCodeTranslator[CommandResult]()
   }
 
   /**
@@ -37,8 +39,8 @@ object GetChannelCipherSuites {
     *
     * The encoded records may be split between multiple records.
     */
-  case class CommandResult(channelNumber: Byte, cipherSuitesData: ByteString)
-    extends IpmiCommandResult {
+  case class CommandResult(channelNumber: Byte, cipherSuitesData: ByteString) extends IpmiCommandResult {
+
     /**
       * @return whether this holds the last block of cipher suite data
       */
@@ -47,6 +49,7 @@ object GetChannelCipherSuites {
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
+
       def encode(request: Command): ByteString = {
         import request._
 
@@ -62,11 +65,11 @@ object GetChannelCipherSuites {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] = CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
   }
 
-  case class Command(listIndex: Int)
-    extends IpmiStandardCommand {
+  case class Command(listIndex: Int) extends IpmiStandardCommand {
     val networkFunction: NetworkFunction = NetworkFunction.ApplicationRequest
     val commandCode = CommandCode(0x54)
 
@@ -77,4 +80,3 @@ object GetChannelCipherSuites {
   }
 
 }
-

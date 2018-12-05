@@ -1,6 +1,5 @@
 package com.cyclone.ipmi.fru
 
-
 import akka.util.ByteString
 import com.cyclone.ipmi.codec.{Decoder, _}
 
@@ -16,4 +15,3 @@ object LanguageCode {
     def decode(data: ByteString) = LanguageCode(data(0).toUnsignedInt)
   }
 }
-

@@ -7,6 +7,7 @@ case class ProductId(value: Int)
 
 object ProductId {
   implicit val decoder: Decoder[ProductId] = new Decoder[ProductId] {
+
     def decode(data: ByteString) =
       ProductId(data.take(2).as[Short].toInt)
   }

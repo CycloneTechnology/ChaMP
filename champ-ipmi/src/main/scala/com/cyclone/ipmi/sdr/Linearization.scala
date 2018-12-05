@@ -9,6 +9,7 @@ sealed trait Linearization
 
 object Linearization {
   implicit val decoder: Decoder[Linearization] = new Decoder[Linearization] {
+
     def decode(data: ByteString): Linearization = data(0).toUnsignedInt match {
       case 0  => Linearization.Linear
       case 1  => Linearization.Log_e
@@ -34,7 +35,6 @@ object Linearization {
 
   private val log2 = log(2)
   private val `1/3` = 1.toDouble / 3
-
 
   case object Linear extends Linearizable {
     def evaluate(x: Double): Double = x
@@ -85,6 +85,3 @@ object Linearization {
   }
 
 }
-
-
-

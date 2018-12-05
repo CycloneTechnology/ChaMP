@@ -3,11 +3,11 @@ package com.cyclone.ipmi.command
 import com.cyclone.ipmi.StatusCodeError
 import com.cyclone.ipmi.codec._
 
-
 object GenericStatusCodeErrors {
 
   case object NodeBusy extends StatusCodeError {
     val code = StatusCode(0xC0)
+
     val message: String =
       """Node Busy.
         |Command could not be processed because command processing
@@ -31,6 +31,7 @@ object GenericStatusCodeErrors {
 
   case object OutOfSpace extends StatusCodeError {
     val code = StatusCode(0xC4)
+
     val message: String =
       """Out of space.Command could not be completed because of a lack of storage
         |space required to execute the given command operation.""".stripMargin
@@ -58,6 +59,7 @@ object GenericStatusCodeErrors {
 
   case object ParameterOutOfRange extends StatusCodeError {
     val code = StatusCode(0xC9)
+
     val message: String =
       """Parameter out of range. One or more parameters in the data field of the
         |Request are out of range. This is different from ‘ Invalid data field ’ (CCh) code in
@@ -67,36 +69,42 @@ object GenericStatusCodeErrors {
 
   case object TooManyBytesRequested extends StatusCodeError {
     val code = StatusCode(0xCA)
+
     val message =
       "Cannot return number of requested data bytes."
   }
 
   case object SensorNotPresent extends StatusCodeError {
     val code = StatusCode(0xCB)
+
     val message =
       "Requested Sensor, data, or record not present."
   }
 
   case object InvalidDataField extends StatusCodeError {
     val code = StatusCode(0xCC)
+
     val message =
       "Invalid data field in Request"
   }
 
   case object IllegalCommand extends StatusCodeError {
     val code = StatusCode(0xCD)
+
     val message =
       "Command illegal for specified sensor or record type."
   }
 
   case object NoResponse extends StatusCodeError {
     val code = StatusCode(0xCE)
+
     val message =
       "Command response could not be provided."
   }
 
   case object DuplicatedRequest extends StatusCodeError {
     val code = StatusCode(0xCF)
+
     val message: String =
       """Cannot execute duplicated request.This completion code is for devices which
         |cannot return the response that was returned for the original instance of the
@@ -108,18 +116,21 @@ object GenericStatusCodeErrors {
 
   case object SDRRepositoryUpdating extends StatusCodeError {
     val code = StatusCode(0xD0)
+
     val message =
       "Command response could not be provided. SDR Repository in update mode."
   }
 
   case object FirmwareUpdating extends StatusCodeError {
     val code = StatusCode(0xD1)
+
     val message =
       "Command response could not be provided. Device in firmware update mode."
   }
 
   case object BMCInitializationInProgress extends StatusCodeError {
     val code = StatusCode(0xD2)
+
     val message: String =
       """Command response could not be provided.BMC initialization or initialization
         |agent in progress.""".stripMargin
@@ -127,6 +138,7 @@ object GenericStatusCodeErrors {
 
   case object DestinationUnavailable extends StatusCodeError {
     val code = StatusCode(0xD3)
+
     val message: String =
       """ Destination unavailable.Cannot deliver request to selected destination.E.g.this
         |code can be returned if a request message is targeted to SMS, but receive
@@ -135,6 +147,7 @@ object GenericStatusCodeErrors {
 
   case object InsufficientPrivilege extends StatusCodeError {
     val code = StatusCode(0xD4)
+
     val message: String =
       """Cannot execute command due to insufficient privilege level or other security based
         |restriction (e.g.disabled for ‘ firmware firewall ’).""".stripMargin
@@ -142,14 +155,15 @@ object GenericStatusCodeErrors {
 
   case object CommandNotSupported extends StatusCodeError {
     val code = StatusCode(0xD5)
+
     val message: String =
       """Cannot execute command.Command, or request parameter(s), not supported
         |in present state.""".stripMargin
   }
 
-
   case object SubFunctionUnavailable extends StatusCodeError {
     val code = StatusCode(0xD6)
+
     val message: String =
       """Cannot execute command. Parameter is illegal because command sub-function
         |has been disabled or is unavailable(e.g.disabled for ‘ firmware firewall ’).""".stripMargin
@@ -166,30 +180,30 @@ object GenericStatusCodeErrors {
 
   //noinspection ScalaStyle
   private val codeLookupMap = Map(
-    NodeBusy.code -> NodeBusy,
-    InvalidCommand.code -> InvalidCommand,
-    InvalidForLun.code -> InvalidForLun,
-    Timeout.code -> Timeout,
-    OutOfSpace.code -> OutOfSpace,
-    ReservationCancelled.code -> ReservationCancelled,
-    RequestTruncated.code -> RequestTruncated,
-    RequestInvalidLength.code -> RequestInvalidLength,
-    RequestFieldLengthExceeded.code -> RequestFieldLengthExceeded,
-    ParameterOutOfRange.code -> ParameterOutOfRange,
-    TooManyBytesRequested.code -> TooManyBytesRequested,
-    SensorNotPresent.code -> SensorNotPresent,
-    InvalidDataField.code -> InvalidDataField,
-    IllegalCommand.code -> IllegalCommand,
-    NoResponse.code -> NoResponse,
-    DuplicatedRequest.code -> DuplicatedRequest,
-    SDRRepositoryUpdating.code -> SDRRepositoryUpdating,
-    FirmwareUpdating.code -> FirmwareUpdating,
+    NodeBusy.code                    -> NodeBusy,
+    InvalidCommand.code              -> InvalidCommand,
+    InvalidForLun.code               -> InvalidForLun,
+    Timeout.code                     -> Timeout,
+    OutOfSpace.code                  -> OutOfSpace,
+    ReservationCancelled.code        -> ReservationCancelled,
+    RequestTruncated.code            -> RequestTruncated,
+    RequestInvalidLength.code        -> RequestInvalidLength,
+    RequestFieldLengthExceeded.code  -> RequestFieldLengthExceeded,
+    ParameterOutOfRange.code         -> ParameterOutOfRange,
+    TooManyBytesRequested.code       -> TooManyBytesRequested,
+    SensorNotPresent.code            -> SensorNotPresent,
+    InvalidDataField.code            -> InvalidDataField,
+    IllegalCommand.code              -> IllegalCommand,
+    NoResponse.code                  -> NoResponse,
+    DuplicatedRequest.code           -> DuplicatedRequest,
+    SDRRepositoryUpdating.code       -> SDRRepositoryUpdating,
+    FirmwareUpdating.code            -> FirmwareUpdating,
     BMCInitializationInProgress.code -> BMCInitializationInProgress,
-    DestinationUnavailable.code -> DestinationUnavailable,
-    InsufficientPrivilege.code -> InsufficientPrivilege,
-    CommandNotSupported.code -> CommandNotSupported,
-    SubFunctionUnavailable.code -> SubFunctionUnavailable,
-    UnspecifiedError.code -> UnspecifiedError
+    DestinationUnavailable.code      -> DestinationUnavailable,
+    InsufficientPrivilege.code       -> InsufficientPrivilege,
+    CommandNotSupported.code         -> CommandNotSupported,
+    SubFunctionUnavailable.code      -> SubFunctionUnavailable,
+    UnspecifiedError.code            -> UnspecifiedError
   )
 
   val lookup: PartialFunction[StatusCode, StatusCodeError] =
@@ -197,4 +211,3 @@ object GenericStatusCodeErrors {
       case c if c.code.in(0x01 to 0x7e) => DeviceSpecific(c)
     }
 }
-  

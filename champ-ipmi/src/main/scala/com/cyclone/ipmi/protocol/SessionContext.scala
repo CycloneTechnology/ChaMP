@@ -22,9 +22,11 @@ sealed trait SessionContext {
 
   def authenticationType: AuthenticationType
 
-  def payloadEncrypted: Boolean = cipherSuite.confidentialityAlgorithm != ConfidentialityAlgorithm.Plain
+  def payloadEncrypted: Boolean =
+    cipherSuite.confidentialityAlgorithm != ConfidentialityAlgorithm.Plain
 
-  def payloadAuthenticated: Boolean = cipherSuite.authenticationAlgorithm != AuthenticationAlgorithm.NoAuth
+  def payloadAuthenticated: Boolean =
+    cipherSuite.authenticationAlgorithm != AuthenticationAlgorithm.NoAuth
 
   def encryptor: SessionContext.Encryptor
 
@@ -39,7 +41,9 @@ object SessionContext {
   type Encryptor = ByteString => ByteString
   type Decryptor = ByteString => ByteString
   type ReqHashMaker = (ManagedSystemSessionId, SessionSequenceNumber, ByteString) => ByteString
-  type ResHashMaker = (ManagedSystemSessionId, SessionSequenceNumber, ByteString) => Option[ByteString]
+
+  type ResHashMaker =
+    (ManagedSystemSessionId, SessionSequenceNumber, ByteString) => Option[ByteString]
 
   val ResNoHash: ResHashMaker = {
     case (_, _, _) => None
@@ -85,8 +89,8 @@ case class V15SessionContext(
   )
 
   def requireResponseAuthCheck(responseAuthenticationType: AuthenticationType): Boolean =
-  // Some BMCs do not send auth responses once the session is established.
-  // Don't require checking if session established...
+    // Some BMCs do not send auth responses once the session is established.
+    // Don't require checking if session established...
     if (!sessionEstablished)
       true
     else
@@ -98,7 +102,12 @@ case class V15SessionContext(
   val responseHashMaker: ResHashMaker = {
     case (sessionId, sequenceNumber, payload) =>
       optCredentials.map { credentials =>
-        authenticationType.generateAuthCode(credentials.password, sessionId, sequenceNumber, payload)
+        authenticationType.generateAuthCode(
+          credentials.password,
+          sessionId,
+          sequenceNumber,
+          payload
+        )
       }
   }
 
@@ -111,7 +120,8 @@ case class V15SessionContext(
 case class V20SessionContext(
   managedSystemSessionId: ManagedSystemSessionId,
   cipherSuite: CipherSuite,
-  optSik: Option[Key.SIK] = None) extends SessionContext {
+  optSik: Option[Key.SIK] = None
+) extends SessionContext {
 
   def requireResponseAuthCheck(responseAuthenticationType: AuthenticationType) = true
 
@@ -120,15 +130,19 @@ case class V20SessionContext(
   val authenticationType: AuthenticationType = AuthenticationType.NoAuth
 
   val encryptor: ByteString => ByteString = { data: ByteString =>
-    optSik.map { sik =>
-      cipherSuite.confidentialityAlgorithm.encrypt(sik, data)
-    }.getOrElse(data)
+    optSik
+      .map { sik =>
+        cipherSuite.confidentialityAlgorithm.encrypt(sik, data)
+      }
+      .getOrElse(data)
   }
 
   val decryptor: ByteString => ByteString = { data: ByteString =>
-    optSik.map { sik =>
-      cipherSuite.confidentialityAlgorithm.decrypt(sik, data)
-    }.getOrElse(data)
+    optSik
+      .map { sik =>
+        cipherSuite.confidentialityAlgorithm.decrypt(sik, data)
+      }
+      .getOrElse(data)
   }
 
   val responseHashMaker: ResHashMaker = {
@@ -140,15 +154,17 @@ case class V20SessionContext(
 
   val requestHashMaker: ReqHashMaker = {
     case (_, _, data) =>
-      optSik.map { sik =>
-        val integrityAlgorithm = cipherSuite.integrityAlgorithm
+      optSik
+        .map { sik =>
+          val integrityAlgorithm = cipherSuite.integrityAlgorithm
 
-        val b = new ByteStringBuilder
+          val b = new ByteStringBuilder
 
-        b ++= integrityAlgorithm.integrityPadding(data)
-        b ++= integrityAlgorithm.generateIntegrityCode(sik, data)
+          b ++= integrityAlgorithm.integrityPadding(data)
+          b ++= integrityAlgorithm.generateIntegrityCode(sik, data)
 
-        b.result()
-      }.getOrElse(ByteString.empty)
+          b.result()
+        }
+        .getOrElse(ByteString.empty)
   }
 }

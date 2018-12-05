@@ -7,7 +7,9 @@ sealed trait DnsRecord
 object DnsRecord {
 
   private val WhitespaceSplitter = Splitter
-    .on(CharMatcher.breakingWhitespace()).trimResults().omitEmptyStrings()
+    .on(CharMatcher.breakingWhitespace())
+    .trimResults()
+    .omitEmptyStrings()
 
   private def trimTrailingDot(value: String): String =
     if (value.endsWith("."))
@@ -18,6 +20,7 @@ object DnsRecord {
   case class PTR(hostName: String) extends DnsRecord
 
   object PTR {
+
     def fromRaw(raw: String): PTR =
       PTR(trimTrailingDot(raw))
   }
@@ -25,6 +28,7 @@ object DnsRecord {
   case class MX(server: String, mxLevel: Int) extends DnsRecord
 
   object MX {
+
     def fromRaw(raw: String): MX = {
       val parts = WhitespaceSplitter.splitToList(raw)
 
