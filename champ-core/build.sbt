@@ -1,4 +1,4 @@
-name := "core"
+name := "champ-core"
 
 resolvers += "bintray" at "http://jcenter.bintray.com"
 
@@ -12,4 +12,3 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test"
 )
 
-EclipseKeys.withSource := true

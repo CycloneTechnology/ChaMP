@@ -1,4 +1,4 @@
-name := "wsman"
+name := "champ-wsman"
 
 
 libraryDependencies ++= Seq(
@@ -10,4 +10,3 @@ libraryDependencies ++= Seq(
   "org.apache.mahout.commons" % "commons-cli" % "2.0-mahout"
 )
 
-EclipseKeys.withSource := true

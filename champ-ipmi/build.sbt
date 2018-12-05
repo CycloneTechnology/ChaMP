@@ -1,3 +1,2 @@
-name := "ipmi"
+name := "champ-ipmi"
 
-EclipseKeys.withSource := true

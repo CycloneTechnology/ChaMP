@@ -1,7 +1,36 @@
-import sbt.Keys.credentials
-import sbt.{Credentials, file, project, _}
+import sbt.{file, project, _}
 
 name := "champ"
+
+organization := "com.cyclone-technology"
+homepage := Some(url("https://github.com/CycloneTechnology/ChaMP"))
+scmInfo := Some(
+  ScmInfo(url("https://github.com/CycloneTechnology/ChaMP"), "git@github.com:CycloneTechnology/ChaMP.git")
+)
+developers := List(
+  Developer(
+    id = "Jeremy.Stone",
+    name = "Jeremy Stone",
+    email = "jeremy.stone@cyclone-technology.com",
+    url = url("https://github.com/jeremystone")
+  ),
+  Developer(
+    id = "Phil.Baxter",
+    name = "Phil Baxter",
+    email = "phil.baxter@cyclone-technology.com",
+    url = url("http://netprefect.com/")
+  )
+)
+licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
+publishMavenStyle := true
+useGpg := true
+
+publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
+)
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
@@ -21,13 +50,13 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.7",
   crossScalaVersions := Seq("2.11.11", scalaVersion.value),
   libraryDependencies ++= Seq(
-    "com.typesafe.akka" %% "akka-actor" % akkaStreamsVersion withSources() withJavadoc(),
-    "com.typesafe.akka" %% "akka-stream" % akkaStreamsVersion withSources() withJavadoc(),
-    "com.typesafe.akka" %% "akka-slf4j" % akkaVersion withSources() withJavadoc(),
-    "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" withSources() withJavadoc(),
-    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion  % "test" withSources() withJavadoc(),
-    "joda-time" % "joda-time" % "2.9.9" withSources() withJavadoc(),
-    "com.google.guava" % "guava" % "23.0" withSources() withJavadoc(),
+    "com.typesafe.akka" %% "akka-actor" % akkaStreamsVersion withSources () withJavadoc (),
+    "com.typesafe.akka" %% "akka-stream" % akkaStreamsVersion withSources () withJavadoc (),
+    "com.typesafe.akka" %% "akka-slf4j" % akkaVersion withSources () withJavadoc (),
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test" withSources () withJavadoc (),
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test" withSources () withJavadoc (),
+    "joda-time" % "joda-time" % "2.9.9" withSources () withJavadoc (),
+    "com.google.guava" % "guava" % "23.0" withSources () withJavadoc (),
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "org.scalaz" %% "scalaz-core" % "7.2.26",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
@@ -47,25 +76,29 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = project.in(file(".")).
-  settings(commonSettings: _*)
+lazy val root = project
+  .in(file("."))
+  .settings(commonSettings: _*)
   .aggregate(ipmi, core, wsman)
- 
-lazy val ipmi = project.in(file("champ-ipmi")).
-  settings(commonSettings: _*)
+
+lazy val ipmi = project
+  .in(file("champ-ipmi"))
+  .settings(commonSettings: _*)
   .configs(IntegrationTest extend Test)
   .settings(Defaults.itSettings: _*)
   .dependsOn(
     core % "compile->compile;test->test;it->test"
   )
 
-lazy val core = project.in(file("champ-core")).
-  settings(commonSettings: _*)
+lazy val core = project
+  .in(file("champ-core"))
+  .settings(commonSettings: _*)
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
 
-lazy val wsman = project.in(file("champ-wsman")).
-  settings(commonSettings: _*)
+lazy val wsman = project
+  .in(file("champ-wsman"))
+  .settings(commonSettings: _*)
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
   .dependsOn(
