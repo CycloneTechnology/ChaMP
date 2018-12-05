@@ -1,0 +1,77 @@
+Function Get-InstalledSoftware {
+  <#
+    .Synopsis
+      Enumerates the Uninstall registry key to display installed software
+    .Description
+      Enumerates the Uninstall registry key to display installed software. This function assumes the caller is authenticated.
+    .Parameter ComputerName
+      The computer to execute against. Defaults to local machine.
+    .Parameter StartRemoteRegistry
+      The script should attempt to start the remote registry service if it is not already running. 
+      This parameter will only take effect if the service is not disabled.
+  #>
+  
+  [CmdLetBinding()]
+  Param(
+    [String]$ComputerName = $Env:ComputerName,
+    [Switch]$StartRemoteRegistry
+  )
+
+  If ($StartRemoteRegistry) {
+    $ShouldStop = $False
+    $Service = Get-WmiObject Win32_Service -Filter "Name='RemoteRegistry'" -Computer $ComputerName
+    If ($Service.State -eq "Stopped" -And $Service.StartMode -ne "Disabled") {
+      $ShouldStop = $True
+      $Service.StartService() | Out-Null
+    }
+  }
+
+  $SoftwareHash = @{}
+
+  Try {
+    $BaseKey = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey("LocalMachine", $ComputerName)
+  } Catch { }
+  If ($?) {
+
+    # Uninstall keys
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall", 
+    "Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall" | ForEach-Object {
+
+      $UninstallKey = $BaseKey.OpenSubKey($_)
+
+      If ($UninstallKey) {
+        $UninstallKey.GetSubKeyNames() | ForEach-Object { 
+        $UninstallKey.OpenSubKey($_) | ForEach-Object {
+          If ($_.GetValue("DisplayName") -And -Not $SoftwareHash.Contains($_.GetValue("DisplayName"))) {
+
+            $SoftwareHash.Add($_.GetValue("DisplayName"),
+              ($_ | Select-Object `
+                @{n='ComputerName';e={ $ComputerName }},
+                @{n='Name';e={ $_.GetValue("DisplayName") }},
+                @{n='DisplayVersion';e={ $_.GetValue("DisplayVersion") }},
+                @{n='InstallDate';e={
+                  $DateString = $_.GetValue("InstallDate")
+                  If ($DateString) {
+                    [DateTime]$DateTime = "01/01/1601"
+                    If ([DateTime]::TryParse($DateString, [Ref]$DateTime)) {
+                      $DateTime
+                    } Else {
+                      [DateTime]::ParseExact($DateString, "yyyyMMdd", $Null)
+                    }
+                  } }},
+                @{n='Publisher';e={ $_.GetValue("Publisher") }}))
+            }
+          }
+        }
+      }
+    }
+  }
+
+  If ($StartRemoteRegistry -And $ShouldStop) {
+    $Service.StopService() | Out-Null
+  }
+
+  $SoftwareHash.Values
+}
+
+Get-InstalledSoftware

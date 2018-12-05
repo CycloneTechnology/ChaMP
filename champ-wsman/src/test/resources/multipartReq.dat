@@ -1,0 +1,6 @@
+--Boundary
+Content-Type: X
+OriginalContent: Y
+--Boundary
+Content-Type: application/octet-stream
+<a attr="value">some text</a>--Boundary--
