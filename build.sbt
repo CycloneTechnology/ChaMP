@@ -2,12 +2,16 @@ import sbt.{file, project, _}
 
 name := "champ"
 
-organization := "com.cyclone-technology"
-homepage := Some(url("https://github.com/CycloneTechnology/ChaMP"))
-scmInfo := Some(
+ThisBuild / organization := "com.cyclone-technology"
+ThisBuild / version := "0.9.0"
+ThisBuild / scalaVersion := "2.12.7"
+ThisBuild / crossScalaVersions := Seq("2.11.11", scalaVersion.value)
+ThisBuild / homepage := Some(url("https://github.com/CycloneTechnology/ChaMP"))
+ThisBuild / scmInfo := Some(
   ScmInfo(url("https://github.com/CycloneTechnology/ChaMP"), "git@github.com:CycloneTechnology/ChaMP.git")
 )
-developers := List(
+ThisBuild / licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
+ThisBuild / developers := List(
   Developer(
     id = "Jeremy.Stone",
     name = "Jeremy Stone",
@@ -21,16 +25,20 @@ developers := List(
     url = url("http://netprefect.com/")
   )
 )
-licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
-publishMavenStyle := true
-useGpg := true
 
-publishTo := Some(
+ThisBuild / publishMavenStyle := true
+//ThisBuild / useGpg := true
+
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := Some(
   if (isSnapshot.value)
     Opts.resolver.sonatypeSnapshots
   else
     Opts.resolver.sonatypeStaging
 )
+credentials += Credentials(Path.userHome / ".sbt" / ".sonatype_credentials")
+
+publishArtifact := false
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
@@ -45,10 +53,6 @@ val akkaStreamsVersion = akkaVersion
 val akkaHttpVersion = "10.1.1"
 
 lazy val commonSettings = Seq(
-  organization := "com.cyclone",
-  version := "0.9.0",
-  scalaVersion := "2.12.7",
-  crossScalaVersions := Seq("2.11.11", scalaVersion.value),
   libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaStreamsVersion withSources () withJavadoc (),
     "com.typesafe.akka" %% "akka-stream" % akkaStreamsVersion withSources () withJavadoc (),
