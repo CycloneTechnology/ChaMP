@@ -1,0 +1,10 @@
+sudo: false
+language: scala
+scala:
+  - 2.12.8
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean test
+jdk:
+  - oraclejdk8
+slack:
+  secure: Cj889n/5TFU4vZIG9LfsJ2SUjpFYhvPSF/V3PraV/CGeWty+KTcge7fRaHXmAfa/pv8jiDOAd0ZEnhOvPyO1xlk0xLh7CntsuvPA339zBhv5TH0jhuJjeXa4M+eiBDXzBhFEFpxb6nrG3iLHyz6DZZWvXyK7SVPZMAFO5NPf91y0VuAICC0NVmlJp8DMwGcU8RjST+N61K0yN8BV3QexnornP2o4C/kc7RGbJLdthM5vRFIkyag8idLUij0EORsPZ/SyS/S4rgLXsxh76vq+n6hD7vLdYZ1wd9C7nrW/kfY2T8lDs18IHOHgAmqnxAt7MoIT71KSwL3S9370KAASFEgU+po3EyJ7ULwEba+lEV1ej9cxZk2wSs41+4U8aDe2TbxafObLFsfcUSoRmjYc/JuGte2ESEQLPSy9UPSJzI/NPuqwCNUDVzia9pdCcsHwUHu3mjrVk+O0LWk5ifHnWSpHozJJhC42PjpGQX1GmVC9LzkGMmFieCPE4vNOjNuJXqSCpTGe5bzNukkYc3Pfy8gRPPjgbA6piPZBJT14jpleabJDI0S1PPqvgeLMLAGbwLS4Lx7s+noFF/gvoptF/WOa1Po7xo6eEsiWH+20FQ5LPQXq9JqFkzj0ydrX3tdTFa6e+VF1coP/r590gDVumuM2SHMtcLE7V8Z8croaMkY=
