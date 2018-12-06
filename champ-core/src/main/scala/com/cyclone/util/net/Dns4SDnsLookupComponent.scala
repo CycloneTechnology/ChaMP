@@ -3,12 +3,12 @@ package com.cyclone.util.net
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.event.LoggingReceive
 import akka.io.IO
-import akka.pattern.{ask, pipe}
+import akka.pattern.{ask, pipe, AskTimeoutException}
 import akka.util.Timeout
 import com.cyclone.akka.FirstResponseSender.Requests
 import com.cyclone.akka.{ActorSystemComponent, FirstResponseSender}
+import com.cyclone.util.OperationDeadline
 import com.cyclone.util.net.DnsLookupActor._
-import com.cyclone.util.{AbsoluteDeadline, OperationDeadline}
 import com.github.mkroli.dns4s.akka.Dns
 import com.google.common.net.InetAddresses
 
@@ -113,6 +113,9 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
             case PTRRecord(resource) => DnsRecord.PTR.fromRaw(resource.ptrdname)
           }
       }
+      .recover {
+        case _: AskTimeoutException => Nil
+      }
   }
 
   private def lookupAddressAndPTRs(
@@ -142,7 +145,11 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
     val first = Future
       .find(dnsConfig.domainNameSuffixes.toStream.map(queryWithDomainPrefix))(_.nonEmpty)
 
-    first.map(_.getOrElse(Nil))
+    first
+      .map(_.getOrElse(Nil))
+      .recover {
+        case _: AskTimeoutException => Nil
+      }
   }
 
   private def addressFor(
@@ -161,14 +168,18 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
     mailAddressDomain: String,
     deadline: OperationDeadline
   ): Future[Seq[DnsRecord.MX]] = {
-    performQuery(dnsConfig, Query ~ Questions(QName(mailAddressDomain) ~ TypeMX), deadline).map {
-      case Response(Answers(answers)) =>
-        answers
-          .collect {
-            case MXRecord(resource) => DnsRecord.MX(resource.exchange, resource.preference)
-          }
-          .sortBy(mx => mx.mxLevel)
-    }
+    performQuery(dnsConfig, Query ~ Questions(QName(mailAddressDomain) ~ TypeMX), deadline)
+      .map {
+        case Response(Answers(answers)) =>
+          answers
+            .collect {
+              case MXRecord(resource) => DnsRecord.MX(resource.exchange, resource.preference)
+            }
+            .sortBy(mx => mx.mxLevel)
+      }
+      .recover {
+        case _: AskTimeoutException => Nil
+      }
   }
 
   private def performQuery(
@@ -179,8 +190,7 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
     implicit val timeout: Timeout = Timeout(dnsConfig.timeout)
 
     val requests = Requests(
-      dnsConfig.dnsServerSocketAddresses.map { socketAddr =>
-        IO(Dns) -> Dns.DnsPacket(message, socketAddr)
+      dnsConfig.dnsServerSocketAddresses.map { socketAddr => IO(Dns) -> Dns.DnsPacket(message, socketAddr)
       }
     )
 

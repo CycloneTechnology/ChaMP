@@ -37,16 +37,10 @@ case class HttpUrl(
         host.toUpperCase().endsWith(s".$ucDomain")
       }
 
-    def hostNameFor(ptrs: Seq[DnsRecord.PTR]) = {
-      ptrs.collectFirst {
-        case DnsRecord.PTR(host) if isSameDomain(host) => host
-      }
-    }
-
     def domainHostName(host: String): Future[Option[String]] = {
       val result = for {
-        ptr <- dnsLookup.lookupAddressAndPTRs(host)
-      } yield hostNameFor(ptr)
+        ptrs <- dnsLookup.lookupAddressAndPTRs(host)
+      } yield ptrs.collectFirst { case DnsRecord.PTR(h) if isSameDomain(h) => h }
 
       result.recover {
         case _: UnknownHostException => None

@@ -1,68 +1,87 @@
 package com.cyclone.util.net
 
+import com.cyclone.util.SynchronizedMockeryComponent
 import com.cyclone.util.net.HostAndPort.fromString
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Matchers, WordSpec}
 
 class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with IntegrationPatience {
 
-  implicit val dnsLookup: DnsLookup = new JavaNamingDnsLookupComponent {}.dnsLookup
+  class Fixture extends TestDnslookupComponent with SynchronizedMockeryComponent {
 
-  private val domain = "CYCLONE-TECHNOLOGY.COM"
+    implicit val dns: DnsLookup = dnsLookup
 
-  private val domain1Address = "10.0.0.4"
-  private val domain1Host = "domain-1"
-  private val domain1FQDN = "domain-1.cyclone-technology.com"
+    val domain = "SOMEDOMAIN.COM"
+
+    val address = "192.168.1.2"
+    val host = "someHost"
+    val hostFQDN = "someHost.someDomain.com"
+  }
 
   "HttpUrl" when {
-    "getting qualified host in domain" must {
-      "look up FQDN when domain and address specified" in {
-        HttpUrl
-          .fromParts(fromString(domain1Address), "/path", ssl = false)
-          .withQualifiedHostNameIfInDomain(Some(domain))
-          .futureValue shouldBe
-        HttpUrl.fromString(s"http://$domain1FQDN/path")
+    "getting qualified host in domain" when {
+      "domain passed" must {
+        "look up FQDN when and address specified" in new Fixture {
+          willLookupAddressAndPTRs(address, Seq(DnsRecord.PTR(hostFQDN)))
+
+          HttpUrl
+            .fromParts(fromString(address), "/path", ssl = false)
+            .withQualifiedHostNameIfInDomain(Some(domain))
+            .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
+        }
+
+        "look up FQDN when unqualified host specified" in new Fixture {
+          willLookupAddressAndPTRs(host, Seq(DnsRecord.PTR(hostFQDN)))
+
+          HttpUrl
+            .fromParts(fromString(host), "/path", ssl = false)
+            .withQualifiedHostNameIfInDomain(Some(domain))
+            .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
+        }
+
+        "use existing FQDN when FQDN specified" in new Fixture {
+          HttpUrl
+            .fromParts(fromString(hostFQDN), "/path", ssl = false)
+            .withQualifiedHostNameIfInDomain(Some(domain))
+            .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
+        }
+
+        "use first host matching domain if resolve to multiple hosts" in new Fixture {
+          willLookupAddressAndPTRs(
+            address,
+            Seq(DnsRecord.PTR("otherHost1"), DnsRecord.PTR(hostFQDN), DnsRecord.PTR("otherHost2"))
+          )
+
+          HttpUrl
+            .fromParts(fromString(address), "/path", ssl = false)
+            .withQualifiedHostNameIfInDomain(Some(domain))
+            .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
+        }
       }
 
-      "look up FQDN when domain and unqualified host specified" in {
-        HttpUrl
-          .fromParts(fromString(domain1Host), "/path", ssl = false)
-          .withQualifiedHostNameIfInDomain(Some(domain))
-          .futureValue shouldBe
-        HttpUrl.fromString(s"http://$domain1FQDN/path")
+      "no domain name passed" must {
+        "use first resolved host" in new Fixture {
+          willLookupAddressAndPTRs(
+            address,
+            Seq(DnsRecord.PTR("host1"), DnsRecord.PTR("host2"), DnsRecord.PTR("host3"))
+          )
+
+          HttpUrl
+            .fromParts(fromString(address), "/path", ssl = false)
+            .withQualifiedHostNameIfInDomain(None)
+            .futureValue shouldBe HttpUrl.fromString("http://host1/path")
+        }
       }
 
-      "use existing FQDN when domain and FQDN specified" in {
-        HttpUrl
-          .fromParts(fromString(domain1FQDN), "/path", ssl = false)
-          .withQualifiedHostNameIfInDomain(Some(domain))
-          .futureValue shouldBe
-        HttpUrl.fromString(s"http://$domain1FQDN/path")
-      }
+      "host lookup fails" must {
+        "use the address" in new Fixture {
+          willLookupAddressAndPTRs(address, Nil)
 
-      "use specified host if lookup fails" in {
-        HttpUrl
-          .fromParts(fromString("someHost"), "/path", ssl = false)
-          .withQualifiedHostNameIfInDomain(Some(domain))
-          .futureValue shouldBe
-        HttpUrl.fromString("http://someHost/path")
-      }
-
-      "use host matching domain when address resolved to multiple host names" in {
-        HttpUrl
-          .fromParts(fromString("10.0.0.6"), "/path", ssl = false)
-          .withQualifiedHostNameIfInDomain(Some(domain))
-          .futureValue shouldBe
-        HttpUrl.fromString("http://exchange.cyclone-technology.com/path")
-      }
-
-      "use first host unqualified resolves to multiple host names" in {
-        HttpUrl
-          .fromParts(fromString("mail"), "/path", ssl = false)
-          .withQualifiedHostNameIfInDomain(None)
-          .futureValue should
-        (be(HttpUrl.fromString("http://mail/path")) or
-        be(HttpUrl.fromString("http://exchange.cyclone-technology.com/path")))
+          HttpUrl
+            .fromParts(fromString(address), "/path", ssl = false)
+            .withQualifiedHostNameIfInDomain(Some(domain))
+            .futureValue shouldBe HttpUrl.fromString(s"http://$address/path")
+        }
       }
     }
   }

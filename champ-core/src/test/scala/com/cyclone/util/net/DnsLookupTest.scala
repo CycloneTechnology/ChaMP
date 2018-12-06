@@ -15,17 +15,25 @@ class DnsLookupTest
     with IntegrationPatience
     with ActorSystemShutdown {
 
-  class Fixture extends Dns4sDnsLookupComponent with TestActorSystemComponent with DnsConfigSourceComponent {
+  val goodDnsConfig = DnsConfig(
+    Seq("8.8.8.8"),
+    Seq("google.com"),
+    1.seconds
+  )
 
-    def dnsConfigSource = new DnsConfigSource {
+  val badDnsConfig= DnsConfig(
+    Seq("10.0.0.123"),
+    Seq("some.domain"),
+    100.millis
+  )
 
-      def dnsConfig: Future[DnsConfig] = Future.successful(
-        DnsConfig(
-          Seq("10.0.0.4"),
-          Seq("cyclone-technology.com"),
-          10.seconds
-        )
-      )
+  class Fixture(_dnsConfig: DnsConfig = goodDnsConfig)
+      extends Dns4sDnsLookupComponent
+      with TestActorSystemComponent
+      with DnsConfigSourceComponent {
+
+    def dnsConfigSource: DnsConfigSource = new DnsConfigSource {
+      def dnsConfig: Future[DnsConfig] = Future.successful(_dnsConfig)
     }
   }
 
@@ -34,8 +42,8 @@ class DnsLookupTest
   "DnsLookup" when {
     "looking up PTR records" must {
       "work when single host name for address" in new Fixture {
-        dnsLookup.lookupPTRs("10.0.0.4").futureValue should contain only
-        DnsRecord.PTR("domain-1.cyclone-technology.com")
+        dnsLookup.lookupPTRs("8.8.8.8").futureValue should contain only
+        DnsRecord.PTR("google-public-dns-a.google.com")
       }
 
       "work when multiple host names for address" ignore new Fixture {
@@ -52,38 +60,42 @@ class DnsLookupTest
 
     "looking up address and then host name PTR records" must {
       "work for addresses" in new Fixture {
-        dnsLookup.lookupAddressAndPTRs("10.0.0.4").futureValue should contain only
-        DnsRecord.PTR("domain-1.cyclone-technology.com")
+        dnsLookup.lookupAddressAndPTRs("8.8.8.8").futureValue should contain only
+        DnsRecord.PTR("google-public-dns-a.google.com")
       }
 
       "work for already fully qualified host names" in new Fixture {
-        dnsLookup.lookupAddressAndPTRs("domain-1.cyclone-technology.com").futureValue should contain only
-        DnsRecord.PTR("domain-1.cyclone-technology.com")
+        dnsLookup.lookupAddressAndPTRs("google-public-dns-a.google.com").futureValue should contain only
+        DnsRecord.PTR("google-public-dns-a.google.com")
       }
 
       "work for host names" in new Fixture {
-        dnsLookup.lookupAddressAndPTRs("domain-1").futureValue should contain only
-        DnsRecord.PTR("domain-1.cyclone-technology.com")
+        dnsLookup.lookupAddressAndPTRs("google-public-dns-a").futureValue should contain only
+        DnsRecord.PTR("google-public-dns-a.google.com")
       }
     }
 
     "looking up MX records" must {
+
       "gets mail server address for email address in mx record" in new Fixture {
-        dnsLookup.lookupMXs("cyclone-technology.com").futureValue should
-        contain(DnsRecord.MX("exchange.cyclone-technology.com", 10))
-      }
-
-      "gets no mail server address for unknown email domain" in new Fixture {
-        dnsLookup.lookupMXs("xblahblahx.com").futureValue shouldBe empty
-      }
-
-      "gets mail server address for email address in mx record - non local address" in new Fixture {
         dnsLookup.lookupMXs("gmail.com").futureValue should
         contain inOrder (DnsRecord.MX("alt1.gmail-smtp-in.l.google.com", 10),
         DnsRecord.MX("alt2.gmail-smtp-in.l.google.com", 20),
         DnsRecord.MX("alt3.gmail-smtp-in.l.google.com", 30),
         DnsRecord.MX("alt4.gmail-smtp-in.l.google.com", 40))
       }
+
+      "gets no mail server address for unknown email domain" in new Fixture {
+        dnsLookup.lookupMXs("xblahblahx.com").futureValue shouldBe empty
+      }
+    }
+  }
+
+  "inaccessible dns server" must {
+    "return empty list of results" in new Fixture(badDnsConfig){
+      dnsLookup.lookupPTRs("1.2.3.4").futureValue shouldBe empty
+      dnsLookup.lookupAddressAndPTRs("1.2.3.4").futureValue shouldBe empty
+      dnsLookup.lookupMXs("gmail.com").futureValue shouldBe empty
     }
   }
 }
