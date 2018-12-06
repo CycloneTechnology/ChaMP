@@ -13,7 +13,7 @@ Open Source libraries for Channel Management Protocols
 
 # Maven
 
-Built artifacts are available in Maven Central. The following dependency can be used to obtain them:
+Published artifacts are available from Maven Central. The following dependency can be used to obtain them:
 
     <dependency>
       <groupId>com.cyclone-technology</groupId>
