@@ -26,13 +26,13 @@ object SensorUnit {
   case object DegreesCentigrade extends SensorUnit {
     val code: Byte = 1.toByte
     val message = "degrees C"
-    val abbreviation = "C"
+    val abbreviation = "°C"
   }
 
   case object DegreesFahrenheight extends SensorUnit {
     val code: Byte = 2.toByte
     val message = "degrees F"
-    val abbreviation = "F"
+    val abbreviation = "°F"
   }
 
   case object DegreesKelvin extends SensorUnit {
@@ -146,7 +146,7 @@ object SensorUnit {
   case object Microsecond extends SensorUnit {
     val code: Byte = 20.toByte
     val message = "microsecond"
-    val abbreviation = "us"
+    val abbreviation = "µs"
   }
 
   case object Millisecond extends SensorUnit {
@@ -344,13 +344,13 @@ object SensorUnit {
   case object MicroFarad extends SensorUnit {
     val code: Byte = 53.toByte
     val message = "microfarad"
-    val abbreviation = "uF"
+    val abbreviation = "µF"
   }
 
   case object Ohms extends SensorUnit {
     val code: Byte = 54.toByte
     val message = "ohms"
-    val abbreviation = "ohms"
+    val abbreviation = "Ω"
   }
 
   case object Siemens extends SensorUnit {

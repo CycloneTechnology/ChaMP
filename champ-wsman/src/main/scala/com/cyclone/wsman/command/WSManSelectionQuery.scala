@@ -5,11 +5,11 @@ import akka.stream.scaladsl.{Keep, Sink}
 import com.cyclone.command.SelectorClause
 import com.cyclone.util.concurrent.Futures
 import com.cyclone.wsman.WSManError.WSManErrorOr
-import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
 import com.cyclone.wsman.command.WSManCommands.CommandExecutor
 import com.cyclone.wsman.impl._
 import com.cyclone.wsman.impl.model.{ManagedInstance, ManagedReference}
 import com.cyclone.wsman.impl.xml.EnumXML
+import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
 import scalaz.EitherT._
 import scalaz.Scalaz._
 
@@ -71,7 +71,7 @@ object WSManEnumerationQueryDefn {
       implicit context: WSManOperationContext
     ): Future[WSManErrorOr[Seq[ManagedInstance]]] = {
 
-      def enumerate(enumMode: EnumerationMode)(implicit context: WSManOperationContext) = {
+      def enumeratorFor(enumMode: EnumerationMode)(implicit context: WSManOperationContext) = {
 
         val enumerationParameters =
           EnumerationParameters(query.maxElementsPerEnumeration, context.operationDeadline)
@@ -89,7 +89,7 @@ object WSManEnumerationQueryDefn {
              )) yield {
           val ctx = (response \ "Body" \ "EnumerateResponse" \ "EnumerationContext").text
 
-          WSManEnumerator(ref, ctx, enumerationParameters)
+          WSManEnumerator(ref, ctx, enumerationParameters, releaseOnClose = true)
         }
       }
 
@@ -131,7 +131,7 @@ object WSManEnumerationQueryDefn {
       }
 
       val result = for {
-        enumerator <- enumerate(ObjectAndReferenceEnumerationMode)
+        enumerator <- enumeratorFor(ObjectAndReferenceEnumerationMode)
         items      <- eitherT(itemsFor(enumerator))
       } yield items
 

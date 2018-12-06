@@ -172,7 +172,7 @@ object SdrReaderComponent extends SdrReaderComponent with LazyLogging {
           logger.debug(
             s"Getting SDR chunk from $offset to ${offset + bytesToRead} (of $totalLength)."
           )
-          if (bytesToRead <= 0) eitherT(acc.right[IpmiError].point[Future])
+          if (bytesToRead <= 0) rightT(acc.point[Future])
           else
             for {
               commandResult <- runGetSdr(recordId, reservationId, offset, bytesToRead)

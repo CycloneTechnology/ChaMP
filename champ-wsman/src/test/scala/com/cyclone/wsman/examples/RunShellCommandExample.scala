@@ -13,19 +13,44 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
+/**
+  * This example runs a shell command on a remote Windows PC.
+  *
+  * To run this need an application.conf in the classpath containing connection details:
+  * {{{
+  *wsman {
+  *   # The target host.
+  *   # Note that Kerberos requires fully qualified host names to authenticate.
+  *   # If IPs are used we will attempt to resolve to a fully
+  *   # qualified host name. To do this DNS needs to be configured - see documentation.
+  *   host = someHost.someDomain
+  *
+  *   username = someUser
+  *   password = somePassword
+  * }
+  * }}}
+  *
+  * If using Kerberos authentication, Kerberos can be configured using the following in the application.conf:
+  * {{{
+  * cyclone {
+  *   kerberos {
+  *     realm = domain.name # Or whatever is the domain name
+  *     kdcHosts = [192.168.1.2] # IP of domain controller
+  *     realmHosts = []
+  *   }
+  * }
+  * }}}
+  */
 object RunShellCommandExample extends App {
-
-  implicit val actorSystem: ActorSystem = ActorSystem("exampleActorSystem")
-  implicit val timeoutContext: TimeoutContext = TimeoutContext.default
 
   val config = ConfigFactory.load()
 
-  // For Kerberos, need to either specify the fully qualified domain name or specify the
-  // domain as part of fully qualified user name (in which case it tries to use DNS to
-  // convert a host or IP to a fully qualified domain name with that domain under the covers)
   val host = config.getString("wsman.host")
-  val username = config.getString("wsman.username") + "@" + config.getString("wsman.domain")
+  val username = config.getString("wsman.username")
   val password = config.getString("wsman.password")
+
+  implicit val actorSystem: ActorSystem = ActorSystem("exampleActorSystem")
+  implicit val timeoutContext: TimeoutContext = TimeoutContext.default
 
   val wsman = WSMan.create
 

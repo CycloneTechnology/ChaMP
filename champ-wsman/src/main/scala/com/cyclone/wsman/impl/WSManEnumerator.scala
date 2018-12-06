@@ -5,14 +5,12 @@ import akka.stream.scaladsl.Source
 import com.cyclone.util.OperationDeadline
 import com.cyclone.util.XmlUtils.childElements
 import com.cyclone.wsman.WSManError.WSManErrorOr
-import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
-import com.cyclone.wsman.impl.WSManEnumerator.WSManEnumeratorConfig
 import com.cyclone.wsman.impl.model.{ManagedInstance, ManagedReference}
 import com.cyclone.wsman.impl.xml.{PullXML, ReleaseXML}
+import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
 import com.typesafe.scalalogging.LazyLogging
 import scalaz.{-\/, \/-}
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -103,28 +101,12 @@ object ReferenceEnumerationMode extends EnumerationMode {
   val name = "EnumerateEPR"
 }
 
+/**
+  * Determines how items are enumerated
+  *
+  * @param maxElements the max number of elements per response message
+  */
 case class EnumerationParameters(maxElements: Int, deadline: OperationDeadline)
-
-object WSManEnumerator {
-
-  def apply(ref: ManagedReference, enumContext: String, params: EnumerationParameters)(
-    implicit context: WSManOperationContext
-  ): WSManEnumerator =
-    new WSManEnumerator(ref, enumContext) with WSManEnumeratorConfig {
-      protected[wsman] def release(enumContext: String): Future[_] =
-        WSManOperations.executeSoapRequest(ReleaseXML(enumContext))
-
-      def parameters: EnumerationParameters = params
-    }
-
-  /** Parameters for the enumeration. */
-  trait WSManEnumeratorConfig {
-    protected[wsman] def release(enumContext: String): Future[_]
-
-    def parameters: EnumerationParameters
-  }
-
-}
 
 sealed trait BatchType
 
@@ -134,10 +116,14 @@ case class BatchTypeNotLast(nextContext: String) extends BatchType
 
 case class Batch(items: List[WSManEnumItem], batchType: BatchType)
 
-class WSManEnumerator protected (protected[wsman] val ref: ManagedReference, initialContext: String)(
+private[wsman] case class WSManEnumerator(
+  ref: ManagedReference,
+  initialContext: String,
+  parameters: EnumerationParameters,
+  releaseOnClose: Boolean
+)(
   implicit context: WSManOperationContext
 ) extends LazyLogging {
-  self: WSManEnumeratorConfig =>
 
   def enumerate: Source[Batch, NotUsed] = {
     Source.unfoldAsync(Option(initialContext)) {
@@ -169,11 +155,7 @@ class WSManEnumerator protected (protected[wsman] val ref: ManagedReference, ini
     val pullRespElt = (document \ "Body" \ "PullResponse").head
     val itemsElt = (pullRespElt \ "Items").head
 
-    val items = ListBuffer[WSManEnumItem]()
-
-    for (itemElement <- childElements(itemsElt))
-      items +=
-        WSManEnumItem.fromElement(itemElement)
+    val items = childElements(itemsElt).map(WSManEnumItem.fromElement)
 
     Batch(items.toList, batchType(pullRespElt))
   }
@@ -184,11 +166,12 @@ class WSManEnumerator protected (protected[wsman] val ref: ManagedReference, ini
     else
       BatchTypeNotLast((pullRespElt \ "EnumerationContext").text)
 
-  def close(enumContext: String): Unit = {
-    logger.debug(s"Enum closing for context $context...")
-    release(enumContext).onComplete {
-      case Success(_) => logger.debug(s"Enum close context $context success")
-      case Failure(t) => logger.warn(s"Enum close context $context failure", t)
+  def close(enumContext: String): Unit =
+    if (releaseOnClose) {
+      logger.debug(s"Enum closing for context $context...")
+      WSManOperations.executeSoapRequest(ReleaseXML(enumContext)).onComplete {
+        case Success(_) => logger.debug(s"Enum close context $context success")
+        case Failure(t) => logger.warn(s"Enum close context $context failure", t)
+      }
     }
-  }
 }

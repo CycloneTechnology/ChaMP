@@ -10,15 +10,14 @@ import com.cyclone.command.{Selector, SelectorClause}
 import com.cyclone.util.net.JavaNamingDnsLookupComponent
 import com.cyclone.wsman.WSMan._
 import com.cyclone.wsman._
+import com.cyclone.wsman.command.{WSManInstance, WSManPropertyValue}
 import com.cyclone.wsman.impl.DeliveryHandler
-import com.cyclone.wsman.impl.model.{InstancePropertyValue, ManagedInstance, StringPropertyValue}
 import com.cyclone.wsman.impl.subscription.push.GuavaKerberosTokenCacheComponent
 import com.cyclone.wsman.subscription._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 
 import scala.concurrent.{Future, Promise}
-import scala.language.{implicitConversions, postfixOps}
 
 /**
   * Tests for event subscription.
@@ -28,7 +27,7 @@ import scala.language.{implicitConversions, postfixOps}
   * @author Jeremy.Stone
   */
 trait WSManSubscriptionTest
-  extends TestKitSupport
+    extends TestKitSupport
     with WordSpecLike
     with Matchers
     with ApplicationWSManComponent
@@ -42,14 +41,13 @@ trait WSManSubscriptionTest
     with IntegrationPatience
     with ActorSystemShutdown {
 
-  val extractFilenameFromResult: ManagedInstance => String = {
-    instance =>
-      val optName = for {
-        InstancePropertyValue(inst) <- instance.getPropertyValue("TargetInstance")
-        StringPropertyValue(v) <- inst.getPropertyValue("Name")
-      } yield v
+  val extractFilenameFromResult: WSManInstance => String = { instance =>
+    val optName = for {
+      WSManPropertyValue.ForInstance(inst) <- instance.properties.get("TargetInstance")
+      name                                 <- inst.stringProperty("Name")
+    } yield name
 
-      optName.get.toString.split('\\').last
+    optName.get.toString.split('\\').last
   }
 
   val extractFilename: File => String = _.getName()
@@ -61,18 +59,20 @@ trait WSManSubscriptionTest
   val httpUrl = httpUrlFor(hostAndPort, ssl)
   val target = WSManTarget(httpUrl, securityContext)
 
-  protected def doSubscribe[S <: WSManSubscriptionDefn : SubscriptionExecutor](
+  protected def doSubscribe[S <: WSManSubscriptionDefn: SubscriptionExecutor](
     defn: S,
-    deliveryHandler: DeliveryHandler = deliveryHandler): (Future[Done], Source[ManagedInstance, SubscriptionId]) = {
+    deliveryHandler: DeliveryHandler = deliveryHandler
+  ): (Future[Done], Source[WSManInstance, SubscriptionId]) = {
     val promise = Promise[Done]
 
     val source =
-      wsman.subscribe(target, defn, deliveryHandler)
+      wsman
+        .subscribe(target, defn, deliveryHandler)
         .map {
-          case x@SubscriptionItem.Subscribed =>
+          case x @ SubscriptionItem.Subscribed =>
             promise.success(Done)
             x
-          case x                             => x
+          case x => x
         }
         .collect {
           case SubscriptionItem.Instance(instance) => instance
@@ -84,9 +84,10 @@ trait WSManSubscriptionTest
   protected def fileCreationSubsDefn =
     SubscribeByWQL(
       "SELECT * FROM __InstanceOperationEvent WITHIN 1" +
-        " Where Targetinstance Isa 'CIM_DataFile'" +
-        " And TargetInstance.Drive='C:'" +
-        " And TargetInstance.Path='" + tempDirWMI + "'")
+      " Where Targetinstance Isa 'CIM_DataFile'" +
+      " And TargetInstance.Drive='C:'" +
+      " And TargetInstance.Path='" + tempDirWMI + "'"
+    )
 
   protected def continuousEventStreamSubscription =
     SubscribeBySelector.fromClassName("Win32_ThreadTrace")
@@ -95,17 +96,20 @@ trait WSManSubscriptionTest
     SubscribeByWQL(
       "SELECT * FROM CIM_ProcessIndication",
       baseResourceUri = ResourceUri("http://schemas.dmtf.org/wbem/wscim/1/*"),
-      cimNamespace = Some("root/cimv2"))
+      cimNamespace = Some("root/cimv2")
+    )
 
   protected def evengLogDefn =
     SubscribeByWQL(
       "SELECT * FROM __InstanceCreationEvent WITHIN 1" +
-        " WHERE TargetInstance ISA 'Win32_NTLogEvent'")
+      " WHERE TargetInstance ISA 'Win32_NTLogEvent'"
+    )
 
   protected def evengLogUserDefn =
     SubscribeByWQL(
       "SELECT * FROM __InstanceCreationEvent WITHIN 1" +
-        " WHERE TargetInstance ISA 'Win32_NTLogEventUser'")
+      " WHERE TargetInstance ISA 'Win32_NTLogEventUser'"
+    )
 
   private def processID: String = {
     val runtime = ManagementFactory.getRuntimeMXBean
@@ -138,8 +142,10 @@ trait WSManSubscriptionTest
     // The WS-Management service cannot accept subscriptions to an indication class, when either the filter or the dialect is specified.
     //  Retry with filter removed."
     "filter based on selector" ignore {
-      val defn = SubscribeBySelector.fromClassName("Win32_ThreadTrace",
-        selectorClause = SelectorClause(Set(Selector("ProcessID", processID))))
+      val defn = SubscribeBySelector.fromClassName(
+        "Win32_ThreadTrace",
+        selectorClause = SelectorClause(Set(Selector("ProcessID", processID)))
+      )
 
       val (subscribed, source) = doSubscribe(defn)
       val events = source.take(1).runWith(Sink.seq)

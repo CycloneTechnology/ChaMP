@@ -1,7 +1,5 @@
 package com.cyclone.util
 
-import scala.language.implicitConversions
-
 object CaseInsensitive {
 
   implicit class StringExt(private val s: String) extends AnyVal {

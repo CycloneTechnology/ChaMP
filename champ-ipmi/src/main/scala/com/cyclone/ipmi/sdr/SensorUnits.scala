@@ -3,15 +3,19 @@ package com.cyclone.ipmi.sdr
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 
-sealed trait RateUnit
+sealed trait RateUnit {
+  def abbreviation: String = "/" + unit.abbreviation
+
+  def unit: SensorUnit
+}
 
 object RateUnit {
   implicit val decoder: Decoder[Option[RateUnit]] = new Decoder[Option[RateUnit]] {
 
     def decode(data: ByteString): Option[RateUnit] = data(0).bits3To5.toUnsignedInt match {
       case 0 => None
-      case 1 => Some(PerMicroSecond)
-      case 2 => Some(PerMilliSecond)
+      case 1 => Some(PerMicrosecond)
+      case 2 => Some(PerMillisecond)
       case 3 => Some(PerSecond)
       case 4 => Some(PerMinute)
       case 5 => Some(PerHour)
@@ -19,21 +23,35 @@ object RateUnit {
     }
   }
 
-  case object PerMicroSecond extends RateUnit
+  case object PerMicrosecond extends RateUnit {
+    def unit: SensorUnit = SensorUnit.Microsecond
+  }
 
-  case object PerMilliSecond extends RateUnit
+  case object PerMillisecond extends RateUnit {
+    def unit: SensorUnit = SensorUnit.Millisecond
+  }
 
-  case object PerSecond extends RateUnit
+  case object PerSecond extends RateUnit {
+    def unit: SensorUnit = SensorUnit.Second
+  }
 
-  case object PerMinute extends RateUnit
+  case object PerMinute extends RateUnit {
+    def unit: SensorUnit = SensorUnit.Minute
+  }
 
-  case object PerHour extends RateUnit
+  case object PerHour extends RateUnit {
+    def unit: SensorUnit = SensorUnit.Hour
+  }
 
-  case object PerDay extends RateUnit
+  case object PerDay extends RateUnit {
+    def unit: SensorUnit = SensorUnit.Day
+  }
 
 }
 
-sealed trait UnitCombination
+sealed trait UnitCombination {
+  def infix: String
+}
 
 object UnitCombination {
   implicit val decoder: Decoder[Option[UnitCombination]] = new Decoder[Option[UnitCombination]] {
@@ -48,16 +66,22 @@ object UnitCombination {
   /**
     * Modification that caters for things like 'metres per second'
     */
-  case object Divide extends UnitCombination
+  case object Divide extends UnitCombination {
+    def infix: String = "/"
+  }
 
   /**
     * Modification that caters for things like 'kilowatt hours'
     */
-  case object Multiply extends UnitCombination
+  case object Multiply extends UnitCombination {
+    def infix: String = " "
+  }
 
 }
 
-sealed trait SensorUnits
+sealed trait SensorUnits {
+  def abbreviation: String
+}
 
 object SensorUnits {
 
@@ -76,22 +100,32 @@ object SensorUnits {
 
       sensorsUnitByte.as[Option[UnitCombination]] match {
         case None              => Simple(baseUnit, rateUnit)
-        case Some(combination) => Combined(baseUnit, modifierUnit, combination, rateUnit)
+        case Some(combination) => Combined(baseUnit, combination, modifierUnit, rateUnit)
       }
     }
   }
 
-  case class Simple(unit: SensorUnit, optRateUnit: Option[RateUnit] = None) extends SensorUnits
+  case class Simple(unit: SensorUnit, optRateUnit: Option[RateUnit] = None) extends SensorUnits {
+    def abbreviation: String = s"${unit.abbreviation}${optRateUnit.map(_.abbreviation).getOrElse("")}"
+  }
 
   case class Combined(
     baseUnit: SensorUnit,
-    modifierUnit: SensorUnit,
     combination: UnitCombination,
+    modifierUnit: SensorUnit,
     optRateUnit: Option[RateUnit] = None
-  ) extends SensorUnits
+  ) extends SensorUnits {
 
-  case class Percentage(optRateUnit: Option[RateUnit]) extends SensorUnits
+    def abbreviation: String =
+      s"${baseUnit.abbreviation}${combination.infix}${modifierUnit.abbreviation}${optRateUnit.map(_.abbreviation).getOrElse("")}"
+  }
 
-  case object NoUnits extends SensorUnits
+  case class Percentage(optRateUnit: Option[RateUnit]) extends SensorUnits {
+    def abbreviation: String = "%"
+  }
+
+  case object NoUnits extends SensorUnits {
+    def abbreviation: String = ""
+  }
 
 }

@@ -2,7 +2,6 @@ package com.cyclone.util.net
 
 import com.google.common.net.{HostAndPort => GuavaHostAndPort}
 
-import scala.language.implicitConversions
 import com.google.common.base.Preconditions._
 
 /**

@@ -15,6 +15,7 @@ import com.cyclone.wsman.impl._
 import com.cyclone.wsman.impl.http.{DefaultWSManConnectionFactoryComponent, DefaultWSManNetworkingComponent}
 import com.cyclone.wsman.impl.model.OperationsReferenceResolverComponent
 import com.cyclone.wsman.impl.subscription._
+import com.cyclone.wsman.impl.subscription.pull.PullDeliveryHandler
 import com.cyclone.wsman.impl.subscription.push.{
   DefaultPushDeliveryRouterComponent,
   GuavaKerberosTokenCacheComponent,
@@ -27,7 +28,6 @@ import scalaz.Scalaz._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-import scala.language.{implicitConversions, postfixOps}
 
 object WSMan {
 
@@ -146,7 +146,7 @@ trait WSMan {
   def subscribe[S <: WSManSubscriptionDefn](
     target: WSManTarget,
     subscriptionDefn: S,
-    deliveryHandler: DeliveryHandler
+    deliveryHandler: DeliveryHandler = PullDeliveryHandler()
   )(implicit executor: SubscriptionExecutor[S]): Source[SubscriptionItem, SubscriptionId]
 
   def testConnection(
@@ -201,10 +201,9 @@ trait DefaultWSManComponent extends WSManComponent {
     }
 
     private def contextForSubscription(target: WSManTarget) =
-      // Neither subscribe nor unsubscribe use the deadline, currently
-      // (and pull and resolve references are controlled through separate properties
-      // of the subscription defn) so just set to a reasonable value for now...
-      wsmanOperationContextFactory.wsmanContextFor(target, ResettingDeadline(5 seconds))
+      // TODO pass in a timeout for the actual subscription/unsubscription??
+      // Use reasonable value for now...
+      wsmanOperationContextFactory.wsmanContextFor(target, ResettingDeadline(5.seconds))
 
     def subscribe[S <: WSManSubscriptionDefn](
       target: WSManTarget,

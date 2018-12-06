@@ -17,13 +17,13 @@ class SensorToolCommandTestEx
 
   "sensor command" must {
     "get all sensor records when required" in new Fixture {
-      val records = executeCommand(SensorTool.Command(SdrFilter.All)).records
+      val records = executeCommand(SensorTool.Command(SdrFilter.All)).readings
 
       records.size should be > 1
     }
 
     "get a correct specific sensor record when required" in new Fixture {
-      val sensorReading = executeCommand(SensorTool.Command(SdrFilter.BySensorIds(SensorId("-12 V")))).records.head
+      val sensorReading = executeCommand(SensorTool.Command(SdrFilter.BySensorIds(SensorId("-12 V")))).readings.head
 
       inside(sensorReading) {
         case SensorReading(id, Some(analogReadings), _) =>

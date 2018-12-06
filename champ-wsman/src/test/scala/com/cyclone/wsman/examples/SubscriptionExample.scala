@@ -1,19 +1,19 @@
 package com.cyclone.wsman.examples
-
 import akka.actor.ActorSystem
-import com.cyclone.command.TimeoutContext
+import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.{ActorMaterializer, KillSwitches}
 import com.cyclone.util.kerberos.{KerberosArtifacts, KerberosDeployer}
 import com.cyclone.util.net.{AuthenticationMethod, PasswordSecurityContext}
-import com.cyclone.wsman.command.{EnumerateByWQL, WSManInstancesResult}
+import com.cyclone.wsman.command.WSManPropertyValue
+import com.cyclone.wsman.impl.subscription.SubscriptionItem
+import com.cyclone.wsman.subscription.SubscribeByWQL
 import com.cyclone.wsman.{WSMan, WSManTarget}
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 /**
-  * This examples enumerates configured services on a remote Windows PC.
+  * This example subscribes to the event log on a remote Windows PC.
   *
   * To run this need an application.conf in the classpath containing connection details:
   * {{{
@@ -40,8 +40,7 @@ import scala.util.{Failure, Success}
   * }
   * }}}
   */
-object QueryCommandExample extends App {
-
+object SubscriptionExample extends App {
   val config = ConfigFactory.load()
 
   val host = config.getString("wsman.host")
@@ -49,37 +48,53 @@ object QueryCommandExample extends App {
   val password = config.getString("wsman.password")
 
   implicit val actorSystem: ActorSystem = ActorSystem("exampleActorSystem")
-  implicit val timeoutContext: TimeoutContext = TimeoutContext.default
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   val wsman = WSMan.create
 
-  val futureResult: Future[WSManInstancesResult] =
+  val futureSource =
     for {
       // If using Kerberos, this will create temporary krb5.conf and login.conf and configure system properties
       _ <- KerberosDeployer.create.deploy(KerberosArtifacts.simpleFromConfig)
 
-      commandResult <- wsman.executeCommand(
+    } yield {
+      val source = wsman.subscribe(
         WSManTarget(
           WSMan.httpUrlFor(host, ssl = false),
           PasswordSecurityContext(username, password, AuthenticationMethod.Kerberos)
         ),
-        EnumerateByWQL("select * from Win32_Service")
+        SubscribeByWQL(
+          "SELECT * FROM __InstanceCreationEvent WITHIN 1" +
+          " WHERE TargetInstance ISA 'Win32_NTLogEvent'"
+        )
       )
-    } yield commandResult
 
-  futureResult.onComplete {
-    case Success(result) =>
-      result.instances.foreach { instance =>
-        for {
-          caption   <- instance.stringProperty("Caption")
-          startMode <- instance.stringProperty("StartMode")
-          state     <- instance.stringProperty("State")
-        } println(s"Service '$caption' with start mode $startMode state is $state")
-      }
-      System.exit(0)
+      source
+    }
 
-    case Failure(e) =>
-      e.printStackTrace()
-      System.exit(1)
-  }
+  val source = Source.fromFutureSource(futureSource)
+
+  val killSwitch =
+    source
+      .viaMat(KillSwitches.single)(Keep.right)
+      .to(Sink.foreach {
+        case SubscriptionItem.Subscribed => println("Subscribed")
+        case SubscriptionItem.Instance(instance) =>
+          for {
+            WSManPropertyValue.ForInstance(inst) <- instance.properties.get("TargetInstance")
+            time                                 <- inst.stringProperty("TimeGenerated")
+            message                              <- inst.stringProperty("Message")
+          } println(s"""
+            |Event occurred at $time:
+            |$message
+            | ---------------------------------------------
+            |""".stripMargin)
+      })
+      .run()
+
+  // Wait for events then shutdown...
+  Thread.sleep(10000)
+  killSwitch.shutdown()
+
+  System.exit(0)
 }

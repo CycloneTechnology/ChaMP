@@ -66,7 +66,7 @@ object SensorType {
   /**
     * Maps type names used in ipmitool as well as here (for the sdr type <typename>) command.
     *
-    * The names (although not the abreviations) can be obtained from ipmitool by running the "sdr type" command
+    * The names (although not the abbreviations) can be obtained from ipmitool by running the "sdr type" command
     * without specifying a type name.
     */
   def forName(typeName: String): Option[SensorType] = {

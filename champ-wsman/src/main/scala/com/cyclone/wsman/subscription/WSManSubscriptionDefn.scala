@@ -1,12 +1,12 @@
 package com.cyclone.wsman.subscription
 
 import akka.stream.scaladsl.{Sink, Source}
-import com.cyclone.util.{AbsoluteDeadline, OperationDeadline}
-import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
+import com.cyclone.util.OperationDeadline
 import com.cyclone.wsman.command._
 import com.cyclone.wsman.impl.model.ManagedReference
 import com.cyclone.wsman.impl.subscription.SubscriptionItem
 import com.cyclone.wsman.impl.{DeliveryHandler, InstanceFilter}
+import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
 import scalaz.{-\/, \/-}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -75,7 +75,7 @@ object WSManFilteredSubscriptionDefn {
                 }
               }
               .alsoTo(Sink.onComplete(_ => subsRegistration.unsubscribe))
-              .map(SubscriptionItem.Instance)
+              .map(instance => SubscriptionItem.Instance(instance.external))
 
             Source.single(SubscriptionItem.Subscribed) ++ instances
 

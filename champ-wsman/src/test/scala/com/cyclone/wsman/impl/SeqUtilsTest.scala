@@ -4,8 +4,6 @@ import com.cyclone.wsman.impl.SeqUtils.{replace, replaceIndexedOccurrence, repla
 import org.junit.Test
 import org.scalatest.junit.JUnitSuite
 
-import scala.language.implicitConversions
-
 class SeqUtilsTest extends JUnitSuite {
 
   @Test

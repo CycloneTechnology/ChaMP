@@ -2,7 +2,6 @@ package com.cyclone.ipmi.tool.command
 
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError._
-import com.cyclone.ipmi.api.IpmiConnection
 import com.cyclone.ipmi.command.GenericStatusCodeErrors
 import com.cyclone.ipmi.command.sensor.{GetSensorReading, GetSensorReadingFactors, GetSensorThresholds}
 import com.cyclone.ipmi.sdr.Linearization.Linearizable
@@ -30,7 +29,7 @@ object SensorTool {
       def execute(command: Command)(implicit ctx: Ctx): Future[IpmiError \/ SensorTool.Result] = {
         val result = for {
           sdrs     <- eitherT(sdrReader.readAllSdrs)
-          filtered <- eitherT(sdrs.filter(command.sdrFilter.predicate).right.point[Future])
+          filtered <- rightT(sdrs.filter(command.sdrFilter.predicate).point[Future])
           sensorNumbersIdsAndSdrs <- eitherT(
             filtered
               .flatMap { sdr =>
@@ -62,22 +61,16 @@ object SensorTool {
             sensorThresholdsResult <- eitherT(
               connection.executeCommandOrError(GetSensorThresholds.Command(sensorNumber))
             )
-            analogReadings <- eitherT(
-              evaluateAnalogReadings(
-                sensorId,
-                sensorReadingResult,
-                sensorThresholdsResult,
-                rawValueConverter,
-                sdr
-              ).right.point[Future]
-            )
+          } yield {
+            val analogReadings =
+              evaluateAnalogReadings(sensorId, sensorReadingResult, sensorThresholdsResult, rawValueConverter, sdr)
 
-            discreteReadings <- eitherT(
-              evaluateDiscreteReadings(sensorId, sensorReadingResult, sdr).right.point[Future]
-            )
-          } yield SensorReading(sensorId, analogReadings, discreteReadings)
+            val discreteReadings = evaluateDiscreteReadings(sensorId, sensorReadingResult, sdr)
 
-          result.map(Some(_)).run.map { errorOrSensorReading =>
+            SensorReading(sensorId, analogReadings, discreteReadings)
+          }
+
+          result.map(Option(_)).run.map { errorOrSensorReading =>
             errorOrSensorReading.recover {
               case GenericStatusCodeErrors.SensorNotPresent =>
                 logger.debug(s"Ignoring missing sensor $sensorId")
@@ -130,7 +123,7 @@ object SensorTool {
                 } yield converter(Linearization.Linear, sensorReadingFactorsResult.readingFactors)
             }
 
-          case _ => eitherT(RawValueConverter.NoConversion.right[IpmiError].point[Future])
+          case _ => rightT(RawValueConverter.NoConversion.point[Future])
         }
       }
 
@@ -140,11 +133,11 @@ object SensorTool {
         thresholdsResult: GetSensorThresholds.CommandResult,
         rawValueConverter: RawValueConverter,
         sdr: SdrKeyAndBody
-      ): Option[AnalogReadings] = sdr match {
+      ): Option[AnalogReading] = sdr match {
 
         case _: AnalogSdrKeyAndBody if !readingResult.readingUnavailable =>
           val reading =
-            AnalogReadings(
+            AnalogReading(
               rawValueConverter.converter(readingResult.rawValue),
               thresholdsResult.sensorThresholds.mapValues(rawValueConverter.converter).view.force
             )
@@ -160,10 +153,10 @@ object SensorTool {
         sensorId: SensorId,
         readingResult: GetSensorReading.CommandResult,
         sdr: SdrKeyAndBody
-      ): Option[DiscreteReadings] = sdr match {
+      ): Option[DiscreteReading] = sdr match {
         case sdr: EventSdrKeyAndBody =>
           Some(
-            DiscreteReadings(
+            DiscreteReading(
               sdr.sensorMasks.readingMask.evaluateOffsets(readingResult.eventStateBits)
             )
           )
@@ -192,21 +185,21 @@ object SensorTool {
     }
   }
 
-  case class AnalogReadings(
+  case class AnalogReading(
     sensorValue: SensorValue,
     thresholdComparisons: Map[ThresholdComparison, SensorValue]
   )
 
-  case class DiscreteReadings(assertedOffsets: Set[EventReadingOffset])
+  case class DiscreteReading(assertedOffsets: Set[EventReadingOffset])
 
   case class SensorReading(
     sensorId: SensorId,
-    analogReadings: Option[AnalogReadings],
-    discreteReadings: Option[DiscreteReadings]
+    analogReading: Option[AnalogReading],
+    discreteReading: Option[DiscreteReading]
   )
 
-  case class Result(records: Seq[SensorReading]) extends IpmiToolCommandResult {
-    override def tabulationSource: Seq[SensorReading] = records
+  case class Result(readings: Seq[SensorReading]) extends IpmiToolCommandResult {
+    override def tabulationSource: Seq[SensorReading] = readings
   }
 
 }

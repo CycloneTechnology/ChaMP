@@ -2,36 +2,39 @@ package com.cyclone.wsman.impl.subscription.pull
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
+import com.cyclone.util.OperationDeadline
 import com.cyclone.wsman.WSManOperationContext
-import com.cyclone.wsman.impl.WSManEnumerator.WSManEnumeratorConfig
 import com.cyclone.wsman.impl._
 import com.cyclone.wsman.impl.model.ManagedReference
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.concurrent.Future
+import scala.concurrent.duration._
 
 /**
   * [[DeliveryHandler]] for pulling notifications.
+  *
+  * @param maxElementsPerPull the maximum number of elements to include in each pull
+  * @param pullTimeout        the time to wait for each pull to complete
   */
-case class PullDeliveryHandler(enumerationParameters: EnumerationParameters) extends DeliveryHandler with LazyLogging {
+case class PullDeliveryHandler(maxElementsPerPull: Int = 10, pullTimeout: FiniteDuration = 5.seconds)
+    extends DeliveryHandler
+    with LazyLogging {
   type R = PullEventSubscriptionRegistration
 
   class PullEventSubscriptionRegistration(
     subscriptionRef: ManagedReference,
     subscriptionDescriptor: SubscriptionDescriptor,
-    ctx: String
+    initialEnumerationContext: String
   )(implicit context: WSManOperationContext)
       extends EventSubscriptionRegistration(subscriptionRef, subscriptionDescriptor) {
 
     val enumerator: WSManEnumerator =
-      new WSManEnumerator(subscriptionRef, ctx) with WSManEnumeratorConfig {
-        // Do nothing on close - handled by separate explicit unsubscribe
-        protected[wsman] def release(enumContext: String): Future[_] = {
-          Future.successful("CLOSE SKIPPED")
-        }
-
-        def parameters: EnumerationParameters = enumerationParameters
-      }
+      WSManEnumerator(
+        subscriptionRef,
+        initialEnumerationContext,
+        EnumerationParameters(maxElementsPerPull, OperationDeadline.reusableTimeout(pullTimeout)),
+        releaseOnClose = false // Because we unsubscribe when the stream completes
+      )
 
     def pullEnumerate: Source[Batch, NotUsed] = enumerator.enumerate
   }
@@ -41,9 +44,9 @@ case class PullDeliveryHandler(enumerationParameters: EnumerationParameters) ext
   def createRegistration(
     ref: ManagedReference,
     subscriptionDescriptor: SubscriptionDescriptor,
-    ctx: String
+    initialEnumerationContext: String
   )(implicit context: WSManOperationContext): PullEventSubscriptionRegistration =
-    new PullEventSubscriptionRegistration(ref, subscriptionDescriptor, ctx)
+    new PullEventSubscriptionRegistration(ref, subscriptionDescriptor, initialEnumerationContext)
 
   def setupDelivery(
     context: WSManOperationContext,
