@@ -29,7 +29,7 @@ object GetIdentifyLedTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetIdentifyLed.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetIdentifyLed.Command))
           } yield Result(cmdResult.ledState)
 
           result.run

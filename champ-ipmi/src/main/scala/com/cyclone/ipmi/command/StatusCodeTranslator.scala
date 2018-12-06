@@ -6,7 +6,7 @@ import com.cyclone.ipmi.{StatusCodeError, UnknownStatusCodeError}
 import scala.language.postfixOps
 
 /**
-  * Knows how to lookup an [[StatusCode]] for a particular type of command result to get an error message
+  * Knows how to lookup a [[StatusCode]] for a particular type of command result to get an error message
   */
 case class StatusCodeTranslator[-Res <: IpmiCommandResult](
   nonGenericLookup: PartialFunction[StatusCode, StatusCodeError] = PartialFunction.empty

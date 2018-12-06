@@ -27,7 +27,7 @@ object GetLastPostCodeTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetLastPostCode.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetLastPostCode.Command))
           } yield Result(cmdResult.postCode, cmdResult.postCodeString)
 
           result.run

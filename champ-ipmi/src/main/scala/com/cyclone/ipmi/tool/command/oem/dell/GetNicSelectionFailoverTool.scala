@@ -28,7 +28,7 @@ object GetNicSelectionFailoverTool {
 
           val result = for {
             cmdResult <- eitherT(
-              connection.executeCommandOrError(GetNicSelectionFailover.Command())
+              connection.executeCommandOrError(GetNicSelectionFailover.Command)
             )
           } yield Result(cmdResult.nicSelection, cmdResult.nicFailover)
 

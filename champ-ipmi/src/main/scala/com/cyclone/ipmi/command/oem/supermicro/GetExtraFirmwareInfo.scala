@@ -49,16 +49,13 @@ object GetExtraFirmwareInfo {
     firmwareTag: String
   ) extends IpmiCommandResult
 
-  object Command {
-    implicit val coder: Coder[Command] = new Coder[Command] {
-      def encode(request: Command): ByteString = ByteString.empty
+  case object Command extends IpmiStandardCommand {
+    implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+      def encode(request: Command.type): ByteString = ByteString.empty
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
-  }
-
-  case class Command() extends IpmiStandardCommand {
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.OemFree3chRequest
     val commandCode = CommandCode(0x20.toByte)

@@ -19,18 +19,15 @@ object BiosPostEnd {
       StatusCodeTranslator[CommandResult.type]()
   }
 
-  object Command {
-    implicit val coder: Coder[Command] = new Coder[Command] {
-      def encode(request: Command): ByteString = ByteString.empty
-    }
-
-    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
-  }
-
   // Note attributeId = 0x00 means read entire configuration data and bytestoRead = 0xFF means read entire configuration or attribute.
   // Note index used by table object only
-  case class Command() extends IpmiStandardCommand {
+  case object Command extends IpmiStandardCommand {
+    implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+      def encode(request: Command.type): ByteString = ByteString.empty
+    }
+
+    implicit val codec: CommandResultCodec[Command.type, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult.type]
 
     val networkFunction: NetworkFunction = NetworkFunction.OemFree30hRequest
     val commandCode = CommandCode(0x80.toByte)

@@ -65,7 +65,7 @@ object GetEepromVersionInfo {
 
   }
 
-  object CommandResult {
+  object CommandResult extends IpmiCommandResult {
     implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
 
       def decode(data: ByteString): CommandResult = {

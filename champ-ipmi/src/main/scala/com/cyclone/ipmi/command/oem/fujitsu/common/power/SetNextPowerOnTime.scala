@@ -12,24 +12,15 @@ import org.joda.time.Instant
   */
 object SetNextPowerOnTime {
 
-  object CommandResult {
-    implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+  object CommandResult extends IpmiCommandResult {
+    implicit val decoder: Decoder[CommandResult.type] = new Decoder[CommandResult.type] {
 
-      def decode(data: ByteString): CommandResult = {
-        //        val iterator = data.iterator
-        //        val is = iterator.asInputStream
-
-        //val ianaNumber = is.read(3).as[IanaEnterpriseNumber] // IANA number LSB First (Should always be 80 28 00 for Fujitsu
-
-        CommandResult()
-      }
+      def decode(data: ByteString): CommandResult.type = CommandResult
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
-      StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
-
-  case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
@@ -55,8 +46,8 @@ object SetNextPowerOnTime {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
 
   }
 

@@ -29,7 +29,7 @@ object GetPowerOnSourceTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetPowerOnSource.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetPowerOnSource.Command))
           } yield Result(cmdResult.powerOnSource)
 
           result.run

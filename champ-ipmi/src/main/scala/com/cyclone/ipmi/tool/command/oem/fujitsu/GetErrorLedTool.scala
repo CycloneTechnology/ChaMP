@@ -29,7 +29,7 @@ object GetErrorLedTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetErrorLed.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetErrorLed.Command))
           } yield Result(cmdResult.ledState)
 
           result.run

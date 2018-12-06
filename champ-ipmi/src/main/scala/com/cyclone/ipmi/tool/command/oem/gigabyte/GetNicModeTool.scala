@@ -29,7 +29,7 @@ object GetNicModeTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetLanSource.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetLanSource.Command))
           } yield Result(cmdResult.lanSourceSetting)
 
           result.run

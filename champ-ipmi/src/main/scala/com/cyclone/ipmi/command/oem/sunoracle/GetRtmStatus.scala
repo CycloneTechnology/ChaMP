@@ -1,12 +1,10 @@
 package com.cyclone.ipmi.command.oem.sunoracle
 
-import akka.util.ByteString
-import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.StatusCodeError
-import com.cyclone.ipmi.command.StatusCode
-import akka.util.ByteStringBuilder
+import com.cyclone.ipmi.codec._
+import com.cyclone.ipmi.command.{CommandCode, StatusCode, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
 
 /**
   * Get RTM Status command
@@ -50,11 +48,10 @@ object GetRtmStatus {
 
   case class CommandResult(rtmPresenceDetected: Boolean) extends IpmiCommandResult
 
-  object Command {
-    implicit val coder: Coder[Command] = new Coder[Command] {
+  case object Command extends IpmiStandardCommand {
+    implicit val coder: Coder[Command.type] = new Coder[Command.type] {
 
-      def encode(request: Command): ByteString = {
-        import request._
+      def encode(request: Command.type): ByteString = {
 
         val b = new ByteStringBuilder
 
@@ -66,11 +63,8 @@ object GetRtmStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
-  }
-
-  case class Command() extends IpmiStandardCommand {
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.OemRequest
     val commandCode = CommandCode(0x88.toByte)

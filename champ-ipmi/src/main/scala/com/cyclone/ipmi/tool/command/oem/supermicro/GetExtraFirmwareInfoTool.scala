@@ -27,7 +27,7 @@ object GetExtraFirmwareInfoTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetExtraFirmwareInfo.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetExtraFirmwareInfo.Command))
           } yield
             Result(
               cmdResult.firmwareMajorVersion,

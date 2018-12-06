@@ -28,7 +28,7 @@ object GetRtmStatusTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetRtmStatus.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetRtmStatus.Command))
           } yield Result(cmdResult.rtmPresenceDetected)
 
           result.run

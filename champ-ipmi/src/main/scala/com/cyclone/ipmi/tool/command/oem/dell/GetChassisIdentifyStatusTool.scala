@@ -28,7 +28,7 @@ object GetChassisIdentifyStatusTool {
 
           val result = for {
             cmdResult <- eitherT(
-              connection.executeCommandOrError(GetChassisIdentifyStatus.Command())
+              connection.executeCommandOrError(GetChassisIdentifyStatus.Command)
             )
           } yield Result(cmdResult.identifyStatus)
 

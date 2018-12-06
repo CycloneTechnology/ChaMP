@@ -89,10 +89,11 @@ object GetHddLightpathStatus {
 
   case class CommandResult() extends IpmiCommandResult
 
-  object Command {
-    implicit val coder: Coder[Command] = new Coder[Command] {
 
-      def encode(request: Command): ByteString = {
+  case object Command extends IpmiStandardCommand {
+    implicit val coder: Coder[Command.type] = new Coder[Command.type] {
+
+      def encode(request: Command.type): ByteString = {
 
         val b = new ByteStringBuilder
 
@@ -107,12 +108,8 @@ object GetHddLightpathStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
-
-  }
-
-  case class Command() extends IpmiStandardCommand {
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.FujitsuGroupRequest
     val commandCode = CommandCode(0xf5.toByte)

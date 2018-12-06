@@ -11,29 +11,27 @@ import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, 
   */
 object SystemOsShutdownRequest {
 
-  object CommandResult {
-    implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+  object CommandResult extends IpmiCommandResult {
+    implicit val decoder: Decoder[CommandResult.type] = new Decoder[CommandResult.type] {
 
-      def decode(data: ByteString): CommandResult = {
+      def decode(data: ByteString): CommandResult.type = {
         //        val iterator = data.iterator
         //        val is = iterator.asInputStream
         //
         //        val ianaNumber = is.read(3).as[IanaEnterpriseNumber] // IANA number LSB First (Should always be 80 28 00 for Fujitsu
 
-        CommandResult()
+        CommandResult
       }
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
-      StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
 
-  case class CommandResult() extends IpmiCommandResult
+  case object Command extends IpmiStandardCommand {
+    implicit val coder: Coder[Command.type] = new Coder[Command.type] {
 
-  object Command {
-    implicit val coder: Coder[Command] = new Coder[Command] {
-
-      def encode(request: Command): ByteString = {
+      def encode(request: Command.type): ByteString = {
 
         val b = new ByteStringBuilder
 
@@ -46,12 +44,8 @@ object SystemOsShutdownRequest {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
-
-  }
-
-  case class Command() extends IpmiStandardCommand {
+    implicit val codec: CommandResultCodec[Command.type, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult.type]
 
     val networkFunction: NetworkFunction = NetworkFunction.FujitsuGroupRequest
     val commandCode = CommandCode(0x02)

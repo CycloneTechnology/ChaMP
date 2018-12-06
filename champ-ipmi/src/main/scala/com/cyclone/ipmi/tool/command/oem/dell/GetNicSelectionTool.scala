@@ -26,7 +26,7 @@ object GetNicSelectionTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetNicSelection.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetNicSelection.Command))
           } yield Result(cmdResult.nicSelection)
 
           result.run

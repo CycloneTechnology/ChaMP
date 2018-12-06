@@ -57,20 +57,15 @@ object SetFrontPanelButtonEnables {
     disablePowerOffButton: Boolean
   )
 
-  object CommandResult {
-    implicit val decoder: Decoder[CommandResult] = new Decoder[CommandResult] {
+  object CommandResult extends IpmiCommandResult {
+    implicit val decoder: Decoder[CommandResult.type] = new Decoder[CommandResult.type] {
 
-      def decode(data: ByteString): CommandResult = {
-
-        CommandResult()
-      }
+      def decode(data: ByteString): CommandResult.type = CommandResult
     }
 
-    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult] =
-      StatusCodeTranslator[CommandResult]()
+    implicit val statusCodeTranslator: StatusCodeTranslator[CommandResult.type] =
+      StatusCodeTranslator[CommandResult.type]()
   }
-
-  case class CommandResult() extends IpmiCommandResult
 
   object Command {
     implicit val coder: Coder[Command] = new Coder[Command] {
@@ -86,8 +81,8 @@ object SetFrontPanelButtonEnables {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
+    implicit val codec: CommandResultCodec[Command, CommandResult.type] =
+      CommandResultCodec.commandResultCodecFor[Command, CommandResult.type]
 
   }
 

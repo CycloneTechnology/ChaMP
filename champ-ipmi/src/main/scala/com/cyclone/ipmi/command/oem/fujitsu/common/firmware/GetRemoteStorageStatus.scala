@@ -62,10 +62,10 @@ object GetRemoteStorageStatus {
 
   case class CommandResult(connectedState: Connected) extends IpmiCommandResult
 
-  object Command {
-    implicit val coder: Coder[Command] = new Coder[Command] {
+  case object Command extends IpmiStandardCommand {
+    implicit val coder: Coder[Command.type] = new Coder[Command.type] {
 
-      def encode(request: Command): ByteString = {
+      def encode(request: Command.type): ByteString = {
 
         val b = new ByteStringBuilder
 
@@ -78,12 +78,8 @@ object GetRemoteStorageStatus {
       }
     }
 
-    implicit val codec: CommandResultCodec[Command, CommandResult] =
-      CommandResultCodec.commandResultCodecFor[Command, CommandResult]
-
-  }
-
-  case class Command() extends IpmiStandardCommand {
+    implicit val codec: CommandResultCodec[Command.type, CommandResult] =
+      CommandResultCodec.commandResultCodecFor[Command.type, CommandResult]
 
     val networkFunction: NetworkFunction = NetworkFunction.FujitsuOemRequest
     val commandCode = CommandCode(0x19)

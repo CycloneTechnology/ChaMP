@@ -28,7 +28,7 @@ object GetVersionTool {
           import ctx._
 
           val result = for {
-            cmdResult <- eitherT(connection.executeCommandOrError(GetVersion.Command()))
+            cmdResult <- eitherT(connection.executeCommandOrError(GetVersion.Command))
           } yield Result(cmdResult.cpldVersion, cmdResult.ipmiFirmwareRev)
 
           result.run
