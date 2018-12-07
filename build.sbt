@@ -48,7 +48,7 @@ initialize := {
     sys.error("Java 8 is required for this project.")
 }
 
-val akkaVersion = "2.5.18"
+val akkaVersion = "2.5.19"
 val akkaStreamsVersion = akkaVersion
 val akkaHttpVersion = "10.1.1"
 
