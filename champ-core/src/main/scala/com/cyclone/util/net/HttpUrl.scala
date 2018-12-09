@@ -28,8 +28,9 @@ case class HttpUrl(
     * url.
     */
   def withQualifiedHostNameIfInDomain(
-    domain: Option[String]
-  )(implicit dnsLookup: DnsLookup): Future[HttpUrl] = {
+    domain: Option[String],
+    dnsLookup: DnsLookup
+  ): Future[HttpUrl] = {
     def isFqdn(host: String) = !isInetAddress(host) && host.contains(".")
 
     def isSameDomain(host: String): Boolean =

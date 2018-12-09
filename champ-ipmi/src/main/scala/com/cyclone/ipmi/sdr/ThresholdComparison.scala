@@ -2,6 +2,7 @@ package com.cyclone.ipmi.sdr
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
+import com.cyclone.ipmi.sdr.readingoffset.EventReadingOffset
 
 sealed trait ThresholdComparison extends EventReadingOffset
 

@@ -25,7 +25,7 @@ class WSManTestBasicAuthTest
     with IntegrationPatience
     with WSManTestProperties
     with TestKerberosDeployment
-    with ApplicationWSManComponent
+    with TestWSManComponent
     with GuavaKerberosTokenCacheComponent
     with ActorSystemShutdown
     with ActorMaterializerComponent

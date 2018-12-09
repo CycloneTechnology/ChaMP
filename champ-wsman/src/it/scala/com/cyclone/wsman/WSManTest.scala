@@ -4,20 +4,10 @@ import java.io.InputStreamReader
 import java.net.InetAddress
 import java.text.SimpleDateFormat
 
-import com.cyclone.akka.{
-  ActorMaterializerComponent,
-  ActorSystemComponent,
-  ActorSystemShutdown,
-  TestKitSupport
-}
+import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemComponent, ActorSystemShutdown, TestKitSupport}
 import com.cyclone.command.{PropertyRestriction, Selector, SelectorClause, TimeoutContext}
 import com.cyclone.util.kerberos.TestKerberosDeployment
-import com.cyclone.util.net.{
-  AuthenticationMethod,
-  HostAndPort,
-  JavaNamingDnsLookupComponent,
-  PasswordSecurityContext
-}
+import com.cyclone.util.net.{AuthenticationMethod, HostAndPort, JavaNamingDnsLookupComponent, PasswordSecurityContext}
 import com.cyclone.util.shell.ShellOutputStream
 import com.cyclone.util.{Base64Utils, OperationDeadline, Password, PasswordCredentials}
 import com.cyclone.wsman.command._
@@ -41,7 +31,7 @@ class WSManTest
     with Inside
     with IntegrationPatience
     with WSManTestProperties
-    with ApplicationWSManComponent
+    with TestWSManComponent
     with GuavaKerberosTokenCacheComponent
     with ActorSystemComponent
     with ActorMaterializerComponent
@@ -58,9 +48,7 @@ class WSManTest
 
   val target = WSManTarget(httpUrl, securityContext)
 
-  private def domainCredentials: PasswordCredentials = {
-    PasswordCredentials(user, Password(password), Some(domain))
-  }
+  private def domainCredentials: PasswordCredentials = PasswordCredentials(user, Password(password), Some(domain))
 
   private def sleepCommandQuery(sleepSecs: Int) =
     WSManRunShellCommand("powershell", "-Command", "Start-Sleep -s " + sleepSecs)
@@ -290,8 +278,7 @@ class WSManTest
       "ignore unknown properties in restrictions" in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
-          propertyRestriction =
-            PropertyRestriction.restrictedTo("Win32_Service", "Name", "NO_SUCH_PROPERTY")
+          propertyRestriction = PropertyRestriction.restrictedTo("Win32_Service", "Name", "NO_SUCH_PROPERTY")
         )
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {

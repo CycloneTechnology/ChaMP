@@ -3,7 +3,7 @@ import sbt.{file, project, _}
 name := "champ"
 
 ThisBuild / organization := "com.cyclone-technology"
-ThisBuild / version := "0.9.0"
+ThisBuild / version := "0.9.1"
 ThisBuild / scalaVersion := "2.12.7"
 ThisBuild / crossScalaVersions := Seq("2.11.11", scalaVersion.value)
 ThisBuild / homepage := Some(url("https://github.com/CycloneTechnology/ChaMP"))

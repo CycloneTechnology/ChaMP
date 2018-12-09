@@ -9,8 +9,6 @@ class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with Integrat
 
   class Fixture extends TestDnslookupComponent with SynchronizedMockeryComponent {
 
-    implicit val dns: DnsLookup = dnsLookup
-
     val domain = "SOMEDOMAIN.COM"
 
     val address = "192.168.1.2"
@@ -26,7 +24,7 @@ class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with Integrat
 
           HttpUrl
             .fromParts(fromString(address), "/path", ssl = false)
-            .withQualifiedHostNameIfInDomain(Some(domain))
+            .withQualifiedHostNameIfInDomain(Some(domain), dnsLookup)
             .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
         }
 
@@ -35,14 +33,14 @@ class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with Integrat
 
           HttpUrl
             .fromParts(fromString(host), "/path", ssl = false)
-            .withQualifiedHostNameIfInDomain(Some(domain))
+            .withQualifiedHostNameIfInDomain(Some(domain), dnsLookup)
             .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
         }
 
         "use existing FQDN when FQDN specified" in new Fixture {
           HttpUrl
             .fromParts(fromString(hostFQDN), "/path", ssl = false)
-            .withQualifiedHostNameIfInDomain(Some(domain))
+            .withQualifiedHostNameIfInDomain(Some(domain), dnsLookup)
             .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
         }
 
@@ -54,7 +52,7 @@ class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with Integrat
 
           HttpUrl
             .fromParts(fromString(address), "/path", ssl = false)
-            .withQualifiedHostNameIfInDomain(Some(domain))
+            .withQualifiedHostNameIfInDomain(Some(domain), dnsLookup)
             .futureValue shouldBe HttpUrl.fromString(s"http://$hostFQDN/path")
         }
       }
@@ -68,7 +66,7 @@ class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with Integrat
 
           HttpUrl
             .fromParts(fromString(address), "/path", ssl = false)
-            .withQualifiedHostNameIfInDomain(None)
+            .withQualifiedHostNameIfInDomain(None, dnsLookup)
             .futureValue shouldBe HttpUrl.fromString("http://host1/path")
         }
       }
@@ -79,7 +77,7 @@ class HttpUrlTest extends WordSpec with Matchers with ScalaFutures with Integrat
 
           HttpUrl
             .fromParts(fromString(address), "/path", ssl = false)
-            .withQualifiedHostNameIfInDomain(Some(domain))
+            .withQualifiedHostNameIfInDomain(Some(domain), dnsLookup)
             .futureValue shouldBe HttpUrl.fromString(s"http://$address/path")
         }
       }

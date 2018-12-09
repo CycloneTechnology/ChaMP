@@ -27,6 +27,13 @@ object DeviceTypeModifier {
 
   case object Heceta5 extends DeviceTypeModifier
 
+  def standardTypeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
+    case 0x00 => None
+    case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
+    case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
+    case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
+    case _    => Some(DeviceTypeModifier.Reserved)
+  }
 }
 
 /**
@@ -38,7 +45,7 @@ sealed trait DeviceType {
 
   def deviceType: String
 
-  def typeModifierFor(bit: Int): Option[DeviceTypeModifier]
+  def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
 }
 
 object DeviceType {
@@ -95,40 +102,30 @@ object DeviceType {
     val code: Byte = 0x00.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object Reserved01 extends DeviceType {
     val code: Byte = 0x01.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object DS1624TemperatureSensorEEPROMorEquivalent extends DeviceType {
     val code: Byte = 0x02.toByte
 
     val deviceType = "DS1624 temperature sensor / EEPROM or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object DS1621TemperatureSensorOrEquivalent extends DeviceType {
     val code: Byte = 0x03.toByte
 
     val deviceType = "DS1621 temperature sensor or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object LM75TemperatureSensorOrEquivalent extends DeviceType {
     val code: Byte = 0x04.toByte
 
     val deviceType = "LM75 Temperature Sensor or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object HecetaASICorSimilar extends DeviceType {
@@ -136,7 +133,7 @@ object DeviceType {
 
     val deviceType = "'Heceta’ ASIC or similar"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
       case 0x00 => Some(DeviceTypeModifier.Heceta1)
       case 0x01 => Some(DeviceTypeModifier.Heceta1)
       case 0x02 => Some(DeviceTypeModifier.Lm80)
@@ -151,16 +148,12 @@ object DeviceType {
     val code: Byte = 0x06.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object Reserved07 extends DeviceType {
     val code: Byte = 0x07.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object EEPROM24C01orEquivalent extends DeviceType {
@@ -168,13 +161,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C01 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C02orEquivalent extends DeviceType {
@@ -182,13 +169,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C02 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C04orEquivalent extends DeviceType {
@@ -196,13 +177,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C04 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C08orEquivalent extends DeviceType {
@@ -210,13 +185,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C08 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C16orEquivalent extends DeviceType {
@@ -224,13 +193,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C16 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C17orEquivalent extends DeviceType {
@@ -238,13 +201,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C17 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C32orEquivalent extends DeviceType {
@@ -252,13 +209,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C32 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object EEPROM24C64orEquivalent extends DeviceType {
@@ -266,13 +217,7 @@ object DeviceType {
 
     val deviceType = "EEPROM, 24C64 or equivalent"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
-      case 0x00 => None
-      case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
-      case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
-      case 0x03 => Some(DeviceTypeModifier.SystemProcessorCartridgeFruOrPIROM)
-      case _    => Some(DeviceTypeModifier.Reserved)
-    }
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = DeviceTypeModifier.standardTypeModifierFor(bit)
   }
 
   case object FruInventoryDeviceBehindMc extends DeviceType {
@@ -280,7 +225,7 @@ object DeviceType {
 
     val deviceType = "FRU Inventory Device behind management controller"
 
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
+    override def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = bit match {
       case 0x00 => Some(DeviceTypeModifier.IpmiFruInventory)
       case 0x01 => Some(DeviceTypeModifier.DimmMemoryId)
       case 0x02 => Some(DeviceTypeModifier.IpmiFruInventory)
@@ -294,174 +239,130 @@ object DeviceType {
     val code: Byte = 0x11.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object Reserved12 extends DeviceType {
     val code: Byte = 0x12.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object Reserved13 extends DeviceType {
     val code: Byte = 0x13.toByte
 
     val deviceType = "reserved"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object PCF8570_256ByteRamOrEquivalent extends DeviceType {
     val code: Byte = 0x14.toByte
 
     val deviceType = "PCF 8570 256 byte RAM or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object PCF8573ClockCalendar extends DeviceType {
     val code: Byte = 0x15.toByte
 
     val deviceType = "PCF 8573 clock/calendar or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object PCF8574AIoPort extends DeviceType {
     val code: Byte = 0x16.toByte
 
     val deviceType = "PCF 8574A ‘i/o port’ or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object PCF8583ClockCalendar extends DeviceType {
     val code: Byte = 0x17.toByte
 
     val deviceType = "PCF 8583 clock/calendar or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object PCF8593ClockCalendar extends DeviceType {
     val code: Byte = 0x18.toByte
 
     val deviceType = "PCF 8593 clock/calendar or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object ClockCalendar extends DeviceType {
     val code: Byte = 0x19.toByte
 
     val deviceType = "Clock calendar, type not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object PCF8591AdDaConverter extends DeviceType {
     val code: Byte = 0x1a.toByte
 
     val deviceType = "PCF 8591 A/D, D/A Converter or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object IoPort extends DeviceType {
     val code: Byte = 0x1b.toByte
 
     val deviceType = "i/o port, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object AdConverter extends DeviceType {
     val code: Byte = 0x1c.toByte
 
     val deviceType = "A/D Converter, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object DaConverter extends DeviceType {
     val code: Byte = 0x1d.toByte
 
     val deviceType = "D/A Converter, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object AdDaConverter extends DeviceType {
     val code: Byte = 0x1e.toByte
 
     val deviceType = "A/D, D/A Converter, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object LCDControllerDriver extends DeviceType {
     val code: Byte = 0x1f.toByte
 
     val deviceType = "LCD controller / Driver, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object CoreLogicChipSetDevice extends DeviceType {
     val code: Byte = 0x20.toByte
 
     val deviceType = "Core Logic (Chip set) Device, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object LMC6874IntelligentBatteryControllerOrEquivalent extends DeviceType {
     val code: Byte = 0x21.toByte
 
     val deviceType = "LMC6874 Intelligent Battery controller, or equivalent"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object IntelligentBatteryController extends DeviceType {
     val code: Byte = 0x22.toByte
 
     val deviceType = "Intelligent Battery controller, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object ComboManagementASIC extends DeviceType {
     val code: Byte = 0x23.toByte
 
     val deviceType = "Combo Management ASIC, specific device not specified"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object Maxim1617TemperatureSensor extends DeviceType {
     val code: Byte = 0x24.toByte
 
     val deviceType = "Maxim 1617 Temperature Sensor"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case object OtherUnspecifiedDevice extends DeviceType {
     val code: Byte = 0xbf.toByte
 
     val deviceType = "Other / unspecified device"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
   case class OemRange(code: Byte) extends DeviceType {
     val deviceType = "OEM specified device"
-
-    def typeModifierFor(bit: Int): Option[DeviceTypeModifier] = None
   }
 
 }

@@ -190,7 +190,8 @@ private[net] class DnsLookupActor(dnsConfigSource: DnsConfigSource) extends Acto
     implicit val timeout: Timeout = Timeout(dnsConfig.timeout)
 
     val requests = Requests(
-      dnsConfig.dnsServerSocketAddresses.map { socketAddr => IO(Dns) -> Dns.DnsPacket(message, socketAddr)
+      dnsConfig.dnsServerSocketAddresses.map { socketAddr =>
+        IO(Dns) -> Dns.DnsPacket(message, socketAddr)
       }
     )
 

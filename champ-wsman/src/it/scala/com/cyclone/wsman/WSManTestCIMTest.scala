@@ -30,7 +30,7 @@ class WSManTestCIMTest
     with WSManTestProperties
     with WSManTestFileCreation
     with TestKerberosDeployment
-    with ApplicationWSManComponent
+    with TestWSManComponent
     with GuavaKerberosTokenCacheComponent
     with ActorMaterializerComponent
     with JavaNamingDnsLookupComponent

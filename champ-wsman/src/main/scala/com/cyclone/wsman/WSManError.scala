@@ -74,50 +74,49 @@ case class WSManQueryError(
 object WSManQueryError {
 
   def apply(response: Node): WSManQueryError = {
-
-    lazy val faultNode = response \ "Body" \ "Fault"
-
-    def message: String =
-      reason
-        .getOrElse("Unknown") + "\nDetail: " +
-      detailProviderFaultMessage.orElse(detailFaultMessage).getOrElse("Unknown")
-
-    def code: Option[String] =
-      optionalText(faultNode \ "Code" \ "Value")
-
-    def subCode: Option[String] =
-      optionalText(faultNode \ "Code" \ "Subcode" \ "Value")
-
-    def reason: Option[String] =
-      optionalText(faultNode \ "Reason" \ "Text")
-
-    def detailFaultMessage: Option[String] =
-      optionalText(faultNode \ "Detail" \ "WSManFault" \ "Message")
-
-    def faultDetail: Option[String] =
-      optionalText(faultNode \ "Detail" \ "FaultDetail")
-
-    // This will pick up on ProviderFault\MSFT_WmiError\Message used sometimes by Microsoft.
-    // (May fail for other providers so will fallback to std detail fault message.)
-    def detailProviderFaultMessage: Option[String] =
-      optionalText(faultNode \ "Detail" \ "WSManFault" \ "Message" \ "ProviderFault" \\ "Message")
-
-    def optionalText(nodes: NodeSeq) =
-      nodes match {
-        case NodeSeq.Empty => None
-        case ns: NodeSeq   => Some(ns.text)
-      }
+    val faultNode: NodeSeq = response \ "Body" \ "Fault"
 
     WSManQueryError(
-      message = message,
-      reason = reason,
-      code = code,
-      subCode = subCode,
-      detailFaultMessage = detailFaultMessage,
-      detailProviderFaultMessage = detailProviderFaultMessage,
-      faultDetail = faultDetail
+      message = message(faultNode),
+      reason = reason(faultNode),
+      code = code(faultNode),
+      subCode = subCode(faultNode),
+      detailFaultMessage = detailFaultMessage(faultNode),
+      detailProviderFaultMessage = detailProviderFaultMessage(faultNode),
+      faultDetail = faultDetail(faultNode)
     )
   }
+
+  private def optionalText(nodes: NodeSeq) =
+    nodes match {
+      case NodeSeq.Empty => None
+      case ns: NodeSeq   => Some(ns.text)
+    }
+
+  private def code(faultNode: NodeSeq): Option[String] =
+    optionalText(faultNode \ "Code" \ "Value")
+
+  private def subCode(faultNode: NodeSeq): Option[String] =
+    optionalText(faultNode \ "Code" \ "Subcode" \ "Value")
+
+  private def reason(faultNode: NodeSeq): Option[String] =
+    optionalText(faultNode \ "Reason" \ "Text")
+
+  private def detailFaultMessage(faultNode: NodeSeq): Option[String] =
+    optionalText(faultNode \ "Detail" \ "WSManFault" \ "Message")
+
+  private def faultDetail(faultNode: NodeSeq): Option[String] =
+    optionalText(faultNode \ "Detail" \ "FaultDetail")
+
+  private def message(faultNode: NodeSeq): String =
+    reason(faultNode)
+      .getOrElse("Unknown") + "\nDetail: " +
+    detailProviderFaultMessage(faultNode).orElse(detailFaultMessage(faultNode)).getOrElse("Unknown")
+
+  // This will pick up on ProviderFault\MSFT_WmiError\Message used sometimes by Microsoft.
+  // (May fail for other providers so will fallback to std detail fault message.)
+  private def detailProviderFaultMessage(faultNode: NodeSeq): Option[String] =
+    optionalText(faultNode \ "Detail" \ "WSManFault" \ "Message" \ "ProviderFault" \\ "Message")
 }
 
 case object RequestTimeout extends WSManError {

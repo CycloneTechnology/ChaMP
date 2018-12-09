@@ -26,7 +26,7 @@ class WSManSSLTest
     with Matchers
     with Inside
     with WSManTestFileCreation
-    with ApplicationWSManComponent
+    with TestWSManComponent
     with GuavaKerberosTokenCacheComponent
     with ActorMaterializerComponent
     with ScalaFutures

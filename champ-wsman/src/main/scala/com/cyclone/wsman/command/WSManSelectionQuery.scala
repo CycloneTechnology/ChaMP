@@ -71,71 +71,74 @@ object WSManEnumerationQueryDefn {
       implicit context: WSManOperationContext
     ): Future[WSManErrorOr[Seq[ManagedInstance]]] = {
 
-      def enumeratorFor(enumMode: EnumerationMode)(implicit context: WSManOperationContext) = {
-
-        val enumerationParameters =
-          EnumerationParameters(query.maxElementsPerEnumeration, context.operationDeadline)
-
-        for (response <- eitherT(
-               WSManOperations.executeSoapRequest(
-                 EnumXML(
-                   ref,
-                   SelectorClause.forCimNamespace(query.cimNamespace),
-                   instanceFilter(query),
-                   enumMode,
-                   enumerationParameters.deadline
-                 )
-               )
-             )) yield {
-          val ctx = (response \ "Body" \ "EnumerateResponse" \ "EnumerationContext").text
-
-          WSManEnumerator(ref, ctx, enumerationParameters, releaseOnClose = true)
-        }
-      }
-
-      def itemsFor(enumerator: WSManEnumerator) = {
-        implicit val mat: Materializer = context.materializer
-
-        val fBatches = enumerator.enumerate
-          .toMat(Sink.seq)(Keep.right)
-          .run()
-
-        // FIXME should be in enumerator
-        fBatches.onComplete {
-          case Success(batches) =>
-            val lastCtx = batches.foldLeft(Option.empty[String]) { (acc, batch) =>
-              batch match {
-                case Batch(_, BatchTypeNotLast(ctx)) => Some(ctx)
-                case _                               => acc
-              }
-            }
-
-            lastCtx.foreach(enumerator.close)
-
-          case Failure(_) =>
-        }
-
-        fBatches
-          .map { batches =>
-            batches
-              .foldLeft(Vector.empty[WSManEnumItem]) { (acc, batch) =>
-                acc ++ batch.items
-              }
-              .flatMap(_.managedInstance)
-              .toList
-              .right
-          }
-          .recoverWith {
-            case WSManErrorException(err) => err.left.point[Future]
-          }
-      }
-
       val result = for {
-        enumerator <- enumeratorFor(ObjectAndReferenceEnumerationMode)
+        enumerator <- enumeratorFor(query, ref, ObjectAndReferenceEnumerationMode)
         items      <- eitherT(itemsFor(enumerator))
       } yield items
 
       result.run
+    }
+    private def enumeratorFor(query: Query, ref: ManagedReference, enumMode: EnumerationMode)(
+      implicit context: WSManOperationContext
+    ) = {
+
+      val enumerationParameters =
+        EnumerationParameters(query.maxElementsPerEnumeration, context.operationDeadline)
+
+      for (response <- eitherT(
+             WSManOperations.executeSoapRequest(
+               EnumXML(
+                 ref,
+                 SelectorClause.forCimNamespace(query.cimNamespace),
+                 instanceFilter(query),
+                 enumMode,
+                 enumerationParameters.deadline
+               )
+             )
+           )) yield {
+        val ctx = (response \ "Body" \ "EnumerateResponse" \ "EnumerationContext").text
+
+        WSManEnumerator(ref, ctx, enumerationParameters, releaseOnClose = true)
+      }
+    }
+
+    private def itemsFor(enumerator: WSManEnumerator)(
+      implicit context: WSManOperationContext
+    ) = {
+      implicit val mat: Materializer = context.materializer
+
+      val fBatches = enumerator.enumerate
+        .toMat(Sink.seq)(Keep.right)
+        .run()
+
+      // FIXME should be in enumerator
+      fBatches.onComplete {
+        case Success(batches) =>
+          val lastCtx = batches.foldLeft(Option.empty[String]) { (acc, batch) =>
+            batch match {
+              case Batch(_, BatchTypeNotLast(ctx)) => Some(ctx)
+              case _                               => acc
+            }
+          }
+
+          lastCtx.foreach(enumerator.close)
+
+        case Failure(_) =>
+      }
+
+      fBatches
+        .map { batches =>
+          batches
+            .foldLeft(Vector.empty[WSManEnumItem]) { (acc, batch) =>
+              acc ++ batch.items
+            }
+            .flatMap(_.managedInstance)
+            .toList
+            .right
+        }
+        .recoverWith {
+          case WSManErrorException(err) => err.left.point[Future]
+        }
     }
 
     protected def instanceFilter(query: Query): InstanceFilter

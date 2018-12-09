@@ -30,7 +30,7 @@ trait WSManSubscriptionTest
     extends TestKitSupport
     with WordSpecLike
     with Matchers
-    with ApplicationWSManComponent
+    with TestWSManComponent
     with JavaNamingDnsLookupComponent
     with GuavaKerberosTokenCacheComponent
     with ActorMaterializerComponent

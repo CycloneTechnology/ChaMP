@@ -2,7 +2,7 @@ package com.cyclone.ipmi.fru
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.sdr.jedec.ManufacturerIdentificationCode
+import com.cyclone.ipmi.sdr.jedec.Manufacturer
 import com.google.common.base.Charsets
 
 sealed trait MemoryType {
@@ -55,10 +55,10 @@ trait StandardMemoryDecoder {
   self: MemoryType =>
 
   protected def decodeManufacturerUsingContinuationFlag(data: ByteString): Option[String] =
-    ManufacturerIdentificationCode.decodeUsingContinuationFlag(data).map(_.name)
+    Manufacturer.decodeUsingContinuationFlag(data).map(_.name)
 
   protected def decodeManufacturerUsingContinuationCount(data: ByteString): Option[String] =
-    ManufacturerIdentificationCode.decodeUsingContinuationCount(data).map(_.name)
+    Manufacturer.decodeUsingContinuationCount(data).map(_.name)
 
   protected def decodeSerialNumber(data: ByteString) =
     Some(data.toHexString(""))

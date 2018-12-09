@@ -3,9 +3,10 @@ package com.cyclone.wsman
 import akka.actor.ActorSystem
 import com.cyclone.akka._
 import com.cyclone.command.PropertyRestriction
-import com.cyclone.util.{AbsoluteDeadline, OperationDeadline}
+import com.cyclone.util.OperationDeadline
 import com.cyclone.util.net.{AuthenticationMethod, HttpUrl, JavaNamingDnsLookupComponent, PasswordSecurityContext}
-import com.cyclone.wsman.impl.http.{DefaultWSManConnectionFactoryComponent, DefaultWSManNetworkingComponent}
+import com.cyclone.wsman.impl.http.settings.ConfigHttpSettingsComponent
+import com.cyclone.wsman.impl.http.{DefaultWSManConnectionFactoryComponent, DefaultAsyncHttpClientComponent}
 import com.cyclone.wsman.impl.model._
 import com.cyclone.wsman.impl.subscription.push.{
   DefaultPushDeliveryRouterComponent,
@@ -57,7 +58,7 @@ class WSManOperationContextTest
 
     implicit val context: WSManOperationContext =
       new DefaultWSManContextFactoryComponent with DefaultWSManConnectionFactoryComponent
-      with DefaultWSManNetworkingComponent with DefaultPushDeliveryRouterComponent
+      with DefaultAsyncHttpClientComponent with ConfigHttpSettingsComponent with DefaultPushDeliveryRouterComponent
       with KerberosStateHousekeeperComponent with GuavaKerberosTokenCacheComponent with ReferenceResolveComponent
       with ActorSystemComponent with ActorMaterializerComponent with JavaNamingDnsLookupComponent {
         val referenceResolver = self.referenceResolver

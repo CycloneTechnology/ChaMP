@@ -2,11 +2,14 @@ package com.cyclone.ipmi.sdr
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
+import com.cyclone.ipmi.sdr.readingoffset._
 
 sealed trait SensorType {
+  type EROffset <: EventReadingOffset
+
   def code: Int
 
-  def eventOffsetFor(bit: Int): Option[EventReadingOffset]
+  def eventOffsetFor(bit: Int): Option[EROffset]
 }
 
 object SensorType {
@@ -69,7 +72,9 @@ object SensorType {
     * The names (although not the abbreviations) can be obtained from ipmitool by running the "sdr type" command
     * without specifying a type name.
     */
+
   def forName(typeName: String): Option[SensorType] = {
+
     val matcher: PartialFunction[String, SensorType] = {
       case "temp" | "temperature"             => Temperature
       case "volt" | "voltage"                 => Voltage
@@ -121,1139 +126,361 @@ object SensorType {
   }
 
   case object Temperature extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x01
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Voltage extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x02
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Current extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x03
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Fan extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x04
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object PhysicalSecurity extends SensorType {
+    type EROffset = PhysicalSecurityEventOffset
+
     val code = 0x05
 
-    object PhysicalSecurityEventOffset {
+    def eventOffsetFor(bit: Int): Option[EROffset] = PhysicalSecurityEventOffset.offsetFor(bit)
 
-      case object GeneralChassisIntrusion extends EventReadingOffset
-
-      case object DriveBayIntrusion extends EventReadingOffset
-
-      case object IOCardAreaIntrusion extends EventReadingOffset
-
-      case object ProcessorAreaIntrusion extends EventReadingOffset
-
-      case object LanLeashLost extends EventReadingOffset
-
-      case object UnauthorizedDock extends EventReadingOffset
-
-      case object FanAreaIntrusion extends EventReadingOffset
-
-    }
-
-    import PhysicalSecurityEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(GeneralChassisIntrusion)
-      case 0x01 => Some(DriveBayIntrusion)
-      case 0x02 => Some(IOCardAreaIntrusion)
-      case 0x03 => Some(ProcessorAreaIntrusion)
-      case 0x04 => Some(LanLeashLost)
-      case 0x05 => Some(UnauthorizedDock)
-      case 0x06 => Some(FanAreaIntrusion)
-      case _    => None
-    }
   }
 
   case object PlatformSecurity extends SensorType {
+    type EROffset = PlatformSecurityEventOffset
+
     val code = 0x06
 
-    object PlatformSecurityEventOffset {
-
-      case object SecureMode extends EventReadingOffset
-
-      case object PreBootPasswordViolationUserPassword extends EventReadingOffset
-
-      case object PreBootPasswordViolationAttemptSetupPassword extends EventReadingOffset
-
-      case object PreBootPasswordViolationNetworkBootPassword extends EventReadingOffset
-
-      case object OtherPreBootPasswordViolation extends EventReadingOffset
-
-      case object OutOfBandAccessPasswordViolation extends EventReadingOffset
-
-    }
-
-    import PlatformSecurityEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(SecureMode)
-      case 0x01 => Some(PreBootPasswordViolationUserPassword)
-      case 0x02 => Some(PreBootPasswordViolationAttemptSetupPassword)
-      case 0x03 => Some(PreBootPasswordViolationNetworkBootPassword)
-      case 0x04 => Some(OtherPreBootPasswordViolation)
-      case 0x05 => Some(OutOfBandAccessPasswordViolation)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = PlatformSecurityEventOffset.offsetFor(bit)
   }
 
   case object Processor extends SensorType {
+    type EROffset = ProcessorEventOffset
+
     val code = 0x07
 
-    object ProcessorEventOffset {
-
-      case object Ierr extends EventReadingOffset
-
-      case object ThermalTrip extends EventReadingOffset
-
-      case object Frb1BistFailure extends EventReadingOffset
-
-      case object Frb2HangInPostFailure extends EventReadingOffset
-
-      case object Frb3ProcessorStartupInitializationFailure extends EventReadingOffset
-
-      case object ConfigurationError extends EventReadingOffset
-
-      case object SmbiosUncorrectableCpuComplexError extends EventReadingOffset
-
-      case object ProcessorPresenceDetected extends EventReadingOffset
-
-      case object ProcessorDisabled extends EventReadingOffset
-
-      case object TerminatorPresenceDetected extends EventReadingOffset
-
-      case object ProcessorAutomaticallyThrottled extends EventReadingOffset
-
-      case object MachineCheckException extends EventReadingOffset
-
-      case object CorrectableMachineCheckError extends EventReadingOffset
-
-    }
-
-    import ProcessorEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(Ierr)
-      case 0x01 => Some(ThermalTrip)
-      case 0x02 => Some(Frb1BistFailure)
-      case 0x03 => Some(Frb2HangInPostFailure)
-      case 0x04 => Some(Frb3ProcessorStartupInitializationFailure)
-      case 0x05 => Some(ConfigurationError)
-      case 0x06 => Some(SmbiosUncorrectableCpuComplexError)
-      case 0x07 => Some(ProcessorPresenceDetected)
-      case 0x08 => Some(ProcessorDisabled)
-      case 0x09 => Some(TerminatorPresenceDetected)
-      case 0x0a => Some(ProcessorAutomaticallyThrottled)
-      case 0x0b => Some(MachineCheckException)
-      case 0x0c => Some(CorrectableMachineCheckError)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = ProcessorEventOffset.offsetFor(bit)
   }
 
   case object PowerSupply extends SensorType {
+    type EROffset = PowerSupplyEventOffset
+
     val code = 0x08
 
-    object PowerSupplyEventOffset {
-
-      case object PresenceDetected extends EventReadingOffset
-
-      case object PowerSupplyFailureDetected extends EventReadingOffset
-
-      case object PredictiveFailure extends EventReadingOffset
-
-      case object PowerSupplyInputLostAcDc extends EventReadingOffset
-
-      case object PowerSupplyInputLostOrOutOfRange extends EventReadingOffset
-
-      case object PowerSupplyInputOutOfRangeButPresent extends EventReadingOffset
-
-      case object ConfigurationError extends EventReadingOffset
-
-      case object PowerSupplyInactiveInStandbyState extends EventReadingOffset
-
-    }
-
-    import PowerSupplyEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-
-      case 0x00 => Some(PresenceDetected)
-      case 0x01 => Some(PowerSupplyFailureDetected)
-      case 0x02 => Some(PredictiveFailure)
-      case 0x03 => Some(PowerSupplyInputLostAcDc)
-      case 0x04 => Some(PowerSupplyInputLostOrOutOfRange)
-      case 0x05 => Some(PowerSupplyInputOutOfRangeButPresent)
-      case 0x06 => Some(ConfigurationError)
-      case 0x07 => Some(PowerSupplyInactiveInStandbyState)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = PowerSupplyEventOffset.offsetFor(bit)
   }
 
   case object PowerUnit extends SensorType {
+    type EROffset = PowerUnitEventOffset
+
     val code = 0x09
 
-    object PowerUnitEventOffset {
-
-      case object PowerOffPowerDown extends EventReadingOffset
-
-      case object PowerCycle extends EventReadingOffset
-
-      case object PowerDown240VA extends EventReadingOffset
-
-      case object InterlockPowerDown extends EventReadingOffset
-
-      case object ACLostPowerInputLostThePowerSourceForThePowerUnitWasLost extends EventReadingOffset
-
-      case object SoftPowerControlFailureUnitDidNotRespondToRequestToTurnOn extends EventReadingOffset
-
-      case object PowerUnitFailureDetected extends EventReadingOffset
-
-      case object PredictiveFailure extends EventReadingOffset
-
-    }
-
-    import PowerUnitEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(PowerOffPowerDown)
-      case 0x01 => Some(PowerCycle)
-      case 0x02 => Some(PowerDown240VA)
-      case 0x03 => Some(InterlockPowerDown)
-      case 0x04 => Some(ACLostPowerInputLostThePowerSourceForThePowerUnitWasLost)
-      case 0x05 => Some(SoftPowerControlFailureUnitDidNotRespondToRequestToTurnOn)
-      case 0x06 => Some(PowerUnitFailureDetected)
-      case 0x07 => Some(PredictiveFailure)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = PowerUnitEventOffset.offsetFor(bit)
   }
 
   case object CoolingDevice extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x0a
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Other extends SensorType {
+
     val code = 0x0b
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Memory extends SensorType {
+    type EROffset = PowerUnitEventOffset
+
     val code = 0x0c
 
-    object MemoryEventOffset {
-
-      case object CorrectableEccOtherCorrectableMemoryError extends EventReadingOffset
-
-      case object UncorrectableEccOtherUncorrectableMemoryError extends EventReadingOffset
-
-      case object Parity extends EventReadingOffset
-
-      case object MemoryScrubFailedStuckBit extends EventReadingOffset
-
-      case object MemoryDeviceDisabled extends EventReadingOffset
-
-      case object CorrectableEccOtherCorrectableMemoryErrorLoggingLimitReached extends EventReadingOffset
-
-      case object PresenceDetected extends EventReadingOffset
-
-      case object ConfigurationError extends EventReadingOffset
-
-      case object Spare extends EventReadingOffset
-
-      case object MemoryAutomaticallyThrottled extends EventReadingOffset
-
-      case object CriticalOvertemperature extends EventReadingOffset
-
-    }
-
-    import MemoryEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(CorrectableEccOtherCorrectableMemoryError)
-      case 0x01 => Some(UncorrectableEccOtherUncorrectableMemoryError)
-      case 0x02 => Some(Parity)
-      case 0x03 => Some(MemoryScrubFailedStuckBit)
-      case 0x04 => Some(MemoryDeviceDisabled)
-      case 0x05 => Some(CorrectableEccOtherCorrectableMemoryErrorLoggingLimitReached)
-      case 0x06 => Some(PresenceDetected)
-      case 0x07 => Some(ConfigurationError)
-      case 0x08 => Some(Spare)
-      case 0x09 => Some(MemoryAutomaticallyThrottled)
-      case 0x0a => Some(CriticalOvertemperature)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = PowerUnitEventOffset.offsetFor(bit)
   }
 
   case object DriveSlotBay extends SensorType {
+    type EROffset = DriveSlotBayEventOffset
+
     val code = 0x0d
 
-    object DriveSlotBayEventOffset {
-
-      case object DrivePresence extends EventReadingOffset
-
-      case object DriveFault extends EventReadingOffset
-
-      case object PredictiveFailure extends EventReadingOffset
-
-      case object HotSpare extends EventReadingOffset
-
-      case object ConsistencyCheckParityCheckInProgress extends EventReadingOffset
-
-      case object InCriticalArray extends EventReadingOffset
-
-      case object InFailedArray extends EventReadingOffset
-
-      case object RebuildRemapInProgress extends EventReadingOffset
-
-      case object RebuildRemapAbortedWasNotCompletedNormally extends EventReadingOffset
-
-    }
-
-    import DriveSlotBayEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(DrivePresence)
-      case 0x01 => Some(DriveFault)
-      case 0x02 => Some(PredictiveFailure)
-      case 0x03 => Some(HotSpare)
-      case 0x04 => Some(ConsistencyCheckParityCheckInProgress)
-      case 0x05 => Some(InCriticalArray)
-      case 0x06 => Some(InFailedArray)
-      case 0x07 => Some(RebuildRemapInProgress)
-      case 0x08 => Some(RebuildRemapAbortedWasNotCompletedNormally)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = DriveSlotBayEventOffset.offsetFor(bit)
   }
 
   case object PostMemoryResize extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x0e
 
     def eventOffsetFor(bit: Int): None.type = None
   }
 
   case object SystemFirmwareProgress extends SensorType {
+    type EROffset = SystemFirmwareProgressEventOffset
+
     val code = 0x0f
 
-    object SystemFirmwareProgressEventOffset {
-
-      case object FirmwareErrorPostError extends EventReadingOffset
-
-      case object FirmwareHang extends EventReadingOffset
-
-      case object FirmwareProgress extends EventReadingOffset
-
-    }
-
-    import SystemFirmwareProgressEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(FirmwareErrorPostError)
-      case 0x01 => Some(FirmwareHang)
-      case 0x02 => Some(FirmwareProgress)
-      case _    => None
-    }
-
+    def eventOffsetFor(bit: Int): Option[EROffset] = SystemFirmwareProgressEventOffset.offsetFor(bit)
   }
 
   case object EventLoggingDisabled extends SensorType {
+    type EROffset = EventLoggingDisabledEventOffset
+
     val code = 0x10
 
-    object EventLoggingDisabledEventOffset {
-
-      case object CorrectableMemoryErrorLoggingDisabled extends EventReadingOffset
-
-      case object EventTypeLoggingDisabled extends EventReadingOffset
-
-      case object LogAreaResetCleared extends EventReadingOffset
-
-      case object AllEventLoggingDisabled extends EventReadingOffset
-
-      case object SelFull extends EventReadingOffset
-
-      case object SelAlmostFull extends EventReadingOffset
-
-      case object CorrectableMachineCheckErrorLoggingDisabled extends EventReadingOffset
-
-    }
-
-    import EventLoggingDisabledEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(CorrectableMemoryErrorLoggingDisabled)
-      case 0x01 => Some(EventTypeLoggingDisabled)
-      case 0x02 => Some(LogAreaResetCleared)
-      case 0x03 => Some(AllEventLoggingDisabled)
-      case 0x04 => Some(SelFull)
-      case 0x05 => Some(SelAlmostFull)
-      case 0x06 => Some(CorrectableMachineCheckErrorLoggingDisabled)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = EventLoggingDisabledEventOffset.offsetFor(bit)
   }
 
   case object Watchdog1 extends SensorType {
+    type EROffset = Watchdog1EventOffset
+
     val code = 0x11
 
-    object Watchdog1EventOffset {
-
-      case object BiosWatchdogReset extends EventReadingOffset
-
-      case object OsWatchdogReset extends EventReadingOffset
-
-      case object OsWatchdogShutDown extends EventReadingOffset
-
-      case object OsWatchdogPowerDown extends EventReadingOffset
-
-      case object OsWatchdogPowerCycle extends EventReadingOffset
-
-      case object OsWatchdogNmiDiagnosticInterrupt extends EventReadingOffset
-
-      case object OsWatchdogExpiredStatusOnly extends EventReadingOffset
-
-      case object OsWatchdogPreTimeoutInterruptNonNMI extends EventReadingOffset
-
-    }
-
-    import Watchdog1EventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(BiosWatchdogReset)
-      case 0x01 => Some(OsWatchdogReset)
-      case 0x02 => Some(OsWatchdogShutDown)
-      case 0x03 => Some(OsWatchdogPowerDown)
-      case 0x04 => Some(OsWatchdogPowerCycle)
-      case 0x05 => Some(OsWatchdogNmiDiagnosticInterrupt)
-      case 0x06 => Some(OsWatchdogExpiredStatusOnly)
-      case 0x07 => Some(OsWatchdogPreTimeoutInterruptNonNMI)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = Watchdog1EventOffset.offsetFor(bit)
   }
 
   case object SystemEvent extends SensorType {
+    type EROffset = SystemEventEventOffset
+
     val code = 0x12
 
-    object SystemEventEventOffset {
-
-      case object SystemReconfigured extends EventReadingOffset
-
-      case object OEMSystemBootEvent extends EventReadingOffset
-
-      case object UndeterminedSystemHardwareFailure extends EventReadingOffset
-
-      case object EntryAddedToAuxiliaryLog extends EventReadingOffset
-
-      case object PEFAction extends EventReadingOffset
-
-      case object TimestampClockSynch extends EventReadingOffset
-
-    }
-
-    import SystemEventEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(SystemReconfigured)
-      case 0x01 => Some(OEMSystemBootEvent)
-      case 0x02 => Some(UndeterminedSystemHardwareFailure)
-      case 0x03 => Some(EntryAddedToAuxiliaryLog)
-      case 0x04 => Some(PEFAction)
-      case 0x05 => Some(TimestampClockSynch)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = SystemEventEventOffset.offsetFor(bit)
   }
 
   case object CriticalInterrupt extends SensorType {
+    type EROffset = CriticalInterruptEventOffset
+
     val code = 0x13
 
-    object CriticalInterruptEventOffset {
-
-      case object FrontPanelNmiDiagnosticInterrupt extends EventReadingOffset
-
-      case object BusTimeout extends EventReadingOffset
-
-      case object IoChannelCheckNmi extends EventReadingOffset
-
-      case object SoftwareNmi extends EventReadingOffset
-
-      case object PciPerr extends EventReadingOffset
-
-      case object PciSerr extends EventReadingOffset
-
-      case object EisaFailSafeTimeout extends EventReadingOffset
-
-      case object BusCorrectableError extends EventReadingOffset
-
-      case object BusUncorrectableError extends EventReadingOffset
-
-      case object FatalNmi extends EventReadingOffset
-
-      case object BusFatalError extends EventReadingOffset
-
-      case object BusDegraded extends EventReadingOffset
-
-    }
-
-    import CriticalInterruptEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(FrontPanelNmiDiagnosticInterrupt)
-      case 0x01 => Some(BusTimeout)
-      case 0x02 => Some(IoChannelCheckNmi)
-      case 0x03 => Some(SoftwareNmi)
-      case 0x04 => Some(PciPerr)
-      case 0x05 => Some(PciSerr)
-      case 0x06 => Some(EisaFailSafeTimeout)
-      case 0x07 => Some(BusCorrectableError)
-      case 0x08 => Some(BusUncorrectableError)
-      case 0x09 => Some(FatalNmi)
-      case 0x0a => Some(BusFatalError)
-      case 0x0b => Some(BusDegraded)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = CriticalInterruptEventOffset.offsetFor(bit)
   }
 
   case object ButtonSwitch extends SensorType {
+    type EROffset = ButtonSwitchEventOffset
+
     val code = 0x14
 
-    object ButtonSwitchEventOffset {
-
-      case object PowerButtonPressed extends EventReadingOffset
-
-      case object SleepButtonPressed extends EventReadingOffset
-
-      case object ResetButtonPressed extends EventReadingOffset
-
-      case object FruLatchOpen extends EventReadingOffset
-
-      case object FruServiceRequestButton extends EventReadingOffset
-
-    }
-
-    import ButtonSwitchEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(PowerButtonPressed)
-      case 0x01 => Some(SleepButtonPressed)
-      case 0x02 => Some(ResetButtonPressed)
-      case 0x03 => Some(FruLatchOpen)
-      case 0x04 => Some(FruServiceRequestButton)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = ButtonSwitchEventOffset.offsetFor(bit)
   }
 
   case object ModuleBoard extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x15
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object MicrocontrollerCoprocessor extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x16
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object AddInCard extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x17
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Chassis extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x18
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object ChipSet extends SensorType {
+    type EROffset = ChipSetEventOffset
+
     val code = 0x19
 
-    object ChipSetEventOffset {
-
-      case object SoftPowerControlFailure extends EventReadingOffset
-
-      case object ThermalTrip extends EventReadingOffset
-
-    }
-
-    import ChipSetEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(SoftPowerControlFailure)
-      case 0x01 => Some(ThermalTrip)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = ChipSetEventOffset.offsetFor(bit)
   }
 
   case object OtherFru extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x1a
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object CableInterconnect extends SensorType {
+    type EROffset = CableInterconnectEventOffset
+
     val code = 0x1b
 
-    object CableInterconnectEventOffset {
-
-      case object CableInterconnectIsConnected extends EventReadingOffset
-
-      case object ConfigurationErrorIncorrectCableConnectedIncorrectInterconnection extends EventReadingOffset
-
-    }
-
-    import CableInterconnectEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(CableInterconnectIsConnected)
-      case 0x01 => Some(ConfigurationErrorIncorrectCableConnectedIncorrectInterconnection)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = CableInterconnectEventOffset.offsetFor(bit)
   }
 
   case object Terminator extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x1c
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object SystemBootRestartInitiated extends SensorType {
+    type EROffset = SystemBootRestartInitiatedEventOffset
+
     val code = 0x1d
 
-    object SystemBootRestartInitiatedEventOffset {
-
-      case object InitiatedByPowerUp extends EventReadingOffset
-
-      case object InitiatedByHardReset extends EventReadingOffset
-
-      case object InitiatedByWarmReset extends EventReadingOffset
-
-      case object UserRequestedPXEBoot extends EventReadingOffset
-
-      case object AutomaticBootToDiagnostic extends EventReadingOffset
-
-      case object OSRuntimeSoftwareInitiatedHardReset extends EventReadingOffset
-
-      case object OSRuntimeSoftwareInitiatedWarmReset extends EventReadingOffset
-
-      case object SystemRestart extends EventReadingOffset
-
-    }
-
-    import SystemBootRestartInitiatedEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(InitiatedByPowerUp)
-      case 0x01 => Some(InitiatedByHardReset)
-      case 0x02 => Some(InitiatedByWarmReset)
-      case 0x03 => Some(UserRequestedPXEBoot)
-      case 0x04 => Some(AutomaticBootToDiagnostic)
-      case 0x05 => Some(OSRuntimeSoftwareInitiatedHardReset)
-      case 0x06 => Some(OSRuntimeSoftwareInitiatedWarmReset)
-      case 0x07 => Some(SystemRestart)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = SystemBootRestartInitiatedEventOffset.offsetFor(bit)
   }
 
   case object BootError extends SensorType {
+    type EROffset = BootErrorEventOffset
+
     val code = 0x1e
 
-    object BootErrorEventOffset {
-
-      case object NoBootableMedia extends EventReadingOffset
-
-      case object NonBootableDisketteLeftInDrive extends EventReadingOffset
-
-      case object PXEServerNotFound extends EventReadingOffset
-
-      case object InvalidBootSector extends EventReadingOffset
-
-      case object TimeoutWaitingForUserSelectionOfBootSource extends EventReadingOffset
-
-    }
-
-    import BootErrorEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(NoBootableMedia)
-      case 0x01 => Some(NonBootableDisketteLeftInDrive)
-      case 0x02 => Some(PXEServerNotFound)
-      case 0x03 => Some(InvalidBootSector)
-      case 0x04 => Some(TimeoutWaitingForUserSelectionOfBootSource)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = BootErrorEventOffset.offsetFor(bit)
   }
 
   case object BaseOsBootInstallationStatus extends SensorType {
+    type EROffset = BaseOsBootInstallationStatusEventOffset
+
     val code = 0x1f
 
-    object BaseOsBootInstallationStatusEventOffset {
+    def eventOffsetFor(bit: Int): Option[EROffset] = BaseOsBootInstallationStatusEventOffset.offsetFor(bit)
 
-      case object ABootCompleted extends EventReadingOffset
-
-      case object CBootCompleted extends EventReadingOffset
-
-      case object PXEBootCompleted extends EventReadingOffset
-
-      case object DiagnosticBootCompleted extends EventReadingOffset
-
-      case object CdRomBootCompleted extends EventReadingOffset
-
-      case object RomBootCompleted extends EventReadingOffset
-
-      case object BootCompletedBootDeviceNotSpecified extends EventReadingOffset
-
-      case object BaseOsHypervisorInstallationStarted extends EventReadingOffset
-
-      case object BaseOsHypervisorInstallationCompleted extends EventReadingOffset
-
-      case object BaseOsHypervisorInstallationAborted extends EventReadingOffset
-
-      case object BaseOsHypervisorInstallationFailed extends EventReadingOffset
-
-    }
-
-    import BaseOsBootInstallationStatusEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(ABootCompleted)
-      case 0x01 => Some(CBootCompleted)
-      case 0x02 => Some(PXEBootCompleted)
-      case 0x03 => Some(DiagnosticBootCompleted)
-      case 0x04 => Some(CdRomBootCompleted)
-      case 0x05 => Some(RomBootCompleted)
-      case 0x06 => Some(BootCompletedBootDeviceNotSpecified)
-      case 0x07 => Some(BaseOsHypervisorInstallationStarted)
-      case 0x08 => Some(BaseOsHypervisorInstallationCompleted)
-      case 0x09 => Some(BaseOsHypervisorInstallationAborted)
-      case 0x0a => Some(BaseOsHypervisorInstallationFailed)
-      case _    => None
-    }
   }
 
   case object OsStopShutdown extends SensorType {
+    type EROffset = OsStopShutdownEventOffset
+
     val code = 0x20
 
-    object OsStopShutdownEventOffset {
-
-      case object CriticalStopDuringOsLoadInitialization extends EventReadingOffset
-
-      case object RuntimeCriticalStop extends EventReadingOffset
-
-      case object OSGracefulStop extends EventReadingOffset
-
-      case object OSGracefulShutdown extends EventReadingOffset
-
-      case object SoftShutdownInitiatedByPEF extends EventReadingOffset
-
-      case object AgentNotResponding extends EventReadingOffset
-
-    }
-
-    import OsStopShutdownEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(CriticalStopDuringOsLoadInitialization)
-      case 0x01 => Some(RuntimeCriticalStop)
-      case 0x02 => Some(OSGracefulStop)
-      case 0x03 => Some(OSGracefulShutdown)
-      case 0x04 => Some(SoftShutdownInitiatedByPEF)
-      case 0x05 => Some(AgentNotResponding)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = OsStopShutdownEventOffset.offsetFor(bit)
   }
 
   case object SlotConnector extends SensorType {
+    type EROffset = SlotConnectorEventOffset
+
     val code = 0x21
 
-    object SlotConnectorEventOffset {
-
-      case object FaultyStatusAsserted extends EventReadingOffset
-
-      case object IdentifyStatusAsserted extends EventReadingOffset
-
-      case object SlotConnectorDeviceInstalledAttached extends EventReadingOffset
-
-      case object SlotConnectorReadyForDeviceInstallation extends EventReadingOffset
-
-      case object SlotConnectorReadyForDeviceRemoval extends EventReadingOffset
-
-      case object SlotPowerIsOff extends EventReadingOffset
-
-      case object SlotConnectorDeviceRemovalRequest extends EventReadingOffset
-
-      case object InterlockAsserted extends EventReadingOffset
-
-      case object SlotIsDisabled extends EventReadingOffset
-
-      case object SlotHoldsSpareDevice extends EventReadingOffset
-
-    }
-
-    import SlotConnectorEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(FaultyStatusAsserted)
-      case 0x01 => Some(IdentifyStatusAsserted)
-      case 0x02 => Some(SlotConnectorDeviceInstalledAttached)
-      case 0x03 => Some(SlotConnectorReadyForDeviceInstallation)
-      case 0x04 => Some(SlotConnectorReadyForDeviceRemoval)
-      case 0x05 => Some(SlotPowerIsOff)
-      case 0x06 => Some(SlotConnectorDeviceRemovalRequest)
-      case 0x07 => Some(InterlockAsserted)
-      case 0x08 => Some(SlotIsDisabled)
-      case 0x09 => Some(SlotHoldsSpareDevice)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = SlotConnectorEventOffset.offsetFor(bit)
   }
 
   case object SystemAcpiPowerState extends SensorType {
+    type EROffset = SystemAcpiPowerStateEventOffset
+
     val code = 0x22
 
-    object SystemAcpiPowerStateEventOffset {
-
-      case object S0G0Working extends EventReadingOffset
-
-      case object S1SleepingWithSystemHwProcessorContextMaintained extends EventReadingOffset
-
-      case object S2SleepingProcessorContextLost extends EventReadingOffset
-
-      case object S3SleepingProcessorAndHwContextLostMemoryRetained extends EventReadingOffset
-
-      case object S4NonvolatileSleepSuspendToDisk extends EventReadingOffset
-
-      case object S5G2SoftOff extends EventReadingOffset
-
-      case object S4S5SoftOffParticularS4S5StateCannotBeDetermined extends EventReadingOffset
-
-      case object G3MechanicalOff extends EventReadingOffset
-
-      case object SleepingInAnS1S2orS3State extends EventReadingOffset
-
-      case object G1SleepingS1S4StateCannotBeDetermined extends EventReadingOffset
-
-      case object S5EnteredByOverride extends EventReadingOffset
-
-      case object LegacyOnState extends EventReadingOffset
-
-      case object LegacyOffState extends EventReadingOffset
-
-      case object Unknown extends EventReadingOffset
-
-    }
-
-    import SystemAcpiPowerStateEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(S0G0Working)
-      case 0x01 => Some(S1SleepingWithSystemHwProcessorContextMaintained)
-      case 0x02 => Some(S2SleepingProcessorContextLost)
-      case 0x03 => Some(S3SleepingProcessorAndHwContextLostMemoryRetained)
-      case 0x04 => Some(S4NonvolatileSleepSuspendToDisk)
-      case 0x05 => Some(S5G2SoftOff)
-      case 0x06 => Some(S4S5SoftOffParticularS4S5StateCannotBeDetermined)
-      case 0x07 => Some(G3MechanicalOff)
-      case 0x08 => Some(SleepingInAnS1S2orS3State)
-      case 0x09 => Some(G1SleepingS1S4StateCannotBeDetermined)
-      case 0x0a => Some(S5EnteredByOverride)
-      case 0x0b => Some(LegacyOnState)
-      case 0x0c => Some(LegacyOffState)
-      case 0x0e => Some(Unknown)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = SystemAcpiPowerStateEventOffset.offsetFor(bit)
   }
 
   case object Watchdog2 extends SensorType {
+    type EROffset = Watchdog2EventOffset
+
     val code = 0x23
 
-    object Watchdog2EventOffset {
-
-      case object TimerExpired extends EventReadingOffset
-
-      case object HardReset extends EventReadingOffset
-
-      case object PowerDown extends EventReadingOffset
-
-      case object PowerCycle extends EventReadingOffset
-
-      case object Reserved1 extends EventReadingOffset
-
-      case object Reserved2 extends EventReadingOffset
-
-      case object Reserved3 extends EventReadingOffset
-
-      case object Reserved4 extends EventReadingOffset
-
-      case object TimerInterrupt extends EventReadingOffset
-
-    }
-
-    import Watchdog2EventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(TimerExpired)
-      case 0x01 => Some(HardReset)
-      case 0x02 => Some(PowerDown)
-      case 0x03 => Some(PowerCycle)
-      case 0x04 => Some(Reserved1)
-      case 0x05 => Some(Reserved2)
-      case 0x06 => Some(Reserved3)
-      case 0x07 => Some(Reserved4)
-      case 0x08 => Some(TimerInterrupt)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = Watchdog2EventOffset.offsetFor(bit)
   }
 
   case object PlatformAlert extends SensorType {
+    type EROffset = PlatformAlertEventOffset
+
     val code = 0x24
 
-    object PlatformAlertEventOffset {
-
-      case object PlatformGeneratedPage extends EventReadingOffset
-
-      case object PlatformGeneratedLanAlert extends EventReadingOffset
-
-      case object PlatformEventTrapGenerated extends EventReadingOffset
-
-      case object PlatformGeneratedSnmpTrap extends EventReadingOffset
-
-    }
-
-    import PlatformAlertEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(PlatformGeneratedPage)
-      case 0x01 => Some(PlatformGeneratedLanAlert)
-      case 0x02 => Some(PlatformEventTrapGenerated)
-      case 0x03 => Some(PlatformGeneratedSnmpTrap)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = PlatformAlertEventOffset.offsetFor(bit)
   }
 
   case object EntityPresence extends SensorType {
+    type EROffset = EntityPresenceEventOffset
+
     val code = 0x25
 
-    object EntityPresenceEventOffset {
-
-      case object EntityPresent extends EventReadingOffset
-
-      case object EntityAbsent extends EventReadingOffset
-
-      case object EntityDisabled extends EventReadingOffset
-
-    }
-
-    import EntityPresenceEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(EntityPresent)
-      case 0x01 => Some(EntityAbsent)
-      case 0x02 => Some(EntityDisabled)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = EntityPresenceEventOffset.offsetFor(bit)
   }
 
   case object MonitorAsicIc extends SensorType {
+    type EROffset = Nothing
+
     val code = 0x26
 
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
   }
 
   case object Lan extends SensorType {
+    type EROffset = LanEventOffset
+
     val code = 0x27
 
-    object LanEventOffset {
-
-      case object LanHeartbeatLost extends EventReadingOffset
-
-      case object LanHeartbeat extends EventReadingOffset
-
-    }
-
-    import LanEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(LanHeartbeatLost)
-      case 0x01 => Some(LanHeartbeat)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = LanEventOffset.offsetFor(bit)
   }
 
   case object ManagementSubsystemHealth extends SensorType {
+    type EROffset = ManagementSubsystemHealthEventOffset
+
     val code = 0x28
 
-    object ManagementSubsystemHealthEventOffset {
-
-      case object SensorAccessDegradedOrUnavailable extends EventReadingOffset
-
-      case object ControllerAccessDegradedOrUnavailable extends EventReadingOffset
-
-      case object ManagementControllerOffline extends EventReadingOffset
-
-      case object ManagementControllerUnavailable extends EventReadingOffset
-
-      case object SensorFailure extends EventReadingOffset
-
-      case object FruFailure extends EventReadingOffset
-
-    }
-
-    import ManagementSubsystemHealthEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(SensorAccessDegradedOrUnavailable)
-      case 0x01 => Some(ControllerAccessDegradedOrUnavailable)
-      case 0x02 => Some(ManagementControllerOffline)
-      case 0x03 => Some(ManagementControllerUnavailable)
-      case 0x04 => Some(SensorFailure)
-      case 0x05 => Some(FruFailure)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = ManagementSubsystemHealthEventOffset.offsetFor(bit)
   }
 
   case object Battery extends SensorType {
+    type EROffset = BatteryEventOffset
+
     val code = 0x29
 
-    object BatteryEventOffset {
-
-      case object BatteryLowPredictiveFailure extends EventReadingOffset
-
-      case object BatteryFailed extends EventReadingOffset
-
-      case object BatteryPresenceDetected extends EventReadingOffset
-
-    }
-
-    import BatteryEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(BatteryLowPredictiveFailure)
-      case 0x01 => Some(BatteryFailed)
-      case 0x02 => Some(BatteryPresenceDetected)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = BatteryEventOffset.offsetFor(bit)
   }
 
   case object SessionAudit extends SensorType {
+    type EROffset = SessionAuditEventOffset
+
     val code = 0x2a
 
-    object SessionAuditEventOffset {
-
-      case object SessionActivated extends EventReadingOffset
-
-      case object SessionDeactivated extends EventReadingOffset
-
-      case object InvalidUsernameOrPassword extends EventReadingOffset
-
-      case object InvalidPasswordDisable extends EventReadingOffset
-
-    }
-
-    import SessionAuditEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(SessionActivated)
-      case 0x01 => Some(SessionDeactivated)
-      case 0x02 => Some(InvalidUsernameOrPassword)
-      case 0x03 => Some(InvalidPasswordDisable)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = SessionAuditEventOffset.offsetFor(bit)
   }
 
   case object VersionChange extends SensorType {
+    type EROffset = VersionChangeEventOffset
+
     val code = 0x2b
 
-    object VersionChangeEventOffset {
-
-      case object HardwareChangeDetectedWithAssociatedEntity extends EventReadingOffset
-
-      case object FirmwareOrSoftwareChangeDetectedWithAssociatedEntity extends EventReadingOffset
-
-      case object HardwareIncompatibilityDetectedWithAssociatedEntity extends EventReadingOffset
-
-      case object FirmwareOrSoftwareIncompatibilityDetectedWithAssociatedEntity extends EventReadingOffset
-
-      case object EntityIsInvalidOrUnsupportedHardwareVersion extends EventReadingOffset
-
-      case object EntityContainsInvalidOrUnsupportedFirmwareOrSoftwareVersionWithAssociatedEntity
-          extends EventReadingOffset
-
-      case object HardwareChangeDetectedWithAssociatedEntityWasSuccessful extends EventReadingOffset
-
-      case object SoftwareOrFirmwareChangeDetectedWithAssociatedEntity extends EventReadingOffset
-
-    }
-
-    import VersionChangeEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(HardwareChangeDetectedWithAssociatedEntity)
-      case 0x01 => Some(FirmwareOrSoftwareChangeDetectedWithAssociatedEntity)
-      case 0x02 => Some(HardwareIncompatibilityDetectedWithAssociatedEntity)
-      case 0x03 => Some(FirmwareOrSoftwareIncompatibilityDetectedWithAssociatedEntity)
-      case 0x04 => Some(EntityIsInvalidOrUnsupportedHardwareVersion)
-      case 0x05 =>
-        Some(EntityContainsInvalidOrUnsupportedFirmwareOrSoftwareVersionWithAssociatedEntity)
-      case 0x06 => Some(HardwareChangeDetectedWithAssociatedEntityWasSuccessful)
-      case 0x07 => Some(SoftwareOrFirmwareChangeDetectedWithAssociatedEntity)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = VersionChangeEventOffset.offsetFor(bit)
   }
 
   case object FruState extends SensorType {
+    type EROffset = FruStateEventOffset
+
     val code = 0x2c
 
-    object FruStateEventOffset {
-
-      case object FruNotInstalled extends EventReadingOffset
-
-      case object FruInactive extends EventReadingOffset
-
-      case object FruActivationRequested extends EventReadingOffset
-
-      case object FruActivationInProgress extends EventReadingOffset
-
-      case object FruActive extends EventReadingOffset
-
-      case object FruDeactivationRequested extends EventReadingOffset
-
-      case object FruDeactivationInProgress extends EventReadingOffset
-
-      case object FruCommunicationLost extends EventReadingOffset
-
-    }
-
-    import FruStateEventOffset._
-
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = bit match {
-      case 0x00 => Some(FruNotInstalled)
-      case 0x01 => Some(FruInactive)
-      case 0x02 => Some(FruActivationRequested)
-      case 0x03 => Some(FruActivationInProgress)
-      case 0x04 => Some(FruActive)
-      case 0x05 => Some(FruDeactivationRequested)
-      case 0x06 => Some(FruDeactivationInProgress)
-      case 0x07 => Some(FruCommunicationLost)
-      case _    => None
-    }
+    def eventOffsetFor(bit: Int): Option[EROffset] = FruStateEventOffset.offsetFor(bit)
   }
 
   case class Oem(code: Int) extends SensorType {
-    def eventOffsetFor(bit: Int): Option[EventReadingOffset] = None
-  }
+    type EROffset = Nothing
 
+    def eventOffsetFor(bit: Int): Option[EROffset] = None
+  }
 }

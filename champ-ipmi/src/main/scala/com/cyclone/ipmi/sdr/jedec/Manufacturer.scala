@@ -7,15 +7,17 @@ import com.cyclone.ipmi.codec._
 // See STANDARD MANUFACTURERS IDENTIFICATION CODE at https://www.jedec.org/
 // This code is based on document JEP106AT published Spe 2016
 
-trait ManufacturerIdentificationCode {
-  val code: Byte
+case class Manufacturer(name: String)
 
-  def name: String
-}
+object Manufacturer {
 
-object ManufacturerIdentificationCode {
+  trait Bank {
+    protected val names: Map[Byte, String]
 
-  val banks = List(
+    val bank: PartialFunction[Byte, Manufacturer] = names.mapValues(Manufacturer(_))
+  }
+
+  private val banks = List(
     Bank01.bank,
     Bank02.bank,
     Bank03.bank,
@@ -28,7 +30,7 @@ object ManufacturerIdentificationCode {
     Bank10.bank
   )
 
-  def decodeUsingContinuationFlag(data: ByteString): Option[ManufacturerIdentificationCode] = {
+  def decodeUsingContinuationFlag(data: ByteString): Option[Manufacturer] = {
     val bankSelection = banks.zip(data).dropWhile(_._2 == 0x7f.toByte)
 
     bankSelection.headOption.flatMap {
@@ -36,7 +38,7 @@ object ManufacturerIdentificationCode {
     }
   }
 
-  def decodeUsingContinuationCount(data: ByteString): Option[ManufacturerIdentificationCode] =
+  def decodeUsingContinuationCount(data: ByteString): Option[Manufacturer] =
     banks
       .drop(data(0).toUnsignedInt & 0x7f)
       .headOption

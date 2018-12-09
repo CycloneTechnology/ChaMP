@@ -12,15 +12,12 @@ import com.cyclone.wsman.WSManError.WSManErrorOr
 import com.cyclone.wsman.command.WSManCommands.CommandExecutor
 import com.cyclone.wsman.command._
 import com.cyclone.wsman.impl._
-import com.cyclone.wsman.impl.http.{DefaultWSManConnectionFactoryComponent, DefaultWSManNetworkingComponent}
+import com.cyclone.wsman.impl.http.settings.ConfigHttpSettingsComponent
+import com.cyclone.wsman.impl.http.{DefaultAsyncHttpClientComponent, DefaultWSManConnectionFactoryComponent}
 import com.cyclone.wsman.impl.model.OperationsReferenceResolverComponent
 import com.cyclone.wsman.impl.subscription._
 import com.cyclone.wsman.impl.subscription.pull.PullDeliveryHandler
-import com.cyclone.wsman.impl.subscription.push.{
-  DefaultPushDeliveryRouterComponent,
-  GuavaKerberosTokenCacheComponent,
-  KerberosStateHousekeeperComponent
-}
+import com.cyclone.wsman.impl.subscription.push.{DefaultPushDeliveryRouterComponent, GuavaKerberosTokenCacheComponent, KerberosStateHousekeeperComponent}
 import com.cyclone.wsman.subscription.{SubscriptionExecutor, SubscriptionId, WSManSubscriptionDefn}
 import scalaz.EitherT._
 import scalaz.Scalaz._
@@ -54,8 +51,8 @@ object WSMan {
     val component: DefaultWSManComponent = new DefaultWSManComponent with DefaultWSManContextFactoryComponent
     with DefaultPushDeliveryRouterComponent with KerberosStateHousekeeperComponent
     with OperationsReferenceResolverComponent with DefaultWSManConnectionFactoryComponent
-    with DefaultWSManNetworkingComponent with GuavaKerberosTokenCacheComponent with ActorSystemComponent
-    with MaterializerComponent with Dns4sDnsLookupComponent with DnsConfigSourceComponent
+    with DefaultAsyncHttpClientComponent with ConfigHttpSettingsComponent with GuavaKerberosTokenCacheComponent
+    with ActorSystemComponent with MaterializerComponent with Dns4sDnsLookupComponent with DnsConfigSourceComponent
     with ConfigDnsConfigSourceComponent {
       lazy val actorSystem: ActorSystem = system
       lazy val materializer: Materializer = ActorMaterializer()

@@ -1,10 +1,11 @@
 package com.cyclone.util.kerberos
 
-import scala.collection.JavaConverters._
 import akka.NotUsed
 import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
+
+import scala.collection.JavaConverters._
 
 /**
   * Defines Kerberos related artifact to deploy (e.g. as files) via a [[KerberosDeployer]]
@@ -24,12 +25,16 @@ case class KerberosArtifacts(
 object KerberosArtifacts {
 
   /**
-    * Gets a source from a resource file on the classpath
+    * Gets a source from a resource file on the classpath or an empty source if
+    * the resource string is empty
     */
   def resourceSource(resourceName: String): Source[ByteString, NotUsed] =
-    StreamConverters
-      .fromInputStream(() => getClass.getResourceAsStream(resourceName))
-      .mapMaterializedValue(_ => NotUsed)
+    if (resourceName.isEmpty)
+      Source.empty
+    else
+      StreamConverters
+        .fromInputStream(() => getClass.getResourceAsStream(resourceName))
+        .mapMaterializedValue(_ => NotUsed)
 
   /**
     * Utility to create a simple kerb5.conf configuration for a single realm
@@ -87,12 +92,14 @@ object KerberosArtifacts {
     val kdcHosts = config.getStringList("cyclone.kerberos.kdcHosts").asScala
     val realmHosts = config.getStringList("cyclone.kerberos.realmHosts").asScala
 
+    val keytabResourceName = config.getString("cyclone.kerberos.keytabResourceName")
+    val servicePrincipalName = config.getString("cyclone.kerberos.servicePrincipalName")
+
     KerberosArtifacts(
       kerb5ConfContent = Source.single(ByteString(singleRealmKrb5Config(realm, kdcHosts, realmHosts))),
       loginConfContent = resourceSource("/login.conf"),
-      // FIXME next params reqd for push subscriptions
-      "",
-      keyTabContent = Source.empty
+      servicePrincipalName,
+      keyTabContent = resourceSource(keytabResourceName)
     )
   }
 

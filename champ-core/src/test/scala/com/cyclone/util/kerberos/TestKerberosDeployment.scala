@@ -23,20 +23,15 @@ trait TestKerberosDeployment
     KerberosDeploymentSettings(retryDelay = 1.second)
 
   def kerberosArtifactsSource: KerberosArtifactsSource = new KerberosArtifactsSource {
-
     def kerberosArtifacts: Future[KerberosArtifacts] =
-      Future.successful(
-        KerberosArtifacts(
-          kerb5ConfContent = KerberosArtifacts.resourceSource("/kerb5.conf"),
-          loginConfContent = KerberosArtifacts.resourceSource("/login.conf"),
-          "HTTP/js.cyclone-technology.com",
-          keyTabContent = KerberosArtifacts.resourceSource("/http-web.keytab")
-        )
-      )
+      Future.successful(KerberosArtifacts.simpleFromConfig)
   }
 
   new TestKit(actorSystem) {
     val probe = TestProbe()(actorSystem)
+
+    kerberosDeployer.deploy(KerberosArtifacts.simpleFromConfig)
+
     kerberosDeploymentActor ! KerberosDeploymentActor.Deploy
 
     awaitAssert {

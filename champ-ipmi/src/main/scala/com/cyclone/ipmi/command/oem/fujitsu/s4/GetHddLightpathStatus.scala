@@ -1,5 +1,3 @@
-package com.cyclone.ipmi.command.oem.fujitsu.s4
-
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.StatusCodeError
 import com.cyclone.ipmi.codec._
@@ -88,7 +86,6 @@ object GetHddLightpathStatus {
   }
 
   case class CommandResult() extends IpmiCommandResult
-
 
   case object Command extends IpmiStandardCommand {
     implicit val coder: Coder[Command.type] = new Coder[Command.type] {

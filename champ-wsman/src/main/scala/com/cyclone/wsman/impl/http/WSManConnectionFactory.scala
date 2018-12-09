@@ -1,6 +1,7 @@
 package com.cyclone.wsman.impl.http
 
-import com.cyclone.util.net.{DnsLookup, DnsLookupComponent, HttpUrl, SecurityContext}
+import com.cyclone.util.net.{DnsLookupComponent, HttpUrl, SecurityContext}
+import com.cyclone.wsman.impl.http.settings.HttpSettingsComponent
 
 /**
   * Factory for [[WSManConnection]]s
@@ -14,11 +15,9 @@ trait WSManConnectionFactoryComponent {
 }
 
 trait DefaultWSManConnectionFactoryComponent extends WSManConnectionFactoryComponent {
-  self: WSManNetworkingComponent with DnsLookupComponent =>
-
-  implicit lazy val dns: DnsLookup = dnsLookup
+  self: AsyncHttpClientComponent with DnsLookupComponent with HttpSettingsComponent =>
 
   lazy val wsManConnectionFactory: WSManConnectionFactory =
     (httpUrl: HttpUrl, securityContext: SecurityContext) =>
-      new DefaultWSManConnection(httpUrl, securityContext, wsmanNetworking)
+      new DefaultWSManConnection(httpUrl, securityContext, asyncHttpClient, dnsLookup, httpSettings)
 }
