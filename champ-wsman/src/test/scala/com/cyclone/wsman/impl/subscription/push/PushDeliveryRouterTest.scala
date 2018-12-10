@@ -91,7 +91,7 @@ class PushDeliveryRouterTest extends TestKitSupport with WordSpecLike with Match
         .repeat(List(PushedMessage.Item(itemA, subsIdA)))
         .runWith(pushDeliveryRouter.inputSink)
 
-      val sourceA = pushDeliveryRouter.newSubscriberSource(subsIdA, Some(100.millis))
+      val sourceA = pushDeliveryRouter.newSubscriberSource(subsIdA, Some(1.second))
       val sourceB = pushDeliveryRouter.newSubscriberSource(subsIdB, Some(100.millis))
 
       val subsA = sourceA.runWith(TestSink.probe)
