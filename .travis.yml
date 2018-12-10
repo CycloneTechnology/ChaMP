@@ -1,11 +1,20 @@
-sudo: false
 language: scala
 scala:
   - 2.12.8
-script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean test
 jdk:
   - oraclejdk8
+env:
+  global:
+    secure: AaEsACIu1n6sP/gJ0Un56oWYD0UwrSTbEbDGGlbBPRPvEiKNdy594evppbrr18W1lxZS7z+Po1ZOYlyQ2iL5bmj5lZSqcWGbyWCAJ+r7WkE71iRYm14uXw+Rf8rGjJQh+bukIt1TpWP3XdISnbTaa9e1Hs60AYW97wG8HLzJ5jc+wYbEAg3x4FWrPzIuGn92+wccJoMOhcQ/48OVcrg10cyx3kCvClwbxIWYLOk6JvoQ5w2VhH034L50hbvdO73CSTbPRFRbh9AFYg4UEzawkNquot+zJ1bw3sJf4uAOlNTp4KGC1Qmz4oS7F2YDXzuFB22viMKFqAK0jhQNeAgUi3ykSc0YZctuFdtin7MGnJMRRCbTXtKe4lISkKO2TbK9AE96ons6xWQAEAYFBgk1okSUl0PwJ2iyzJXwyuQJ6RdNwy0Na8AzaC/4d4LEZRKbA0Ut3BUe6WZ2zgMedFthSi1GDkszi70ylv34MC9MXYWFXqGXr2+oLOgOiBoyNRCY1revQIOwnpNTb8mr28VCdGXqf7EKKvDrAY0yopz1Niz03TqhB9QVBIcGrlA/umC/1C1KQ2amQovXMExefS5+Qr9V5hwwcKIUvAPd1YEAi+SwDvGN5yhQYxEI+R7CmGfCuYvGxNj0Y1pqJT5Qk5GA7ktqKiuftFzLRHDyXk+bYoc=
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate
+after_script:
+  - ./cc-test-reporter format-coverage -t cobertura target/scala-2.12/coverage-report/cobertura.xml
+  - ./cc-test-reporter upload-coverage
 notifications:
   slack:
     secure: hyO/hJtqqoR7qR8AhwSpivpsU45u+Bnj+y4jN7fy58NtnSyrJmplWQHX2cXBtlf4mZlb1GsPjvQViqqbtuio9w6nUJqtbyotsjDtmtuAsaqrITLcSchMYUVFCw+pY8pFquPZgLkuUrcbK93R9PHpZOAXbkhkpSI+2oGPDnprifbzwiXGxoPP2fknUNSkGUSpwtmeiB2brISCN/Vpbh1eAY4yUm/l8A+sFJpuaYLAgcQ5uyo13Ud1B9G9Ub3W61CZo46b4cYEA6IkKaDwBt1t8QPw0u1N3oNerQbbdFFBe0FUxkGUsz6bgt8zh0n3+UQ78Ot2qX7HR+bzFk09LaSbZhguVaA87BINZ5undlNk3RuK0wBha73LXVAU1yoU0FvERvFEByHbhWOko9/6rgdCtoGk9C/ffSZ/2Sh1DxLyNNRJ4TpfFgHxe1W7ViiF04hzb4FDj13ecqfdQeqaFquAS2lvin9VOQK61Fv5/0Gu0LGVcLHVkWnhAWfCGyW1hloUjxDSEPvn4knXFYuORnQ0PFhQr41mkRCbf4jFWQdvfmoYR2JAvN7ktjz+x+6gW0W07PKh1ONqV6xzbMODA1+noIOY13C2vHP8MxpKpOTcGG3W+etP0CN83LV96XSdLCF2tBL0b0v1EKXQlFpFU6gW1lcVpIE8c/nQ/7pfIrpsArk=
