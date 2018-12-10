@@ -2,8 +2,7 @@ package com.cyclone.wsman
 
 import akka.stream.Materializer
 import com.cyclone.akka.MaterializerComponent
-import com.cyclone.command.PropertyRestriction
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, PropertyRestriction}
 import com.cyclone.util.concurrent.Futures
 import com.cyclone.util.net.{HttpUrl, SecurityContext}
 import com.cyclone.wsman.WSManError.WSManErrorOr

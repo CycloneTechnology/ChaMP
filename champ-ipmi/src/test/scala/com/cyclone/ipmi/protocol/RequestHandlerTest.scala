@@ -3,7 +3,7 @@ package com.cyclone.ipmi.protocol
 import akka.testkit.{ImplicitSender, TestProbe}
 import akka.util.ByteString
 import com.cyclone.akka.{ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.{RequestTimeouts, TimeoutContext}
+import com.cyclone.command.{OperationDeadline, RequestTimeouts, TimeoutContext}
 import com.cyclone.ipmi._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.command.fruInventory.ReadFruData
@@ -11,7 +11,6 @@ import com.cyclone.ipmi.command.global.{DeviceAddress, DeviceId}
 import com.cyclone.ipmi.command.ipmiMessagingSupport.GetChannelCipherSuites
 import com.cyclone.ipmi.protocol.RequestHandler.{RequestResult, SendRequest}
 import com.cyclone.ipmi.protocol.packet._
-import com.cyclone.util.OperationDeadline
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 import scalaz.-\/
 import scalaz.Scalaz._

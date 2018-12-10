@@ -1,9 +1,10 @@
 package com.cyclone.wsman.impl.xml
 
-import scala.xml.Elem
+import com.cyclone.command.OperationDeadline
 import com.cyclone.wsman.impl.Namespace
-import com.cyclone.util.OperationDeadline
 import com.cyclone.wsman.impl.shell.{ShellCommandId, ShellId}
+
+import scala.xml.Elem
 
 case class ShellReceiveXML(shellId: ShellId, commandId: ShellCommandId, deadline: OperationDeadline)
     extends RequestXMLWithDeadline {

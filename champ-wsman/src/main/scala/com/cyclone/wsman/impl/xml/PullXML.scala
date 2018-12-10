@@ -1,11 +1,10 @@
 package com.cyclone.wsman.impl.xml
 
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.OperationDeadline
+import com.cyclone.wsman.impl.{EnumerationParameters, Namespace}
+import com.cyclone.wsman.impl.model.ManagedReference
 
 import scala.xml.Elem
-import com.cyclone.wsman.impl.Namespace
-import com.cyclone.wsman.impl.EnumerationParameters
-import com.cyclone.wsman.impl.model.ManagedReference
 
 case class PullXML(ref: ManagedReference, context: String, parameters: EnumerationParameters)
     extends RequestXMLWithDeadline {

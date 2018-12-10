@@ -1,7 +1,6 @@
 package com.cyclone.wsman.impl
 
-import com.cyclone.command.SelectorClause
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, SelectorClause}
 import com.cyclone.util.XmlUtils.{singleChildOfSingleElement, singleElement}
 import com.cyclone.wsman.WSManError.WSManErrorOr
 import com.cyclone.wsman.WSManOperationContext

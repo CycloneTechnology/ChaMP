@@ -1,9 +1,9 @@
-package com.cyclone.util
+package com.cyclone.command
 
-import org.scalatest.FunSuite
+import com.cyclone.command.OperationDeadline.{NoDeadline, Overdue, TimeRemains}
+import org.scalatest.{FunSuite, Matchers}
+
 import scala.concurrent.duration._
-import org.scalatest.Matchers
-import OperationDeadline._
 
 class OperationDeadlineTest extends FunSuite with Matchers {
 

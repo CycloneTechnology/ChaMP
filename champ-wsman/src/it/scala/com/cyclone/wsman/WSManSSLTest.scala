@@ -2,10 +2,10 @@ package com.cyclone.wsman
 
 import akka.testkit.ImplicitSender
 import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.TimeoutContext
+import com.cyclone.command.{OperationDeadline, TimeoutContext}
+import com.cyclone.util.PasswordCredentials
 import com.cyclone.util.kerberos.TestKerberosDeployment
 import com.cyclone.util.net.{AuthenticationMethod, JavaNamingDnsLookupComponent, PasswordSecurityContext}
-import com.cyclone.util.{OperationDeadline, PasswordCredentials}
 import com.cyclone.wsman.WSMan.httpUrlFor
 import com.cyclone.wsman.command.{EnumerateBySelector, Identify}
 import com.cyclone.wsman.impl.subscription.push.GuavaKerberosTokenCacheComponent
@@ -19,7 +19,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class WSManSSLTest
-  extends TestKitSupport
+    extends TestKitSupport
     with JUnitSuiteLike
     with ActorSystemShutdown
     with WSManTestProperties
@@ -51,8 +51,9 @@ class WSManSSLTest
 
   @Test
   def failsToConnectIfNotSetForSSL(): Unit = {
-    inside(wsman.executeCommandOrError(WSManTarget(httpUrlFor(hostAndPort, !ssl), securityContext), Identify)
-      .futureValue) {
+    inside(
+      wsman.executeCommandOrError(WSManTarget(httpUrlFor(hostAndPort, !ssl), securityContext), Identify).futureValue
+    ) {
       case -\/(e) => e shouldBe a[WSManIOError]
     }
   }
@@ -88,11 +89,19 @@ class WSManSSLTest
   def basicAuth_authExceptionThrownWhenBadcredentials(): Unit = {
     val query = EnumerateBySelector.fromClassName("ANY")
 
-    inside(wsman.executeCommandOrError(
-      target.copy(securityContext = PasswordSecurityContext(
-        PasswordCredentials.fromStrings("someUser", "somePassword"),
-        AuthenticationMethod.Basic)),
-      query).futureValue) {
+    inside(
+      wsman
+        .executeCommandOrError(
+          target.copy(
+            securityContext = PasswordSecurityContext(
+              PasswordCredentials.fromStrings("someUser", "somePassword"),
+              AuthenticationMethod.Basic
+            )
+          ),
+          query
+        )
+        .futureValue
+    ) {
       case -\/(e) => e shouldBe a[WSManAuthenticationError]
     }
   }

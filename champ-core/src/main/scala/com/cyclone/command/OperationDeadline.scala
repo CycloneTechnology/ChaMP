@@ -1,4 +1,4 @@
-package com.cyclone.util
+package com.cyclone.command
 
 import java.util.concurrent.TimeUnit
 
@@ -102,8 +102,8 @@ trait OperationDeadline {
     currentState(Duration(1, timeUnit))
 }
 
-case class AbsoluteDeadline(deadline: Deadline) extends OperationDeadline {
+case class AbsoluteDeadline private[command] (deadline: Deadline) extends OperationDeadline {
   def timeRemaining: FiniteDuration = deadline.timeLeft max 0.nanos
 }
 
-case class ResettingDeadline(timeRemaining: FiniteDuration) extends OperationDeadline
+case class ResettingDeadline private[command] (timeRemaining: FiniteDuration) extends OperationDeadline

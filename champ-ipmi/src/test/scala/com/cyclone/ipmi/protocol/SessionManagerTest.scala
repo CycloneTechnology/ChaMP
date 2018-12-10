@@ -3,7 +3,7 @@ package com.cyclone.ipmi.protocol
 import akka.actor.{ActorContext, ActorRef, Status}
 import akka.testkit.{ImplicitSender, TestProbe}
 import com.cyclone.akka.{ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.TimeoutContext
+import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi._
 import com.cyclone.ipmi.command.global.WarmReset
 import com.cyclone.ipmi.command.ipmiMessagingSupport.CloseSession
@@ -12,7 +12,7 @@ import com.cyclone.ipmi.protocol.Transport.Factory
 import com.cyclone.ipmi.protocol.packet.IpmiVersion
 import com.cyclone.ipmi.protocol.packet.SessionId.ManagedSystemSessionId
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
-import com.cyclone.util.{OperationDeadline, SynchronizedMockeryComponent}
+import com.cyclone.util.SynchronizedMockeryComponent
 import com.google.common.net.InetAddresses
 import org.scalatest.{Matchers, WordSpecLike}
 import scalaz.Scalaz._

@@ -4,10 +4,9 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import akka.stream.{ActorMaterializer, Materializer}
 import com.cyclone.akka.{ActorSystemComponent, MaterializerComponent}
-import com.cyclone.command.TimeoutContext
+import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.util.concurrent.Futures
 import com.cyclone.util.net._
-import com.cyclone.util.{OperationDeadline, ResettingDeadline}
 import com.cyclone.wsman.WSManError.WSManErrorOr
 import com.cyclone.wsman.command.WSManCommands.CommandExecutor
 import com.cyclone.wsman.command._
@@ -43,9 +42,11 @@ object WSMan {
     HttpUrl.fromParts(HostAndPort.fromParts(host, port(ssl)), "wsman", ssl)
 
   /**
-    * Use this to create a [[WSMan]] instance.
+    * Creates a [[WSMan]].
     *
-    * @return
+    * The resulting object can be used for multiple command executions etc.
+    *
+    * @param system an actor system
     */
   def create(implicit system: ActorSystem): WSMan = {
     val component: DefaultWSManComponent = new DefaultWSManComponent with DefaultWSManContextFactoryComponent
@@ -200,7 +201,7 @@ trait DefaultWSManComponent extends WSManComponent {
     private def contextForSubscription(target: WSManTarget) =
       // TODO pass in a timeout for the actual subscription/unsubscription??
       // Use reasonable value for now...
-      wsmanOperationContextFactory.wsmanContextFor(target, ResettingDeadline(5.seconds))
+      wsmanOperationContextFactory.wsmanContextFor(target, OperationDeadline.reusableTimeout(5.seconds))
 
     def subscribe[S <: WSManSubscriptionDefn](
       target: WSManTarget,

@@ -2,9 +2,10 @@ package com.cyclone.wsman.impl.shell
 
 import akka.NotUsed
 import akka.stream.scaladsl.{Sink, Source}
+import com.cyclone.command.OperationDeadline
 import com.cyclone.util.XmlUtils._
 import com.cyclone.util.shell.ShellOutputStream
-import com.cyclone.util.{AbsoluteDeadline, Base64Utils, NumberUtils, OperationDeadline}
+import com.cyclone.util.{Base64Utils, NumberUtils}
 import com.cyclone.wsman.WSManError.WSManErrorOr
 import com.cyclone.wsman.{WSManErrorException, WSManOperationContext}
 import com.cyclone.wsman.command.WSManRunShellCommand

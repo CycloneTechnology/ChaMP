@@ -5,11 +5,11 @@ import java.net.InetAddress
 import java.text.SimpleDateFormat
 
 import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemComponent, ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.{PropertyRestriction, Selector, SelectorClause, TimeoutContext}
+import com.cyclone.command._
 import com.cyclone.util.kerberos.TestKerberosDeployment
 import com.cyclone.util.net.{AuthenticationMethod, HostAndPort, JavaNamingDnsLookupComponent, PasswordSecurityContext}
 import com.cyclone.util.shell.ShellOutputStream
-import com.cyclone.util.{Base64Utils, OperationDeadline, Password, PasswordCredentials}
+import com.cyclone.util.{Base64Utils, Password, PasswordCredentials}
 import com.cyclone.wsman.command._
 import com.cyclone.wsman.impl.WSManAvailability
 import com.cyclone.wsman.impl.subscription.push.GuavaKerberosTokenCacheComponent

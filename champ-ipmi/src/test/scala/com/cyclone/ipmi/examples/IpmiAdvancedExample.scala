@@ -2,18 +2,17 @@ package com.cyclone.ipmi.examples
 
 import akka.actor.ActorSystem
 import com.cyclone.command.TimeoutContext
-import com.cyclone.ipmi.sdr.{SensorType, ThresholdComparison}
-import com.cyclone.ipmi.tool.api.IpmiTool
-import com.cyclone.ipmi.tool.command.{SdrFilter, SensorTool}
-import com.cyclone.ipmi.{IpmiCredentials, IpmiTarget}
+import com.cyclone.ipmi.command.chassis.{GetChassisStatus, GetPohCounter}
+import com.cyclone.ipmi.{Ipmi, IpmiCredentials, IpmiTarget}
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 /**
-  * This example enumerates the readings from temperatures sensors for a specific device along with
-  * the corresponding upper critical values.
+  * This example shows how multiple tool commands and standard commands
+  * can be executed within a single authenticated session
+  * to get a number of different data related to chassis power.
   *
   * To run this need an application.conf in the classpath containing connection details:
   * {{{
@@ -27,7 +26,7 @@ import scala.util.{Failure, Success}
   * }
   * }}}
   */
-object IpmiToolExample extends App {
+object IpmiAdvancedExample extends App {
 
   val config = ConfigFactory.load()
 
@@ -38,30 +37,23 @@ object IpmiToolExample extends App {
   implicit val actorSystem: ActorSystem = ActorSystem("exampleActorSystem")
   implicit val timeoutContext: TimeoutContext = TimeoutContext.default
 
-  val ipmiTool = IpmiTool.create
+  val ipmi = Ipmi.create
 
   val target = IpmiTarget.LAN.forHost(host = host, credentials = IpmiCredentials(username, password))
 
-  val futureResult = ipmiTool.executeCommand(
-    target,
-    SensorTool.Command(SdrFilter.BySensorType(SensorType.Temperature))
-  )
+  // This allows running multiple against a target within an authenticated session...
+  val futureResult = ipmi.withContext(target) { implicit ctx =>
+    for {
+      status       <- ipmi.executeCommand(GetChassisStatus.Command)
+      powerOnHours <- ipmi.executeCommand(GetPohCounter.Command)
+    } yield (status, powerOnHours)
+  }
 
   futureResult.onComplete {
-    case Success(result) =>
-      for {
-        sensorReading <- result.readings
-        analogReading <- sensorReading.analogReading
-      } {
-        val thresholdMessage = analogReading.thresholdComparisons
-          .get(ThresholdComparison.UpperCritical)
-          .map { value =>
-            s" (critical is ${value.message})"
-          }
-          .getOrElse("")
-
-        println(s"Reading of ${sensorReading.sensorId.id} is ${analogReading.sensorValue.message}$thresholdMessage")
-      }
+    case Success((status, powerOnHours)) =>
+      println(s"""Power on=${status.currentPowerState.on}, fault=${status.currentPowerState.fault}.
+           |Total POH=${powerOnHours.powerOnTime}
+         """.stripMargin)
 
       System.exit(0)
 

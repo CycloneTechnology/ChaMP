@@ -112,6 +112,11 @@ trait IpmiConnection {
     Futures.disjunctionToFailedFuture(raw)(IpmiError.toThrowable)
   }
 
+  def executeCommand[Command <: IpmiStandardCommand, Result <: IpmiCommandResult](
+    command: Command
+  )(implicit timeoutContext: TimeoutContext, codec: CommandResultCodec[Command, Result]): Future[Result] =
+    executeCommand(command, DeviceAddress.BmcAddress)
+
   /**
     * If a session has been negotiated, executes the command within that session using the negotiated IPMI version.
     *

@@ -21,7 +21,7 @@ object GetPohCounter {
         val iterator = data.iterator
         val is = iterator.asInputStream
 
-        def minutesPerCount = is.read(2).as[Short]
+        def minutesPerCount = is.readByte.toUnsignedInt
         def counterReading = is.read(4).as[Int]
 
         val powerOnTime = new FiniteDuration(minutesPerCount * counterReading, TimeUnit.MINUTES)

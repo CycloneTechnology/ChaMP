@@ -1,6 +1,6 @@
 package com.cyclone.wsman.impl.xml
 
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.OperationDeadline
 import com.cyclone.wsman.impl.Namespace
 
 import scala.xml.Elem

@@ -2,17 +2,12 @@ package com.cyclone.wsman
 
 import akka.actor.ActorSystem
 import com.cyclone.akka._
-import com.cyclone.command.PropertyRestriction
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, PropertyRestriction}
 import com.cyclone.util.net.{AuthenticationMethod, HttpUrl, JavaNamingDnsLookupComponent, PasswordSecurityContext}
 import com.cyclone.wsman.impl.http.settings.ConfigHttpSettingsComponent
-import com.cyclone.wsman.impl.http.{DefaultWSManConnectionFactoryComponent, DefaultAsyncHttpClientComponent}
+import com.cyclone.wsman.impl.http.{DefaultAsyncHttpClientComponent, DefaultWSManConnectionFactoryComponent}
 import com.cyclone.wsman.impl.model._
-import com.cyclone.wsman.impl.subscription.push.{
-  DefaultPushDeliveryRouterComponent,
-  GuavaKerberosTokenCacheComponent,
-  KerberosStateHousekeeperComponent
-}
+import com.cyclone.wsman.impl.subscription.push.{DefaultPushDeliveryRouterComponent, GuavaKerberosTokenCacheComponent, KerberosStateHousekeeperComponent}
 import org.hamcrest.Matchers._
 import org.hamcrest.{FeatureMatcher, Matcher}
 import org.jmock.AbstractExpectations._

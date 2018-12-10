@@ -5,7 +5,7 @@ import java.net.InetAddress
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout, Stash, Status}
 import akka.event.LoggingReceive
 import akka.pattern.pipe
-import com.cyclone.command.{RequestTimeouts, TimeoutContext}
+import com.cyclone.command.{OperationDeadline, RequestTimeouts, TimeoutContext}
 import com.cyclone.ipmi._
 import com.cyclone.ipmi.command.global.DeviceAddress
 import com.cyclone.ipmi.command.ipmiMessagingSupport.CloseSession
@@ -13,7 +13,6 @@ import com.cyclone.ipmi.protocol.SessionHub.{DefaultSessionHubFactory, SessionHu
 import com.cyclone.ipmi.protocol.SessionManager._
 import com.cyclone.ipmi.protocol.packet.SessionId.RemoteConsoleSessionId
 import com.cyclone.ipmi.protocol.packet._
-import com.cyclone.util.OperationDeadline
 import scalaz.{-\/, \/-}
 
 import scala.concurrent.ExecutionContext.Implicits.global

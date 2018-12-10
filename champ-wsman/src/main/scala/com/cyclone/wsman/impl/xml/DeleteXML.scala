@@ -1,7 +1,6 @@
 package com.cyclone.wsman.impl.xml
 
-import com.cyclone.command.SelectorClause
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, SelectorClause}
 import com.cyclone.wsman.impl.Namespace
 import com.cyclone.wsman.impl.model.ManagedReference
 
