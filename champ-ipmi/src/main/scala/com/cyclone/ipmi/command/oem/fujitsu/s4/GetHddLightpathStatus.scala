@@ -2,8 +2,8 @@ import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.StatusCodeError
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.oem.IanaEnterpriseNumber
-import com.cyclone.ipmi.command.{CommandCode, StatusCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCode, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 
 /**
   * GetHddLightpathStatus command and response

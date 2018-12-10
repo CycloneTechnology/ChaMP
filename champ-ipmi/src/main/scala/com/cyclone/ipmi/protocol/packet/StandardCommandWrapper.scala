@@ -3,7 +3,7 @@ package com.cyclone.ipmi.protocol.packet
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.global.DeviceAddress
-import com.cyclone.ipmi.command.{CommandCode, StatusCode}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCode}
 
 object StandardCommandWrapper {
 

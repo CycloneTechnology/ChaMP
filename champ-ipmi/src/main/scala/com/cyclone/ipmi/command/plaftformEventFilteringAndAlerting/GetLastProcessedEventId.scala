@@ -3,8 +3,8 @@ package com.cyclone.ipmi.command.plaftformEventFilteringAndAlerting
 import akka.util.ByteString
 import com.cyclone.ipmi.StatusCodeError
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{CommandCode, StatusCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCode, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 import org.joda.time.Instant
 
 /**

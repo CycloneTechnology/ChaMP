@@ -3,8 +3,8 @@ package com.cyclone.ipmi.command.chassis
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.chassis.ChassisIdentify.IdentifyInterval.{Off, On, OnFor}
-import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 
 import scala.concurrent.duration.FiniteDuration
 

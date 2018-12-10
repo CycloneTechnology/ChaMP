@@ -1,4 +1,4 @@
-package com.cyclone.ipmi.protocol.packet
+package com.cyclone.ipmi.command
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
@@ -177,7 +177,6 @@ object NetworkFunction {
     val code: Byte = 0xc4.toByte
   }
 
-  //noinspection ScalaStyle
   def fromCode(code: Byte): NetworkFunction = code match {
     case ChassisRequest.code        => ChassisRequest
     case ChassisResponse.code       => ChassisResponse

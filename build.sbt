@@ -23,6 +23,12 @@ ThisBuild / developers := List(
     name = "Phil Baxter",
     email = "phil.baxter@cyclone-technology.com",
     url = url("http://netprefect.com/")
+  ),
+  Developer(
+    id = "Dan.Willis",
+    name = "Dan Willis",
+    email = "dan.willis@cyclone-technology.com",
+    url = url("https://github.com/dan-willis")
   )
 )
 

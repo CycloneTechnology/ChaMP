@@ -178,7 +178,6 @@ object GenericStatusCodeErrors {
     def message = s"Device-specific (OEM) error: $code"
   }
 
-  //noinspection ScalaStyle
   private val codeLookupMap = Map(
     NodeBusy.code                    -> NodeBusy,
     InvalidCommand.code              -> InvalidCommand,

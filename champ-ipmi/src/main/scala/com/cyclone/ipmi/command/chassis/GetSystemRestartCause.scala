@@ -2,8 +2,8 @@ package com.cyclone.ipmi.command.chassis
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 
 /**
   * Get System Restart Cause command and response

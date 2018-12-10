@@ -1,6 +1,6 @@
 package com.cyclone.ipmi.protocol.packet
 
-import com.cyclone.ipmi.command.CommandCode
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction}
 
 trait IpmiCommand
 

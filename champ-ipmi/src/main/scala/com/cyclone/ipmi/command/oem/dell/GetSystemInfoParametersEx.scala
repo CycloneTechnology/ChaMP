@@ -2,10 +2,10 @@ package com.cyclone.ipmi.command.oem.dell
 
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
 import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSystemInfoParameters.ParameterSelector
 import com.cyclone.ipmi.command.ipmiMessagingSupport.ParameterRevision
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 
 /**
   * Extension to GetSystemInfoParameters command for getting 11G/12G Mac addresses

@@ -2,7 +2,7 @@ package com.cyclone.ipmi.command.ipmiMessagingSupport
 
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{CommandCode, StatusCode, StatusCodeTranslator}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCode, StatusCodeTranslator}
 import com.cyclone.ipmi.protocol.packet.SessionId.ManagedSystemSessionId
 import com.cyclone.ipmi.protocol.packet._
 import com.cyclone.ipmi.protocol.security.AuthenticationType

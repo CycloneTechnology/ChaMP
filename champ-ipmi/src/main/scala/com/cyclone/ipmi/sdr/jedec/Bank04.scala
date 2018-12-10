@@ -1,8 +1,5 @@
 package com.cyclone.ipmi.sdr.jedec
 
-// JEDEC Manufacturer lookup
-// See STANDARD MANUFACTURERS IDENTIFICATION CODE at https://www.jedec.org/
-// This code is based on document JEP106AT published Spe 2016
 object Bank04 extends Manufacturer.Bank {
 
   protected lazy val names: Map[Byte, String] = Map(

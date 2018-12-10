@@ -102,7 +102,6 @@ object RmcpPlusAndRakpStatusCodeErrors {
     val message = "Illegal or unrecognized parameter"
   }
 
-  //noinspection ScalaStyle
   private val codeLookupMap = Map(
     InsufficientResources.code           -> InsufficientResources,
     InvalidSessionId.code                -> InvalidSessionId,

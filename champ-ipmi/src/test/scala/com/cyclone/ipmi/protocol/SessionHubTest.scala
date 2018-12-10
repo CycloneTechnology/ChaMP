@@ -7,7 +7,7 @@ import com.cyclone.akka.{ActorSystemShutdown, TestKitSupport}
 import com.cyclone.ipmi.IpmiDecodeError
 import com.cyclone.ipmi.codec.Coder
 import com.cyclone.ipmi.command.global.DeviceAddress
-import com.cyclone.ipmi.command.{CommandCode, StatusCode}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCode}
 import com.cyclone.ipmi.protocol.Transport.Factory
 import com.cyclone.ipmi.protocol.packet._
 import org.scalatest.{Matchers, WordSpecLike}

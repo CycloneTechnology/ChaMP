@@ -2,8 +2,8 @@ package com.cyclone.ipmi.command.oem.supermicro
 
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 import com.google.common.base.Charsets
 
 /**

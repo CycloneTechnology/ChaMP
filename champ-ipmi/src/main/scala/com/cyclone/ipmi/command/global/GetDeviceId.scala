@@ -3,8 +3,8 @@ package com.cyclone.ipmi.command.global
 import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.oem.IanaEnterpriseNumber
-import com.cyclone.ipmi.command.{CommandCode, StatusCodeTranslator}
-import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand, NetworkFunction}
+import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
+import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
 import com.cyclone.ipmi.sdr.DeviceCapabilities
 
 /**
