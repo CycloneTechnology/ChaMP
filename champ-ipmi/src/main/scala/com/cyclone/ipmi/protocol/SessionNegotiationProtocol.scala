@@ -81,7 +81,7 @@ object SessionNegotiationProtocol {
             f.flatMap {
               case \/-((acc, done)) =>
                 if (!done)
-                  requester.makeRequest(GetChannelCipherSuites.Command(index), version).map {
+                  requester.makeRequest(GetChannelCipherSuites.Command(index), IpmiVersion.V15).map {
                     case \/-(res) =>
                       val (bytes, newDone) = cipherSuiteBytesFor(res)
                       (acc ++ bytes, newDone).right

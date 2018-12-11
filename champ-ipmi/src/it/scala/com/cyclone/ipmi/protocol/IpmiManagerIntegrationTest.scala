@@ -6,7 +6,7 @@ import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.command.chassis.GetChassisStatus
-import com.cyclone.ipmi.command.ipmiMessagingSupport.{GetChannelAuthenticationCapabilities, GetSessionChallenge}
+import com.cyclone.ipmi.command.ipmiMessagingSupport.{GetChannelAuthenticationCapabilities, GetSessionChallenge, SetSessionPrivilegeLevel}
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 
@@ -30,7 +30,7 @@ class IpmiManagerIntegrationTest
 
     val IpmiManager.SessionManagerCreated(sessionMgr) = expectMsgType[IpmiManager.SessionManagerCreated]
 
-    implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(10.seconds))
+    implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(2.seconds))
   }
 
   "an ipmi manager" when {
@@ -57,17 +57,11 @@ class IpmiManagerIntegrationTest
 
       "execute a command" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(credentials, versionRequirement)
-
         expectMsg(SessionManager.SessionNegotiationSuccess)
 
         sessionMgr ! SessionManager.ExecuteCommand(GetChassisStatus.Command)
         inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
           case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChassisStatus.CommandResult]
-        }
-
-        sessionMgr ! SessionManager.ExecuteCommand(GetChannelAuthenticationCapabilities.Command(PrivilegeLevel.User))
-        inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
-          case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChannelAuthenticationCapabilities.CommandResult]
         }
       }
     }
@@ -101,11 +95,6 @@ class IpmiManagerIntegrationTest
         sessionMgr ! SessionManager.ExecuteCommand(GetChassisStatus.Command)
         inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
           case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChassisStatus.CommandResult]
-        }
-
-        sessionMgr ! SessionManager.ExecuteCommand(GetChannelAuthenticationCapabilities.Command(PrivilegeLevel.User))
-        inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
-          case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChannelAuthenticationCapabilities.CommandResult]
         }
       }
     }
