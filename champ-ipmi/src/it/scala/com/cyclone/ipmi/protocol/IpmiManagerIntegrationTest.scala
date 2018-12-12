@@ -6,7 +6,7 @@ import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.command.chassis.GetChassisStatus
-import com.cyclone.ipmi.command.ipmiMessagingSupport.{GetChannelAuthenticationCapabilities, GetSessionChallenge, SetSessionPrivilegeLevel}
+import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSessionChallenge
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 

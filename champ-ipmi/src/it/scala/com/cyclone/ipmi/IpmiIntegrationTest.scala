@@ -2,19 +2,16 @@ package com.cyclone.ipmi
 
 import com.cyclone.akka.ActorSystemShutdown
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
-import com.cyclone.ipmi.api.ActorIpmiClientComponent
-import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSessionChallenge.InvalidUserName
+import com.cyclone.ipmi.client.ActorIpmiClientComponent
 import com.cyclone.ipmi.protocol.TestIpmiManagerComponent
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors.InvalidIntegrityCheckValue
 import com.cyclone.ipmi.tool.command.ChassisStatusTool
-import com.cyclone.util.OperationDeadline
 import com.google.common.net.InetAddresses
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 import scalaz.Scalaz._
 import scalaz.{-\/, \/-}
 
 import scala.concurrent.duration._
-import com.cyclone.command.{OperationDeadline, TimeoutContext}
 
 /**
   * Integration tests for [[Ipmi]]

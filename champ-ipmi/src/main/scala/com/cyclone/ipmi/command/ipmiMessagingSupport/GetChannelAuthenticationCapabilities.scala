@@ -25,8 +25,8 @@ object GetChannelAuthenticationCapabilities {
         val byte4 = is.readByte
         val kgRequired = byte4.bit5
 
-        val perMessageAuthEnabled = byte4.bit4
-        val userLevelAuthEnabled = byte4.bit3
+        val perMessageAuthEnabled = !byte4.bit4
+        val userLevelAuthEnabled = !byte4.bit3
 
         val nonNullUsernamesEnabled = byte4.bit2
         val nullUsernamesEnabled = byte4.bit1

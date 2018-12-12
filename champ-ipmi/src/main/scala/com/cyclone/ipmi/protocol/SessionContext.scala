@@ -78,9 +78,9 @@ case class V15SessionContext(
   managedSystemSessionId: ManagedSystemSessionId,
   optCredentials: Option[IpmiCredentials] = None,
   authenticationType: AuthenticationType = AuthenticationType.NoAuth,
-  sessionEstablished: Boolean = false
+  sessionEstablished: Boolean = false,
+  initialSendSequenceNumber: SessionSequenceNumber
 ) extends SessionContext {
-  val initialSendSequenceNumber = SessionSequenceNumber(1)
 
   val cipherSuite = CipherSuite(
     AuthenticationAlgorithm.NoAuth,
