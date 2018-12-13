@@ -14,6 +14,7 @@ Open Source libraries for Channel Management Protocols
 | champ-wsman   | WS-Management communication | [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12) |
 | champ-icmp    | ICMP communication | No Timescale Yet |
 | champ-ssh     | SSH communication | No Timescale Yet |
+| champ-snmp    | SNMP communication | No Timescale Yet |
 
 # Maven
 
