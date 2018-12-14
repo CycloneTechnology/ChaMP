@@ -46,7 +46,8 @@ class IpmiManagerIntegrationTest
       "fail to create a session when use wrong user name" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(IpmiCredentials("ss", "ADMIN"), versionRequirement)
 
-        expectMsg(SessionManager.SessionNegotiationError(RmcpPlusAndRakpStatusCodeErrors.InvalidIntegrityCheckValue))
+        // This is what the tests IPMI implementation gives for ipmitool...
+        expectMsg(SessionManager.SessionNegotiationError(RmcpPlusAndRakpStatusCodeErrors.IllegalParameter))
       }
 
       "fail to create a session when use wrong password" in new Fixture {
@@ -84,8 +85,8 @@ class IpmiManagerIntegrationTest
       "fail to create a session when use wrong password" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(IpmiCredentials("ADMIN", "wrong"), versionRequirement)
 
-        // This is what IPMI tool responds with...
-        expectMsg(SessionManager.SessionNegotiationError(GenericStatusCodeErrors.NoResponse))
+        // We get nothing back with ipmitool either...
+        expectMsg(SessionManager.SessionNegotiationError(DeadlineReached))
       }
 
       "execute a command" in new Fixture {

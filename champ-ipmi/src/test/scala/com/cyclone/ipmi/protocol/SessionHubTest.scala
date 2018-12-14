@@ -5,7 +5,7 @@ import akka.testkit.{ImplicitSender, TestProbe}
 import akka.util.ByteString
 import com.cyclone.akka.{ActorSystemShutdown, TestKitSupport}
 import com.cyclone.ipmi.IpmiDecodeError
-import com.cyclone.ipmi.codec.Coder
+import com.cyclone.ipmi.codec.{Codable, Coder}
 import com.cyclone.ipmi.command.global.DeviceAddress
 import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCode}
 import com.cyclone.ipmi.protocol.Transport.Factory
@@ -24,6 +24,13 @@ class SessionHubTest
     with Matchers
     with ImplicitSender
     with ActorSystemShutdown {
+
+  object TestCommand {
+    implicit val coder: Coder[TestCommand.type] = new Coder[TestCommand.type] {
+      override def encode(a: TestCommand.type) =
+        ByteString.empty
+    }
+  }
 
   class Fixture {
     val version = IpmiVersion.V20
@@ -60,7 +67,7 @@ class SessionHubTest
         commandCode = cmdCode,
         seqNo = SeqNo(1),
         targetAddress = DeviceAddress.BmcAddress,
-        commandData = ByteString.empty
+        commandData = Codable(TestCommand)
       )
   }
 
@@ -113,7 +120,7 @@ class SessionHubTest
 
     "it receives an outgoing Send message" must {
       "tell the transport" in new Fixture {
-        implicit val coder = implicitly[Coder[StandardCommandWrapper.RequestPayload]]
+        implicit val coder: Coder[StandardCommandWrapper.RequestPayload] = implicitly[Coder[StandardCommandWrapper.RequestPayload]]
         val payload = requestPayload
 
         hub ! SessionHub.SendIpmi(payload, version, sessionContext)

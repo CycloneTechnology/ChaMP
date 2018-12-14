@@ -2,6 +2,7 @@ package com.cyclone.ipmi.protocol.packet
 
 import akka.util.ByteString
 import com.cyclone.ipmi.IpmiCredentials
+import com.cyclone.ipmi.codec.{Codable, Coder}
 import com.cyclone.ipmi.protocol.packet.SessionId.ManagedSystemSessionId
 import com.cyclone.ipmi.protocol.security._
 import com.cyclone.ipmi.protocol.{Oem, SessionContext, V20SessionContext}
@@ -13,6 +14,13 @@ import scalaz.\/-
   */
 class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
 
+  object TestCommand {
+    implicit val coder: Coder[TestCommand.type] = new Coder[TestCommand.type] {
+      override def encode(a: TestCommand.type) =
+        ByteString(1, 2, 3, 4, 5, 6)
+    }
+  }
+
   "a session wrapper codec" must {
     "encode and decode an unencrypted, unauthenticated session wrapper" in {
       val ctx = SessionContext.NoSession
@@ -21,14 +29,14 @@ class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
         sessionSequenceNumber = SessionSequenceNumber(0),
         encryptor = ctx.encryptor,
         requestHashMaker = ctx.requestHashMaker,
-        payload = ByteString(1, 2, 3, 4, 5, 6)
+        payload = Codable(TestCommand)
       )
       val bs = IpmiSessionWrapper.encode(w)
 
       val w2OrError = IpmiSessionWrapper.decode(bs, ctx)
 
       inside(w2OrError) {
-        case \/-(w2) => w2.payload shouldBe w.payload
+        case \/-(w2) => w2.payload shouldBe w.payload.encode
       }
     }
 
@@ -39,7 +47,7 @@ class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
         sessionSequenceNumber = SessionSequenceNumber(0),
         encryptor = ctx.encryptor,
         requestHashMaker = ctx.requestHashMaker,
-        payload = ByteString(1, 2, 3, 4, 5, 6),
+        payload = Codable(TestCommand),
         oem = Some(Oem(1, 2.toByte, 3.toByte)),
         payloadType = PayloadType.Oem
       )
@@ -48,7 +56,7 @@ class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
       val w2OrError = IpmiSessionWrapper.decode(bs, ctx)
 
       inside(w2OrError) {
-        case \/-(w2) => w2.payload shouldBe w.payload
+        case \/-(w2) => w2.payload shouldBe w.payload.encode
       }
     }
 
@@ -73,7 +81,7 @@ class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
         sessionSequenceNumber = SessionSequenceNumber(321),
         encryptor = ctx.encryptor,
         requestHashMaker = ctx.requestHashMaker,
-        payload = ByteString(1, 2, 3, 4, 5, 6),
+        payload = Codable(TestCommand),
         payloadAuthenticated = true,
         payloadEncrypted = true
       )
@@ -83,7 +91,7 @@ class Ipmi20SessionWrapperTest extends WordSpec with Matchers with Inside {
       val w2OrError = IpmiSessionWrapper.decode(bs, ctx)
 
       inside(w2OrError) {
-        case \/-(w2) => w2.payload shouldBe w.payload
+        case \/-(w2) => w2.payload shouldBe w.payload.encode
       }
     }
   }

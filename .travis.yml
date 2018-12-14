@@ -11,7 +11,7 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test local:test coverageReport coverageAggregate
 after_script:
   - ./cc-test-reporter format-coverage -t cobertura target/scala-2.12/coverage-report/cobertura.xml
   - ./cc-test-reporter upload-coverage

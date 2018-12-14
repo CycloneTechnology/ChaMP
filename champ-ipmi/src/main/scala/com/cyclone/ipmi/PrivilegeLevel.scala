@@ -40,13 +40,3 @@ object PrivilegeLevel {
     case Administrator.code => Administrator
   }
 }
-
-/**
-  * Java-friendly access to [[PrivilegeLevel]] objects
-  */
-object PrivilegeLevelJava {
-  val Callback: PrivilegeLevel = PrivilegeLevel.Callback
-  val User: PrivilegeLevel = PrivilegeLevel.User
-  val Operator: PrivilegeLevel = PrivilegeLevel.Operator
-  val Administrator: PrivilegeLevel = PrivilegeLevel.Administrator
-}

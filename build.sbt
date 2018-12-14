@@ -35,7 +35,9 @@ ThisBuild / developers := List(
 ThisBuild / publishMavenStyle := true
 //ThisBuild / useGpg := true
 
-ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / pomIncludeRepository := { _ =>
+  false
+}
 ThisBuild / publishTo := Some(
   if (isSnapshot.value)
     Opts.resolver.sonatypeSnapshots
@@ -95,6 +97,9 @@ lazy val ipmi = project
   .in(file("champ-ipmi"))
   .settings(commonSettings: _*)
   .configs(IntegrationTest extend Test)
+  .configs(LocalTest)
+  .settings(inConfig(LocalTest)(Defaults.testTasks): _*)
+  .settings(testOptions in LocalTest := Seq(Tests.Argument("-l", "com.cyclone.ipmi.RequiresRealIpmi")))
   .settings(Defaults.itSettings: _*)
   .dependsOn(
     core % "compile->compile;test->test;it->test"
@@ -103,14 +108,19 @@ lazy val ipmi = project
 lazy val core = project
   .in(file("champ-core"))
   .settings(commonSettings: _*)
-  .configs(IntegrationTest)
+  .configs(IntegrationTest extend Test)
   .settings(Defaults.itSettings: _*)
 
 lazy val wsman = project
   .in(file("champ-wsman"))
   .settings(commonSettings: _*)
-  .configs(IntegrationTest)
+  .configs(IntegrationTest extend Test)
+  .configs(LocalTest)
+  .settings(inConfig(LocalTest)(Defaults.testTasks): _*)
+  .settings(testOptions in LocalTest := Seq(Tests.Argument("-l", "com.cyclone.wsman.RequiresRealWsman")))
   .settings(Defaults.itSettings: _*)
   .dependsOn(
-    core % "compile->compile;test->test"
+    core % "compile->compile;test->test;it->test"
   )
+
+lazy val LocalTest = config("local") extend IntegrationTest

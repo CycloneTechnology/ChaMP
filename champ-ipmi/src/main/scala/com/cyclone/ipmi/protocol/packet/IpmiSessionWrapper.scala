@@ -68,12 +68,15 @@ trait IpmiSessionWrapper {
 
   def payloadType: PayloadType
 
-  def payload: ByteString
 }
 
-trait IpmiSessionWrapperRequest extends IpmiSessionWrapper
+trait IpmiSessionWrapperRequest extends IpmiSessionWrapper {
+  def payload: Codable
+}
 
-trait IpmiSessionWrapperResponse extends IpmiSessionWrapper
+trait IpmiSessionWrapperResponse extends IpmiSessionWrapper {
+  def payload: ByteString
+}
 
 /**
   * A raw response that has not been checked for authenticity & integrity

@@ -7,10 +7,8 @@ import com.cyclone.util.net.JavaNamingDnsLookupComponent
 import com.cyclone.wsman.WSMan.httpUrlFor
 import com.cyclone.wsman.command.{EnumerateBySelector, EnumerateByWQL, Get, Identify}
 import com.cyclone.wsman.impl.subscription.push.GuavaKerberosTokenCacheComponent
-import org.junit.Test
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.junit.JUnitSuiteLike
-import org.scalatest.{Inside, Matchers}
+import org.scalatest.{Inside, Matchers, WordSpecLike}
 import scalaz.\/-
 
 import scala.concurrent.duration._
@@ -20,8 +18,8 @@ import scala.language.postfixOps
   * Tests for connecting to an openwsman server configured to talk to a CIM provider (e.g. for a storage device).
   */
 class WSManTestCIMTest
-  extends TestKitSupport
-    with JUnitSuiteLike
+    extends TestKitSupport
+    with WordSpecLike
     with Matchers
     with ScalaFutures
     with Inside
@@ -42,78 +40,79 @@ class WSManTestCIMTest
   implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.reusableTimeout(10.seconds))
   val target = WSManTarget(httpUrl, securityContext)
 
-  @Test
-  def identify(): Unit = {
-    inside(wsman.executeCommandOrError(target, Identify).futureValue) {
-      case \/-(result) => result.productVendor shouldBe Some("Openwsman Project")
+  "wsman" must {
+    "do identify" taggedAs RequiresRealWsman in {
+      inside(wsman.executeCommandOrError(target, Identify).futureValue) {
+        case \/-(result) => result.productVendor shouldBe Some("Openwsman Project")
+      }
     }
-  }
+    "do enumeration" taggedAs RequiresRealWsman in {
+      val query = EnumerateBySelector(
+        ResourceUri("http://lsissi.test/LSISSI_DriveFirmwareIdentity"),
+        cimNamespace = Some("root/LsiArray13")
+      )
 
-  @Test
-  def accessRootCimv2Class(): Unit = {
-    val query = EnumerateBySelector(ResourceUri("http://cim.test/CIM_ComputerSystem"))
-
-    inside(wsman.executeCommandOrError(target, query).futureValue) {
-      case \/-(result) =>
-        result.instances.head.stringProperty("Description").get shouldBe "WBEM-enabled computer system"
+      wsman.executeCommandOrError(target, query).futureValue
     }
-  }
 
-  // Seem to get more info??
-  @Test
-  def accessRootCimv2ClassFromProviderNamespace(): Unit = {
-    val query = EnumerateBySelector(
-      ResourceUri("http://cim.test/CIM_ComputerSystem"),
-      cimNamespace = Some("root/LsiArray13"))
+    "do enumeration with selector filter" taggedAs RequiresRealWsman in {
+      val query = EnumerateBySelector(
+        ResourceUri("http://lsissi.test/LSISSI_DriveFirmwareIdentity"),
+        selectorClause = SelectorClause(
+          Set(Selector("InstanceID", "600A0B800018491D0000000051524A62_220C000A3303E0FE_Drive_Firmware_Identity"))
+        ),
+        cimNamespace = Some("root/LsiArray13")
+      )
 
-    inside(wsman.executeCommandOrError(target, query).futureValue) {
-      case \/-(result) =>
-        result.instances.head.stringProperty("Caption").get should include("Dixie")
+      inside(wsman.executeCommandOrError(target, query).futureValue) {
+        case \/-(result) => result.instances should have size 1
+      }
     }
-  }
 
-  @Test
-  def accessProviderClass_enumeration(): Unit = {
-    val query = EnumerateBySelector(
-      ResourceUri("http://lsissi.test/LSISSI_DriveFirmwareIdentity"),
-      cimNamespace = Some("root/LsiArray13"))
-
-    wsman.executeCommandOrError(target, query).futureValue
-  }
-
-  @Test
-  def accessProviderClass_enumeration_withSelectorFilter(): Unit = {
-    val query = EnumerateBySelector(
-      ResourceUri("http://lsissi.test/LSISSI_DriveFirmwareIdentity"),
-      selectorClause = SelectorClause(Set(Selector("InstanceID", "600A0B800018491D0000000051524A62_220C000A3303E0FE_Drive_Firmware_Identity"))),
-      cimNamespace = Some("root/LsiArray13"))
-
-    inside(wsman.executeCommandOrError(target, query).futureValue) {
-      case \/-(result) => result.instances should have size 1
-    }
-  }
-
-  @Test
-  def accessProviderClass_wqlEnumeration(): Unit = {
-    val query = EnumerateByWQL(
-      "select * from LSISSI_DriveFirmwareIdentity " +
+    "do enumeration with wql" taggedAs RequiresRealWsman in {
+      val query = EnumerateByWQL(
+        "select * from LSISSI_DriveFirmwareIdentity " +
         "where InstanceID=\"600A0B800018491D0000000051524A62_220C000A3303E0FE_Drive_Firmware_Identity\"",
-      baseResourceUri = ResourceUri("http://schemas.dmtf.org/wbem/wscim/1"),
-      cimNamespace = Some("root/LsiArray13")
-    )
+        baseResourceUri = ResourceUri("http://schemas.dmtf.org/wbem/wscim/1"),
+        cimNamespace = Some("root/LsiArray13")
+      )
 
-    inside(wsman.executeCommandOrError(target, query).futureValue) {
-      case \/-(result) => result.instances should have size 1
+      inside(wsman.executeCommandOrError(target, query).futureValue) {
+        case \/-(result) => result.instances should have size 1
+      }
     }
-  }
 
-  @Test
-  def accessProviderClass_get(): Unit = {
-    val query = Get(
-      ResourceUri("http://lsissi.test/LSISSI_DriveFirmwareIdentity"),
-      selectorClause = SelectorClause(Set(Selector("InstanceID", "600A0B800018491D0000000051524A62_220C000A3303E0FE_Drive_Firmware_Identity"))),
-      cimNamespace = Some("root/LsiArray13"))
+    "do get" taggedAs RequiresRealWsman in {
+      val query = Get(
+        ResourceUri("http://lsissi.test/LSISSI_DriveFirmwareIdentity"),
+        selectorClause = SelectorClause(
+          Set(Selector("InstanceID", "600A0B800018491D0000000051524A62_220C000A3303E0FE_Drive_Firmware_Identity"))
+        ),
+        cimNamespace = Some("root/LsiArray13")
+      )
 
-    wsman.executeCommandOrError(target, query).futureValue
+      wsman.executeCommandOrError(target, query).futureValue
+    }
+
+    "allow root/cimv2 class" taggedAs RequiresRealWsman in {
+      val query = EnumerateBySelector(ResourceUri("http://cim.test/CIM_ComputerSystem"))
+
+      inside(wsman.executeCommandOrError(target, query).futureValue) {
+        case \/-(result) =>
+          result.instances.head.stringProperty("Description").get shouldBe "WBEM-enabled computer system"
+      }
+    }
+
+    // Seem to get more info??
+    "allow root/cimv2 from provider namespace" taggedAs RequiresRealWsman in {
+      val query =
+        EnumerateBySelector(ResourceUri("http://cim.test/CIM_ComputerSystem"), cimNamespace = Some("root/LsiArray13"))
+
+      inside(wsman.executeCommandOrError(target, query).futureValue) {
+        case \/-(result) =>
+          result.instances.head.stringProperty("Caption").get should include("Dixie")
+      }
+    }
+
   }
 }

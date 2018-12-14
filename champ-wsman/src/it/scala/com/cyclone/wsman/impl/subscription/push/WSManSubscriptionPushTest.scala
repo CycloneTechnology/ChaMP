@@ -4,6 +4,7 @@ import akka.stream.KillSwitches
 import akka.stream.scaladsl.{Keep, Sink}
 import com.cyclone.util.kerberos.TestKerberosDeployment
 import com.cyclone.util.net.HttpUrl
+import com.cyclone.wsman.RequiresRealWsman
 import com.cyclone.wsman.impl.subscription.{WSManSubscriptionExpiryException, WSManSubscriptionTest}
 import com.cyclone.wsman.subscription.DeliveryExpiryParams
 
@@ -11,7 +12,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class WSManSubscriptionPushTest
-  extends WSManSubscriptionTest
+    extends WSManSubscriptionTest
     with TestKerberosDeployment
     with AkkaHttpTestWebServerComponent
     with EventService
@@ -24,14 +25,12 @@ class WSManSubscriptionPushTest
 
   lazy val deliveryHandler: PushDeliveryHandler =
     PushDeliveryHandler(
-      HttpUrl.fromParts(
-        hostAndPort = testWebServer.hostAndPort,
-        resource = "/wsman/event_receiver/receive"),
+      HttpUrl.fromParts(hostAndPort = testWebServer.hostAndPort, resource = "/wsman/event_receiver/receive"),
       DeliveryExpiryParams.Expiring(10.seconds, 2)
     )
 
   "push subscription handling" must {
-    "error if no heartbeat within expiry" in {
+    "error if no heartbeat within expiry" taggedAs RequiresRealWsman in {
       lazy val expiringHandler =
         deliveryHandler.copy(
           expiryParams = new DeliveryExpiryParams {
@@ -45,12 +44,11 @@ class WSManSubscriptionPushTest
 
       subscribed.futureValue
 
-      try
-        completion.failed.futureValue shouldBe WSManSubscriptionExpiryException
+      try completion.failed.futureValue shouldBe WSManSubscriptionExpiryException
       finally kill.shutdown()
     }
 
-    "not expire subscription when no events" in {
+    "not expire subscription when no events" taggedAs RequiresRealWsman in {
       lazy val expiringHandler =
         deliveryHandler.copy(
           expiryParams = new DeliveryExpiryParams {
@@ -68,14 +66,14 @@ class WSManSubscriptionPushTest
         Thread.sleep(5000)
 
         completion.isCompleted shouldBe false
-      }
-      finally kill.shutdown()
+      } finally kill.shutdown()
     }
 
     // Test for NP-2377
-    "remove token from cache on unsubscribe" in {
+    "remove token from cache on unsubscribe" taggedAs RequiresRealWsman in {
       val (subscribed, source) = doSubscribe(fileCreationSubsDefn)
-      val ((localSubscriptionId, kill), completion) = source.viaMat(KillSwitches.single)(Keep.both).toMat(Sink.ignore)(Keep.both).run
+      val ((localSubscriptionId, kill), completion) =
+        source.viaMat(KillSwitches.single)(Keep.both).toMat(Sink.ignore)(Keep.both).run
 
       subscribed.futureValue
 

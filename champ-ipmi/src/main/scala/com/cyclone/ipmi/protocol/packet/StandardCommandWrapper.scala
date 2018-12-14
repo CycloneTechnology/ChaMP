@@ -23,7 +23,7 @@ object StandardCommandWrapper {
 
         b ++= commandCode.toBin
 
-        b ++= commandData
+        b ++= commandData.encode
         b += checksum(b.result().drop(3))
 
         b.result()
@@ -40,7 +40,7 @@ object StandardCommandWrapper {
         command.commandCode,
         seqNo,
         targetAddress,
-        implicitly[Coder[Cmd]].encode(command)
+        Codable(command)
       )
     }
   }
@@ -50,7 +50,7 @@ object StandardCommandWrapper {
     commandCode: CommandCode,
     seqNo: SeqNo,
     targetAddress: DeviceAddress,
-    commandData: ByteString
+    commandData: Codable
   ) extends IpmiRequestPayload {
     val requesterLun: Byte = 0.toByte
     val responderLun: Byte = 0.toByte

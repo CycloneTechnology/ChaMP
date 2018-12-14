@@ -58,7 +58,7 @@ class WSManTest
       TimeoutContext(deadline = OperationDeadline.reusableTimeout(10.seconds))
 
     "test connectability" must {
-      "indicate possible when scheme wrong" in {
+      "indicate possible when scheme wrong" taggedAs RequiresRealWsman in {
         inside(
           wsman
             .testConnection(
@@ -76,7 +76,7 @@ class WSManTest
         }
       }
 
-      "indicate not possible when device not listening on port" in {
+      "indicate not possible when device not listening on port" taggedAs RequiresRealWsman in {
         wsman
           .testConnection(
             WSManTarget(
@@ -87,7 +87,7 @@ class WSManTest
           .futureValue shouldBe WSManAvailabilityTestError(WSManAvailability.NotListening).left
       }
 
-      "indicate not possible if device listening but wrong path" in {
+      "indicate not possible if device listening but wrong path" taggedAs RequiresRealWsman in {
         wsman
           .testConnection(
             WSManTarget(WSMan.httpUrlFor(HostAndPort.fromString("dev:8090"), ssl), securityContext)
@@ -95,12 +95,12 @@ class WSManTest
           .futureValue shouldBe WSManAvailabilityTestError(WSManAvailability.PathNotFound).left
       }
 
-      "indicate possible when can connect" in {
+      "indicate possible when can connect" taggedAs RequiresRealWsman in {
         wsman.testConnection(target).futureValue shouldBe ().right
       }
     }
 
-    "indicate error when not connectable" in {
+    "indicate error when not connectable" taggedAs RequiresRealWsman in {
       inside(
         wsman
           .executeCommandOrError(
@@ -116,7 +116,7 @@ class WSManTest
       }
     }
 
-    "ok when using domain credentials" in {
+    "ok when using domain credentials" taggedAs RequiresRealWsman in {
       val query = EnumerateBySelector.fromClassName("Win32_OperatingSystem")
 
       inside(
@@ -137,7 +137,7 @@ class WSManTest
       }
     }
 
-    "works with resolvable IP addresses" in {
+    "works with resolvable IP addresses" taggedAs RequiresRealWsman in {
       val query = EnumerateBySelector.fromClassName("Win32_OperatingSystem")
 
       inside(
@@ -158,7 +158,7 @@ class WSManTest
       }
     }
 
-    "extract dates as strings" in {
+    "extract dates as strings" taggedAs RequiresRealWsman in {
       val query = EnumerateBySelector.fromClassName(
         "Win32_OperatingSystem",
         propertyRestriction = PropertyRestriction.restrictedTo("LastBootUpTime")
@@ -177,7 +177,7 @@ class WSManTest
       * Get 401 response when run against localhost and have set up service principle for that host.
       * This caused a hang. Check that it is fixed...
       */
-    "does not hang when run against localhost" in {
+    "does not hang when run against localhost" taggedAs RequiresRealWsman in {
       val query = EnumerateBySelector.fromClassName("Win32_Service")
 
       inside(
@@ -198,7 +198,7 @@ class WSManTest
     /**
       * NP-2352
       */
-    "returns error when connection refused" in {
+    "returns error when connection refused" taggedAs RequiresRealWsman in {
       val query = EnumerateBySelector.fromClassName("Win32_Service")
 
       inside(
@@ -220,7 +220,7 @@ class WSManTest
     }
 
     "using identify" must {
-      "work" in {
+      "work" taggedAs RequiresRealWsman in {
         inside(wsman.executeCommandOrError(target, Identify).futureValue) {
           case \/-(result) =>
             result.productVendor shouldBe Some("Microsoft Corporation")
@@ -232,7 +232,7 @@ class WSManTest
         }
       }
 
-      "return authentication exception when incorrect security context type" in {
+      "return authentication exception when incorrect security context type" taggedAs RequiresRealWsman in {
         inside(
           wsman
             .executeCommandOrError(
@@ -250,7 +250,7 @@ class WSManTest
     }
 
     "enumerating" must {
-      "work with no selector" in {
+      "work with no selector" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName("Win32_Service")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -261,7 +261,7 @@ class WSManTest
         }
       }
 
-      "work with no selector with specified property restriction" in {
+      "work with no selector with specified property restriction" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("Name", "PathName")
@@ -275,7 +275,7 @@ class WSManTest
         }
       }
 
-      "ignore unknown properties in restrictions" in {
+      "ignore unknown properties in restrictions" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("Win32_Service", "Name", "NO_SUCH_PROPERTY")
@@ -289,7 +289,7 @@ class WSManTest
         }
       }
 
-      "work for single result" in {
+      "work for single result" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           selectorClause = SelectorClause(Set(Selector("Name", "WinRM")))
@@ -302,7 +302,7 @@ class WSManTest
         }
       }
 
-      "return multiple results" in {
+      "return multiple results" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("Name", "PathName"),
@@ -317,7 +317,7 @@ class WSManTest
         }
       }
 
-      "return empty when no matching instance" in {
+      "return empty when no matching instance" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           selectorClause = SelectorClause(Set(Selector("Name", "NOSUCHSERVICE")))
@@ -329,7 +329,7 @@ class WSManTest
         }
       }
 
-      "select case insensitively" in {
+      "select case insensitively" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           selectorClause = SelectorClause(Set(Selector("name", "winrm")))
@@ -343,7 +343,7 @@ class WSManTest
         }
       }
 
-      "restrict properties case insensitively" in {
+      "restrict properties case insensitively" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("name", "pathname"),
@@ -359,7 +359,7 @@ class WSManTest
         }
       }
 
-      "work with selector and property restriction" in {
+      "work with selector and property restriction" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("Name", "PathName"),
@@ -375,7 +375,7 @@ class WSManTest
         }
       }
 
-      "not resolve by default" in {
+      "not resolve by default" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName("Win32_DiskDriveToDiskPartition")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -389,7 +389,7 @@ class WSManTest
         }
       }
 
-      "resolve if required" in {
+      "resolve if required" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_DiskDriveToDiskPartition",
           propertyRestriction = PropertyRestriction.restrictedTo("Antecedent", "Dependent"),
@@ -408,7 +408,7 @@ class WSManTest
         }
       }
 
-      "return error when selector properties don't exist" in {
+      "return error when selector properties don't exist" taggedAs RequiresRealWsman in {
         val query = EnumerateBySelector.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("Name", "PathName"),
@@ -422,7 +422,7 @@ class WSManTest
     }
 
     "enumerating by wql" must {
-      "work" in {
+      "work" taggedAs RequiresRealWsman in {
         val query = EnumerateByWQL("SELECT Name, PathName FROM Win32_Service where Name=\"WinRM\"")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -432,7 +432,7 @@ class WSManTest
         }
       }
 
-      "resolve references if reqd" in {
+      "resolve references if reqd" taggedAs RequiresRealWsman in {
         val query =
           EnumerateByWQL("SELECT * FROM Win32_DiskDriveToDiskPartition", resolveReferences = true)
 
@@ -446,7 +446,7 @@ class WSManTest
     }
 
     "getting singleton" must {
-      "work with selector" in {
+      "work with selector" taggedAs RequiresRealWsman in {
         val query = Get.fromClassName(
           "Win32_Service",
           selectorClause = SelectorClause(Set(Selector("Name", "WinRM")))
@@ -459,7 +459,7 @@ class WSManTest
         }
       }
 
-      "select case insensitively" in {
+      "select case insensitively" taggedAs RequiresRealWsman in {
         val query = Get.fromClassName(
           "Win32_Service",
           selectorClause = SelectorClause(Set(Selector("name", "winrm")))
@@ -472,7 +472,7 @@ class WSManTest
         }
       }
 
-      "work with no selector" in {
+      "work with no selector" taggedAs RequiresRealWsman in {
         val query = Get.fromClassName("Win32_OperatingSystem")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -483,7 +483,7 @@ class WSManTest
         }
       }
 
-      "return error when invalid url" in {
+      "return error when invalid url" taggedAs RequiresRealWsman in {
         val query = Get(ResourceUri("http://unknown/SOME_UNKNOWN_CLASS"))
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -491,7 +491,7 @@ class WSManTest
         }
       }
 
-      "return error when invalid query class" in {
+      "return error when invalid query class" taggedAs RequiresRealWsman in {
         val query = Get.fromClassName("SOME_UNKNOWN_CLASS")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -499,7 +499,7 @@ class WSManTest
         }
       }
 
-      "return error when no matching instance" in {
+      "return error when no matching instance" taggedAs RequiresRealWsman in {
         val query = Get.fromClassName(
           "Win32_Service",
           selectorClause = SelectorClause(Set(Selector("Name", "NOSUCHSERVICE")))
@@ -512,7 +512,7 @@ class WSManTest
         }
       }
 
-      "return error when selector properties don't exist" in {
+      "return error when selector properties don't exist" taggedAs RequiresRealWsman in {
         val query = Get.fromClassName(
           "Win32_Service",
           propertyRestriction = PropertyRestriction.restrictedTo("Name", "PathName"),
@@ -525,7 +525,7 @@ class WSManTest
       }
     }
 
-    "run remote command" in {
+    "run remote command" taggedAs RequiresRealWsman in {
       val query = WSManRunShellCommand("dir", directory)
       inside(wsman.executeCommandOrError(target, query).futureValue) {
         case \/-(result) =>
@@ -535,7 +535,7 @@ class WSManTest
     }
 
     "run remote command" must {
-      "work" in {
+      "work" taggedAs RequiresRealWsman in {
         val file = createTempFile
 
         val query = WSManRunShellCommand("powershell", "-Command", "dir " + directory)
@@ -546,7 +546,7 @@ class WSManTest
         }
       }
 
-      "detect error code" in {
+      "detect error code" taggedAs RequiresRealWsman in {
         val query = WSManRunShellCommand("blobble", "blibble")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -557,7 +557,7 @@ class WSManTest
         }
       }
 
-      "return multiple response parts" in {
+      "return multiple response parts" taggedAs RequiresRealWsman in {
         val query = WSManRunShellCommand("dir", "c:\\windows\\system32")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -566,7 +566,7 @@ class WSManTest
         }
       }
 
-      "allow encoded powershell commands" in {
+      "allow encoded powershell commands" taggedAs RequiresRealWsman in {
         val file = createTempFile
 
         val query = WSManRunShellCommand(
@@ -581,7 +581,7 @@ class WSManTest
         }
       }
 
-      "return error for empty command" in {
+      "return error for empty command" taggedAs RequiresRealWsman in {
         val query = WSManRunShellCommand("", "abcde")
 
         inside(wsman.executeCommandOrError(target, query).futureValue) {
@@ -589,7 +589,7 @@ class WSManTest
         }
       }
 
-      "allow running from external script resource" in {
+      "allow running from external script resource" taggedAs RequiresRealWsman in {
         val is = getClass.getResourceAsStream("./installedsoftware.txt")
         val r = new InputStreamReader(is, Charsets.UTF_8)
         val sb: Appendable = new java.lang.StringBuilder()
@@ -612,7 +612,7 @@ class WSManTest
   }
 
   "WSMan" must {
-    "timeout if command runs too long" in {
+    "timeout if command runs too long" taggedAs RequiresRealWsman in {
       implicit val timeoutContext: TimeoutContext =
         TimeoutContext(OperationDeadline.fromNow(4.seconds))
 
@@ -623,7 +623,7 @@ class WSManTest
       }
     }
 
-    "not timeout if completes in time" in {
+    "not timeout if completes in time" taggedAs RequiresRealWsman in {
       implicit val timeoutContext: TimeoutContext =
         TimeoutContext(OperationDeadline.fromNow(7.seconds))
 

@@ -23,12 +23,3 @@ object IpmiVersionRequirement {
   def parse(name: String): Option[IpmiVersionRequirement] =
     nameMap.get(name.toUpperCase)
 }
-
-/**
-  * Java-friendly access to [[IpmiVersionRequirement]] objects
-  */
-object IpmiVersionRequirementJava {
-  val V15Only: IpmiVersionRequirement = IpmiVersionRequirement.V15Only
-  val V20Only: IpmiVersionRequirement = IpmiVersionRequirement.V20Only
-  val V20IfSupported: IpmiVersionRequirement = IpmiVersionRequirement.V20IfSupported
-}
