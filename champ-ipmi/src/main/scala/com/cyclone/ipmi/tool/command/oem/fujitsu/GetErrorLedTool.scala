@@ -2,7 +2,7 @@ package com.cyclone.ipmi.tool.command.oem.fujitsu
 
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError
-import com.cyclone.ipmi.api.IpmiConnection
+import com.cyclone.ipmi.client.IpmiConnection
 import com.cyclone.ipmi.command.oem.fujitsu.s2s3.GetErrorLed
 import com.cyclone.ipmi.command.oem.fujitsu.s2s3.GetErrorLed.ErrorLedState
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}

@@ -1,10 +1,9 @@
 package com.cyclone.ipmi.tool.command
 
 import com.cyclone.akka.{ActorSystemComponent, ActorSystemShutdown}
-import com.cyclone.ipmi._
-import com.cyclone.ipmi.api.ActorIpmiClientComponent
+import com.cyclone.ipmi.{DefaultIpmiComponent, _}
+import com.cyclone.ipmi.client.ActorIpmiClientComponent
 import com.cyclone.ipmi.protocol.TestIpmiManagerComponent
-import com.cyclone.ipmi.tool.api.DefaultIpmiToolComponent
 import com.cyclone.ipmi.tool.command.IpmiCommands._
 import org.scalatest.{Matchers, Suite}
 import scalaz.{-\/, \/-}
@@ -16,7 +15,7 @@ abstract class BaseToolCommandTest
   extends BaseIntegrationTest {
   self: Matchers with Suite with ActorSystemShutdown =>
 
-  class Fixture extends DefaultIpmiToolComponent
+  class Fixture extends DefaultIpmiComponent
     with ActorIpmiClientComponent
     with TestIpmiManagerComponent
     with ActorSystemComponent {
@@ -24,7 +23,7 @@ abstract class BaseToolCommandTest
     def actorSystem = system
 
     def executeCommand[C <: IpmiToolCommand, R <: IpmiToolCommandResult](command: C)(implicit executor: CommandExecutor[C, R]): R = {
-      val resultOrError = ipmiTool.executeCommandOrError(target, command).futureValue
+      val resultOrError = ipmi.executeToolCommandOrError(target, command).futureValue
 
       resultOrError match {
         case \/-(result) => result.asInstanceOf[R]

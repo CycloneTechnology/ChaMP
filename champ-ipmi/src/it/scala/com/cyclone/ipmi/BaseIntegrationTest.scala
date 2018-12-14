@@ -1,8 +1,7 @@
 package com.cyclone.ipmi
 
 import com.cyclone.akka.{ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.TimeoutContext
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.google.common.net.InetAddresses
 import com.typesafe.config.ConfigFactory
 import org.scalatest.Suite

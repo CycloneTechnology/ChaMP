@@ -10,18 +10,19 @@ Open Source libraries for Channel Management Protocols
 | Project       | Description | Release |
 | ------------- | ----------- | ------ |
 | champ-core    | Core utilities and common code for use by all ChaMP libraries | [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-core_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-core_2.12) |
-| champ-ipmi    | IPMI communications | [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-ipmi_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-ipmi_2.12) |
-| champ-wsman   | WS-Management communication | [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12) |
+| [champ-ipmi](champ-ipmi/README.md)    | IPMI communications | [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-ipmi_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-ipmi_2.12) |
+| [champ-wsman](champ-wsman/README.md)   | WS-Management communication | [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12) |
+| champ-snmp    | SNMP communication | No Timescale Yet |
 | champ-icmp    | ICMP communication | No Timescale Yet |
 | champ-ssh     | SSH communication | No Timescale Yet |
 | champ-snmp    | SNMP communication | No Timescale Yet |
 
-# Maven
+These libraries provide consistent, uncomplicated APIs for some of the most popular network management protocols.
 
-Published artifacts are available from Maven Central. The following dependency can be used to obtain them:
+Most API methods are command based and used in Cyclone Technology's [netPrefect](http://netPrefect.com) commercial 
+network management offerings.
 
-    <dependency>
-      <groupId>com.cyclone-technology</groupId>
-      <artifactId>{project}_2.12</artifactId>
-      <version>{release_version}</version>
-    </dependency>
+In order to minimise thread and memory usage when managing a large number of devices, 
+IO is non-blocking and API methods return results as Scala Futures or as reactive streams (Akka Streams Sources).
+
+Documentation with example usage is maintained individually for each protocol.

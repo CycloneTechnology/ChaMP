@@ -3,11 +3,11 @@ package com.cyclone.util.net
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.event.LoggingReceive
 import akka.io.IO
-import akka.pattern.{ask, pipe, AskTimeoutException}
+import akka.pattern.{AskTimeoutException, ask, pipe}
 import akka.util.Timeout
 import com.cyclone.akka.FirstResponseSender.Requests
 import com.cyclone.akka.{ActorSystemComponent, FirstResponseSender}
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.OperationDeadline
 import com.cyclone.util.net.DnsLookupActor._
 import com.github.mkroli.dns4s.akka.Dns
 import com.google.common.net.InetAddresses

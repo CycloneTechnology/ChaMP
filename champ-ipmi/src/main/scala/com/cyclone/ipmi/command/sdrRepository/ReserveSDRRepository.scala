@@ -4,7 +4,7 @@ import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
 import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
-import com.cyclone.ipmi.sdr.SdrReservationId
+import com.cyclone.ipmi.protocol.sdr.SdrReservationId
 
 /**
   * Reserve SDR Repository command and response

@@ -2,13 +2,13 @@ package com.cyclone.ipmi.tool.command
 
 import akka.util.ByteString
 import com.cyclone.command.TimeoutContext
-import com.cyclone.ipmi.api.IpmiConnection
+import com.cyclone.ipmi.client.IpmiConnection
 import com.cyclone.ipmi.codec.RichByteString
 import com.cyclone.ipmi.command.GenericStatusCodeErrors
 import com.cyclone.ipmi.command.fruInventory.{GetFruInventoryAreaInfo, ReadFruData}
 import com.cyclone.ipmi.command.global.{DeviceId, GetDeviceId}
-import com.cyclone.ipmi.fru.{Fru, FruDescriptor}
-import com.cyclone.ipmi.sdr._
+import com.cyclone.ipmi.protocol.fru.{Fru, FruDescriptor}
+import com.cyclone.ipmi.protocol.sdr._
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}
 import com.cyclone.ipmi.{DeadlineReached, IpmiError, IpmiOperationContext}
 import com.cyclone.util.concurrent.Futures

@@ -1,7 +1,7 @@
 package com.cyclone.ipmi.tool.command
 
 import com.cyclone.command.TimeoutContext
-import com.cyclone.ipmi.sdr._
+import com.cyclone.ipmi.protocol.sdr._
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}
 import com.cyclone.ipmi.IpmiError
 import com.typesafe.scalalogging.LazyLogging

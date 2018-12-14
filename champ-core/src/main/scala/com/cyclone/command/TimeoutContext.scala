@@ -1,7 +1,5 @@
 package com.cyclone.command
 
-import com.cyclone.util.OperationDeadline
-
 import scala.concurrent.duration._
 
 /**

@@ -2,7 +2,7 @@ package com.cyclone.wsman.impl.subscription.pull
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.OperationDeadline
 import com.cyclone.wsman.WSManOperationContext
 import com.cyclone.wsman.impl._
 import com.cyclone.wsman.impl.model.ManagedReference

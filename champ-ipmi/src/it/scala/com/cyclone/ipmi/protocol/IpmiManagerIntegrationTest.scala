@@ -2,13 +2,12 @@ package com.cyclone.ipmi.protocol
 
 import akka.testkit.ImplicitSender
 import com.cyclone.akka.ActorSystemShutdown
-import com.cyclone.command.TimeoutContext
+import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.command.chassis.GetChassisStatus
 import com.cyclone.ipmi.command.ipmiMessagingSupport.{GetChannelAuthenticationCapabilities, GetSessionChallenge}
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
-import com.cyclone.util.OperationDeadline
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._

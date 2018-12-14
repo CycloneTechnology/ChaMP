@@ -1,8 +1,7 @@
 package com.cyclone.wsman
 
 import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.{Selector, SelectorClause, TimeoutContext}
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, Selector, SelectorClause, TimeoutContext}
 import com.cyclone.util.kerberos.TestKerberosDeployment
 import com.cyclone.util.net.JavaNamingDnsLookupComponent
 import com.cyclone.wsman.WSMan.httpUrlFor

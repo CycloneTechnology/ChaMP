@@ -2,7 +2,7 @@ package com.cyclone.ipmi.tool.command.oem.sunoracle
 
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError
-import com.cyclone.ipmi.api.IpmiConnection
+import com.cyclone.ipmi.client.IpmiConnection
 import com.cyclone.ipmi.command.oem.sunoracle.GetRtmStatus
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}
 import com.cyclone.ipmi.tool.command.{IpmiCommands, IpmiToolCommand, IpmiToolCommandResult}

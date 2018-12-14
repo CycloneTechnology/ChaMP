@@ -5,7 +5,7 @@ import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.oem.IanaEnterpriseNumber
 import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
 import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
-import com.cyclone.ipmi.sdr.DeviceCapabilities
+import com.cyclone.ipmi.protocol.sdr.DeviceCapabilities
 
 /**
   * Get Device ID command and response

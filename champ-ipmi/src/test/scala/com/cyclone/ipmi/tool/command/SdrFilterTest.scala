@@ -1,6 +1,6 @@
 package com.cyclone.ipmi.tool.command
 
-import com.cyclone.ipmi.sdr._
+import com.cyclone.ipmi.protocol.sdr._
 import com.cyclone.ipmi.tool.command.SdrFilter.{BySensorIds, BySensorNumbers}
 import org.scalatest.{Matchers, WordSpec}
 

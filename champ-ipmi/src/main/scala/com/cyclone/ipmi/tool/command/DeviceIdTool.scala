@@ -5,7 +5,7 @@ import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.command.global.GetDeviceId.DeviceAvailable
 import com.cyclone.ipmi.command.global._
 import com.cyclone.ipmi.command.oem.IanaEnterpriseNumber
-import com.cyclone.ipmi.sdr.DeviceCapabilities
+import com.cyclone.ipmi.protocol.sdr.DeviceCapabilities
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}
 import com.cyclone.ipmi.IpmiError
 import scalaz.EitherT._

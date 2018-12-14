@@ -1,7 +1,7 @@
 package com.cyclone.wsman.subscription
 
 import akka.stream.scaladsl.{Sink, Source}
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.OperationDeadline
 import com.cyclone.wsman.command._
 import com.cyclone.wsman.impl.model.ManagedReference
 import com.cyclone.wsman.impl.subscription.SubscriptionItem

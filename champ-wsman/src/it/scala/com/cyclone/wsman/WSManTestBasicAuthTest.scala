@@ -1,10 +1,10 @@
 package com.cyclone.wsman
 
 import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemShutdown, TestKitSupport}
-import com.cyclone.command.TimeoutContext
+import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.util.kerberos.TestKerberosDeployment
 import com.cyclone.util.net.{AuthenticationMethod, HostAndPort, JavaNamingDnsLookupComponent, PasswordSecurityContext}
-import com.cyclone.util.{OperationDeadline, PasswordCredentials}
+import com.cyclone.util.PasswordCredentials
 import com.cyclone.wsman.WSMan.httpUrlFor
 import com.cyclone.wsman.command.{EnumerateBySelector, Identify}
 import com.cyclone.wsman.impl.subscription.push.GuavaKerberosTokenCacheComponent

@@ -1,7 +1,7 @@
 package com.cyclone.ipmi.tool.command
 
 import com.cyclone.akka.ActorSystemShutdown
-import com.cyclone.ipmi.sdr._
+import com.cyclone.ipmi.protocol.sdr._
 import com.cyclone.ipmi.tool.command.SensorTool.SensorReading
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 

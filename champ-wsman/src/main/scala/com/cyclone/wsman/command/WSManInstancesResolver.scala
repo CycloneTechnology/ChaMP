@@ -1,7 +1,6 @@
 package com.cyclone.wsman.command
 
-import com.cyclone.command.PropertyRestriction
-import com.cyclone.util.OperationDeadline
+import com.cyclone.command.{OperationDeadline, PropertyRestriction}
 import com.cyclone.wsman.WSManError.WSManErrorOr
 import com.cyclone.wsman.WSManOperationContext
 import com.cyclone.wsman.impl.model.{ManagedInstance, ManagedReference}
