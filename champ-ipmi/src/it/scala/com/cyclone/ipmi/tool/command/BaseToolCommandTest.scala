@@ -2,7 +2,7 @@ package com.cyclone.ipmi.tool.command
 
 import com.cyclone.akka.{ActorSystemComponent, ActorSystemShutdown}
 import com.cyclone.ipmi.{DefaultIpmiComponent, _}
-import com.cyclone.ipmi.api.ActorIpmiClientComponent
+import com.cyclone.ipmi.client.ActorIpmiClientComponent
 import com.cyclone.ipmi.protocol.TestIpmiManagerComponent
 import com.cyclone.ipmi.tool.command.IpmiCommands._
 import org.scalatest.{Matchers, Suite}

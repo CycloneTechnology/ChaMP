@@ -3,7 +3,7 @@ package com.cyclone.ipmi.tool.command
 import akka.util.ByteString
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError._
-import com.cyclone.ipmi.api.IpmiConnection
+import com.cyclone.ipmi.client.IpmiConnection
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSystemInfoParameters
 import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSystemInfoParameters.ParameterSelector.BlockData

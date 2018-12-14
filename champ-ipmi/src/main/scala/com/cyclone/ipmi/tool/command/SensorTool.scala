@@ -4,9 +4,9 @@ import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError._
 import com.cyclone.ipmi.command.GenericStatusCodeErrors
 import com.cyclone.ipmi.command.sensor.{GetSensorReading, GetSensorReadingFactors, GetSensorThresholds}
-import com.cyclone.ipmi.sdr.Linearization.Linearizable
-import com.cyclone.ipmi.sdr.readingoffset.EventReadingOffset
-import com.cyclone.ipmi.sdr.{RawValueConverter, _}
+import com.cyclone.ipmi.protocol.sdr.Linearization.Linearizable
+import com.cyclone.ipmi.protocol.readingoffset.EventReadingOffset
+import com.cyclone.ipmi.protocol.sdr.{RawValueConverter, _}
 import com.cyclone.ipmi.tool.command.IpmiCommands.{CommandExecutor, Ctx}
 import com.cyclone.ipmi.{IpmiError, IpmiOperationContext}
 import com.cyclone.util.concurrent.Futures

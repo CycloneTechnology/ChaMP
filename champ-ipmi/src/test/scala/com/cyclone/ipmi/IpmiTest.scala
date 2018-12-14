@@ -1,7 +1,7 @@
 package com.cyclone.ipmi
 
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
-import com.cyclone.ipmi.api.MockIpmiClientComponent
+import com.cyclone.ipmi.client.MockIpmiClientComponent
 import com.cyclone.ipmi.command.GenericStatusCodeErrors.InsufficientPrivilege
 import com.cyclone.ipmi.command.global.{ColdReset, WarmReset}
 import com.cyclone.ipmi.tool.command.ResetTool

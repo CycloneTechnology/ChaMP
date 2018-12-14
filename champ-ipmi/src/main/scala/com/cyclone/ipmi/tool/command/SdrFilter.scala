@@ -1,6 +1,6 @@
 package com.cyclone.ipmi.tool.command
 
-import com.cyclone.ipmi.sdr._
+import com.cyclone.ipmi.protocol.sdr._
 
 sealed trait SdrFilter {
   val predicate: SdrKeyAndBody => Boolean

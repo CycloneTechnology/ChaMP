@@ -4,7 +4,7 @@ import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
 import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
-import com.cyclone.ipmi.sdr.{EventBits, RawSensorValue, SensorNumber}
+import com.cyclone.ipmi.protocol.sdr.{EventBits, RawSensorValue, SensorNumber}
 
 /**
   * Get Sensor Reading command

@@ -2,7 +2,7 @@ package com.cyclone.ipmi
 
 import com.cyclone.akka.ActorSystemShutdown
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
-import com.cyclone.ipmi.api.ActorIpmiClientComponent
+import com.cyclone.ipmi.client.ActorIpmiClientComponent
 import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSessionChallenge.InvalidUserName
 import com.cyclone.ipmi.protocol.TestIpmiManagerComponent
 import com.cyclone.ipmi.tool.command.ChassisStatusTool

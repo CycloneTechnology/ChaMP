@@ -2,7 +2,7 @@ package com.cyclone.ipmi.examples
 
 import akka.actor.ActorSystem
 import com.cyclone.command.TimeoutContext
-import com.cyclone.ipmi.sdr.{SensorType, ThresholdComparison}
+import com.cyclone.ipmi.protocol.sdr.{SensorType, ThresholdComparison}
 import com.cyclone.ipmi.tool.command.{SdrFilter, SensorTool}
 import com.cyclone.ipmi.{Ipmi, IpmiCredentials, IpmiTarget}
 import com.typesafe.config.ConfigFactory

@@ -1,7 +1,7 @@
 package com.cyclone.ipmi.tool.command
 
 import com.cyclone.akka.ActorSystemShutdown
-import com.cyclone.ipmi.fru.StandardFru
+import com.cyclone.ipmi.protocol.fru.StandardFru
 import com.cyclone.ipmi.tool.command.FruPrintTool.FruInfo
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 

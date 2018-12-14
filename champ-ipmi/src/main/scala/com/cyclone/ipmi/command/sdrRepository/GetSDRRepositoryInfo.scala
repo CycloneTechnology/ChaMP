@@ -4,7 +4,7 @@ import akka.util.ByteString
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command.{CommandCode, NetworkFunction, StatusCodeTranslator}
 import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
-import com.cyclone.ipmi.sdr.SdrVersion
+import com.cyclone.ipmi.protocol.sdr.SdrVersion
 import org.joda.time.Instant
 
 /**

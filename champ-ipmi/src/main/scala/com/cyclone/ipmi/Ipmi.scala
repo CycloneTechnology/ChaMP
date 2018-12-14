@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.cyclone.akka.ActorSystemComponent
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi.IpmiError.IpmiErrorOr
-import com.cyclone.ipmi.api.{ActorIpmiClientComponent, IpmiClientComponent}
+import com.cyclone.ipmi.client.{ActorIpmiClientComponent, IpmiClientComponent}
 import com.cyclone.ipmi.command.ipmiMessagingSupport.GetChannelAuthenticationCapabilities
 import com.cyclone.ipmi.protocol.ExtensionIpmiManagerComponent
 import com.cyclone.ipmi.protocol.packet.{CommandResultCodec, IpmiCommandResult, IpmiStandardCommand}
