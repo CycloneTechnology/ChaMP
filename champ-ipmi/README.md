@@ -1,4 +1,4 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-wsman_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-ipmi_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cyclone-technology/champ-ipmi_2.12)
 
 ## Intelligent Platform Management Interface (IPMI)
 
