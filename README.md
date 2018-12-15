@@ -15,7 +15,6 @@ Open Source libraries for Channel Management Protocols
 | champ-snmp    | SNMP communication | No Timescale Yet |
 | champ-icmp    | ICMP communication | No Timescale Yet |
 | champ-ssh     | SSH communication | No Timescale Yet |
-| champ-snmp    | SNMP communication | No Timescale Yet |
 
 These libraries provide consistent, uncomplicated APIs for some of the most popular network management protocols.
 
