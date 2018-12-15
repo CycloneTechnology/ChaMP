@@ -1,5 +1,7 @@
 package com.cyclone.util.kerberos
 
+import java.io.IOException
+
 import akka.NotUsed
 import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
@@ -33,7 +35,14 @@ object KerberosArtifacts {
       Source.empty
     else
       StreamConverters
-        .fromInputStream(() => getClass.getResourceAsStream(resourceName))
+        .fromInputStream { () =>
+          val is = getClass.getResourceAsStream(resourceName)
+
+          if (is == null)
+            throw new IOException(s"No resource '$resourceName' found in class path")
+
+          is
+        }
         .mapMaterializedValue(_ => NotUsed)
 
   /**

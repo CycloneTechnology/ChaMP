@@ -19,15 +19,16 @@ class WSManSubscriptionPushTest
     with GuavaKerberosTokenCacheComponent
     with DefaultPushEventXmlParserComponent {
 
-  testWebServer.start()
-
   def route = eventServiceRoute
 
-  lazy val deliveryHandler: PushDeliveryHandler =
+  lazy val deliveryHandler: PushDeliveryHandler = {
+    testWebServer.start()
+
     PushDeliveryHandler(
       HttpUrl.fromParts(hostAndPort = testWebServer.hostAndPort, resource = "/wsman/event_receiver/receive"),
       DeliveryExpiryParams.Expiring(10.seconds, 2)
     )
+  }
 
   "push subscription handling" must {
     "error if no heartbeat within expiry" taggedAs RequiresRealWsman in {

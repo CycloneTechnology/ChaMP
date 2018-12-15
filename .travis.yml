@@ -1,12 +1,16 @@
 language: scala
 scala:
   - 2.12.8
+services:
+  - docker
 jdk:
   - oraclejdk8
 env:
   global:
     secure: AaEsACIu1n6sP/gJ0Un56oWYD0UwrSTbEbDGGlbBPRPvEiKNdy594evppbrr18W1lxZS7z+Po1ZOYlyQ2iL5bmj5lZSqcWGbyWCAJ+r7WkE71iRYm14uXw+Rf8rGjJQh+bukIt1TpWP3XdISnbTaa9e1Hs60AYW97wG8HLzJ5jc+wYbEAg3x4FWrPzIuGn92+wccJoMOhcQ/48OVcrg10cyx3kCvClwbxIWYLOk6JvoQ5w2VhH034L50hbvdO73CSTbPRFRbh9AFYg4UEzawkNquot+zJ1bw3sJf4uAOlNTp4KGC1Qmz4oS7F2YDXzuFB22viMKFqAK0jhQNeAgUi3ykSc0YZctuFdtin7MGnJMRRCbTXtKe4lISkKO2TbK9AE96ons6xWQAEAYFBgk1okSUl0PwJ2iyzJXwyuQJ6RdNwy0Na8AzaC/4d4LEZRKbA0Ut3BUe6WZ2zgMedFthSi1GDkszi70ylv34MC9MXYWFXqGXr2+oLOgOiBoyNRCY1revQIOwnpNTb8mr28VCdGXqf7EKKvDrAY0yopz1Niz03TqhB9QVBIcGrlA/umC/1C1KQ2amQovXMExefS5+Qr9V5hwwcKIUvAPd1YEAi+SwDvGN5yhQYxEI+R7CmGfCuYvGxNj0Y1pqJT5Qk5GA7ktqKiuftFzLRHDyXk+bYoc=
 before_script:
+  - docker pull vaporio/ipmi-simulator
+  - docker run -d -p 623:623/udp vaporio/ipmi-simulator
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
