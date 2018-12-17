@@ -1,13 +1,16 @@
 package com.cyclone.wsman.impl.subscription.push
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import akka.stream.{ActorMaterializer, Materializer}
+import akka.util.{ByteString, Timeout}
 import com.cyclone.akka.MaterializerComponent
-import com.cyclone.util.kerberos.KerberosDeploymentComponent
+import com.cyclone.util.kerberos.settings.ArtifactDeploymentResult
+import com.cyclone.util.kerberos.{ArtifactDeploymentInfo, KerberosDeployment, KerberosDeploymentComponent}
 import com.cyclone.util.spnego.{SpnegoDirectives, Token}
-import com.cyclone.wsman.subscription.SubscriptionId
+import com.cyclone.wsman.subscription.{PushDeliveryConfig, SubscriptionId}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,6 +23,7 @@ trait EventService extends Directives with SpnegoDirectives with LazyLogging {
   self: PushDeliveryRouterComponent
     with MaterializerComponent
     with PushEventXmlParserComponent
+    with PushDeliveryResourceComponent
     with KerberosTokenCacheComponent
     with KerberosDeploymentComponent =>
 
@@ -87,8 +91,33 @@ trait EventService extends Directives with SpnegoDirectives with LazyLogging {
       .map(_ => StatusCodes.NoContent)
   }
 
-  val eventServiceRoute: Route = pathPrefix("wsman" / "event_receiver" / "receive") {
+  val eventServiceRoute: Route = pathPrefix(pushDeliveryResource.pathMatcher) {
     postEventKerberos
   }
 
+}
+
+object EventService {
+
+  def create(
+    pushDeliveryConfig: PushDeliveryConfig,
+    deploymentResult: Future[ArtifactDeploymentResult]
+  )(implicit actorSystem: ActorSystem): EventService = {
+    new EventService with PushDeliveryResourceComponent with MaterializerComponent
+    with DefaultPushEventXmlParserComponent with PushDeliveryRouterComponent with KerberosTokenCacheComponent
+    with KerberosDeploymentComponent {
+
+      lazy val pushDeliveryRouter: PushDeliveryRouter = pushDeliveryConfig.pushDeliveryRouter
+      lazy val kerberosTokenCache: KerberosTokenCache = pushDeliveryConfig.kerberosTokenCache
+      lazy val pushDeliveryResource: PushDeliveryResource = pushDeliveryConfig.pushDeliveryResource
+
+      lazy val materializer: Materializer = ActorMaterializer()
+
+      lazy val kerberosDeployment: KerberosDeployment = new KerberosDeployment {
+        def latestArtifactDeploymentInfo(implicit ignored: Timeout): Future[ArtifactDeploymentInfo] =
+          deploymentResult.map(_.information)
+      }
+
+    }
+  }
 }

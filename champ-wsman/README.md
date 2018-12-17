@@ -3,18 +3,17 @@
 ## Web Services-Management (WSMan)
 
 ### Features
-* Windows Management Instrumentation Query Language (WQL) support
-* Alternative simple object-oriented query language for non-Microsoft hosts
-* Support for Kerberos and Basic authentication
-* Pull and push-based event subscription
-* Get and enumerate actions
-* Remote shell command execution via the Windows Remote Shell (WinRS)
+* Windows Management Instrumentation Query Language (WQL) support.
+* Alternative simple object-oriented query language (e.g. for non-Microsoft hosts).
+* Support for Kerberos and Basic authentication.
+* Pull and push-based event subscription (push based subscription against Akka Http web server).
+* Get and enumerate actions.
+* Remote shell command execution via the Windows Remote Shell (WinRS).
 
-### Command-based API
+### Running commands
 
-Commands extend the WSManCommand trait.
+Commands extend the ```WSManCommand``` trait.
 
-Basic usage:
 ```scala
   // Have implicit actor system and timeout
   implicit val actorSystem: ActorSystem = ActorSystem("exampleActorSystem")
@@ -39,18 +38,40 @@ Basic usage:
   // ...
 ```
 
+### Subscribing to events
+
+Subscriptions to WS-Management events use Akka Streams. The ```WSMan``` ```subscribe``` method 
+will return a ```Source``` which can be run with a ```Sink``` of your choosing.
+ 
+Unsubscription will occur automatically when the stream completes (e.g. through using a ```KillSwitch```).   
+
+```scala
+  // Subscribe to the Windows event log...
+  val source: Source[SubscriptionItem, SubscriptionId] = wsman.subscribe(
+    WSManTarget(
+      WSMan.httpUrlFor(host, ssl = false),
+      PasswordSecurityContext(username, password, AuthenticationMethod.Kerberos)
+    ),
+    SubscribeByWQL(
+      "SELECT * FROM __InstanceCreationEvent WITHIN 1" +
+        " WHERE TargetInstance ISA 'Win32_NTLogEvent'"
+    )
+  )
+     
+  source.runWith(Sink.foreach(println))
+```
+
+By default, subscription is pull based, that is we repeatedly send SOAP packets to poll the device for events.
+
+Push based subscription is also supported with a little more configuration. It requires a web server
+and a means to forward events received as HTTP POST requests to the required subscribers. An implementation 
+using a Akka Http web server is included but this could be extended to work with other web servers. 
+
 For fully working examples see [here](./src/test/scala/com/cyclone/wsman/examples).
 
-_TODO_ 
-
-### Setting up Kerberos
-_TODO_ 
-
-### Setting up Push event subscriptions
-_TODO_ 
+### See also 
+* [Notes on Kerberos configuration](KERBEROS.md)
+* [Notes on setting up openwsman on Linux](OPENWSMAN.md)
 
 ### Java API
-TODO - no Java API as yet
-
-
-
+TODO - no Java API as yet. Sorry.

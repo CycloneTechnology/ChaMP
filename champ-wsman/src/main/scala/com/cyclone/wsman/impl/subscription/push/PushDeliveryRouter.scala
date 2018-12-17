@@ -1,6 +1,7 @@
 package com.cyclone.wsman.impl.subscription.push
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Sink, Source}
 import akka.stream.stage._
@@ -49,6 +50,31 @@ trait PushDeliveryRouter {
   ): Source[WSManEnumItem, NotUsed]
 }
 
+object PushDeliveryRouter {
+
+  /**
+    * @return a new [[PushDeliveryRouter]].
+    */
+  def create(implicit system: ActorSystem): PushDeliveryRouter = {
+    val component: PushDeliveryRouterComponent = new DefaultPushDeliveryRouterComponent with MaterializerComponent
+    with KerberosStateHousekeeperComponent with GuavaKerberosTokenCacheComponent {
+      lazy val materializer: Materializer = ActorMaterializer()
+    }
+
+    component.pushDeliveryRouter
+  }
+
+  /**
+    * A dummy [[PushDeliveryRouter]] that does no routing. Use when only pull based subscriptions are to be used.
+    */
+  private[wsman]  object Dummy extends PushDeliveryRouter {
+    def inputSink: Sink[List[PushedMessage], NotUsed] = Sink.ignore.mapMaterializedValue(_ => NotUsed)
+
+    def newSubscriberSource(id: SubscriptionId, expiry: Option[FiniteDuration]): Source[WSManEnumItem, NotUsed] =
+      Source.empty
+  }
+}
+
 trait PushDeliveryRouterComponent {
   def pushDeliveryRouter: PushDeliveryRouter
 }
@@ -57,7 +83,7 @@ trait DefaultPushDeliveryRouterComponent extends PushDeliveryRouterComponent {
   self: MaterializerComponent with StateHousekeeperComponent =>
 
   // TODO ideally something like PartitionHub required so that each source does not have to
-  // filter. However with PartitionHub seems to be no way to influence of get at the identifiers from the outside...?
+  // filter. However with PartitionHub seems to be no way to influence or get at the identifiers from the outside...?
   lazy val (sink, hub) =
     MergeHub
       .source[List[PushedMessage]](perProducerBufferSize = 1)

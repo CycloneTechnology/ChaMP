@@ -19,6 +19,22 @@ trait KerberosTokenCache {
   def deleteTokenFor(subscriptionId: SubscriptionId): Unit
 }
 
+object KerberosTokenCache {
+
+  /**
+    * Creates a KerberosTokenCache
+    */
+  def create: KerberosTokenCache = {
+    new GuavaKerberosTokenCacheComponent {}.kerberosTokenCache
+  }
+
+  private[wsman] object Dummy extends KerberosTokenCache {
+    def getTokenFor(subscriptionId: SubscriptionId): Option[Token] = None
+    def putTokenFor(subscriptionId: SubscriptionId, token: Token): Unit = ()
+    def deleteTokenFor(subscriptionId: SubscriptionId): Unit = ()
+  }
+}
+
 trait KerberosTokenCacheComponent {
   def kerberosTokenCache: KerberosTokenCache
 }

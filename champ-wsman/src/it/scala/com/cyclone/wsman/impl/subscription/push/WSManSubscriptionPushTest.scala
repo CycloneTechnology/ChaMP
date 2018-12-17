@@ -16,6 +16,7 @@ class WSManSubscriptionPushTest
     with TestKerberosDeployment
     with AkkaHttpTestWebServerComponent
     with EventService
+    with DefaultPushDeliveryResourceComponent
     with GuavaKerberosTokenCacheComponent
     with DefaultPushEventXmlParserComponent {
 

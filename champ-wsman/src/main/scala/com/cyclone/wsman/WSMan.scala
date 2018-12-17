@@ -16,8 +16,8 @@ import com.cyclone.wsman.impl.http.{DefaultAsyncHttpClientComponent, DefaultWSMa
 import com.cyclone.wsman.impl.model.OperationsReferenceResolverComponent
 import com.cyclone.wsman.impl.subscription._
 import com.cyclone.wsman.impl.subscription.pull.PullDeliveryHandler
-import com.cyclone.wsman.impl.subscription.push.{DefaultPushDeliveryRouterComponent, GuavaKerberosTokenCacheComponent, KerberosStateHousekeeperComponent}
-import com.cyclone.wsman.subscription.{SubscriptionExecutor, SubscriptionId, WSManSubscriptionDefn}
+import com.cyclone.wsman.impl.subscription.push._
+import com.cyclone.wsman.subscription.{PushDeliveryConfig, SubscriptionExecutor, SubscriptionId, WSManSubscriptionDefn}
 import scalaz.EitherT._
 import scalaz.Scalaz._
 
@@ -48,15 +48,33 @@ object WSMan {
     *
     * @param system an actor system
     */
-  def create(implicit system: ActorSystem): WSMan = {
-    val component: DefaultWSManComponent = new DefaultWSManComponent with DefaultWSManContextFactoryComponent
-    with DefaultPushDeliveryRouterComponent with KerberosStateHousekeeperComponent
-    with OperationsReferenceResolverComponent with DefaultWSManConnectionFactoryComponent
-    with DefaultAsyncHttpClientComponent with ConfigHttpSettingsComponent with GuavaKerberosTokenCacheComponent
-    with ActorSystemComponent with MaterializerComponent with Dns4sDnsLookupComponent with DnsConfigSourceComponent
-    with ConfigDnsConfigSourceComponent {
+  def create(implicit system: ActorSystem): WSMan =
+    doCreate(PushDeliveryConfig.Dummy)
+
+  /**
+    * Creates a [[WSMan]] with the capability to perform push delivery of subscription events.
+    *
+    * The resulting object can be used for multiple command executions etc.
+    *
+    * @param pushDeliveryConfig links the web service endpoint at the
+    *                           push delivery address to the subscriptions
+    * @param system an actor system
+    */
+  def create(pushDeliveryConfig: PushDeliveryConfig)(implicit system: ActorSystem): WSMan =
+    doCreate(pushDeliveryConfig)
+
+  private def doCreate(pushDeliveryConfig: PushDeliveryConfig)(
+    implicit system: ActorSystem
+  ): WSMan = {
+    val component: WSManComponent = new DefaultWSManComponent with DefaultWSManContextFactoryComponent
+    with PushDeliveryRouterComponent with OperationsReferenceResolverComponent
+    with DefaultWSManConnectionFactoryComponent with DefaultAsyncHttpClientComponent with ConfigHttpSettingsComponent
+    with KerberosTokenCacheComponent with ActorSystemComponent with MaterializerComponent with Dns4sDnsLookupComponent
+    with DnsConfigSourceComponent with ConfigDnsConfigSourceComponent {
       lazy val actorSystem: ActorSystem = system
       lazy val materializer: Materializer = ActorMaterializer()
+      lazy val pushDeliveryRouter: PushDeliveryRouter = pushDeliveryConfig.pushDeliveryRouter
+      lazy val kerberosTokenCache: KerberosTokenCache = pushDeliveryConfig.kerberosTokenCache
     }
 
     component.wsman

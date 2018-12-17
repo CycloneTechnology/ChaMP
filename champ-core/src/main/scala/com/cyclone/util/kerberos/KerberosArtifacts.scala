@@ -101,12 +101,14 @@ object KerberosArtifacts {
     val kdcHosts = config.getStringList("cyclone.kerberos.kdcHosts").asScala
     val realmHosts = config.getStringList("cyclone.kerberos.realmHosts").asScala
 
+    val loginConfResourceName = config.getString("cyclone.kerberos.loginConfResourceName")
+
     val keytabResourceName = config.getString("cyclone.kerberos.keytabResourceName")
     val servicePrincipalName = config.getString("cyclone.kerberos.servicePrincipalName")
 
     KerberosArtifacts(
       kerb5ConfContent = Source.single(ByteString(singleRealmKrb5Config(realm, kdcHosts, realmHosts))),
-      loginConfContent = resourceSource("/login.conf"),
+      loginConfContent = resourceSource(loginConfResourceName),
       servicePrincipalName,
       keyTabContent = resourceSource(keytabResourceName)
     )

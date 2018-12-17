@@ -43,7 +43,7 @@ The main Scala API is the ```Ipmi``` trait. This has a number of methods that al
   // ...
 ```
 
-#### Advanced usage
+#### Running multiple commands 
 In order to execute multiple commands within a negotiated session, 
 the ```withContext``` method 
 (which implements the loan pattern) on the ```Ipmi``` trait  can be used:

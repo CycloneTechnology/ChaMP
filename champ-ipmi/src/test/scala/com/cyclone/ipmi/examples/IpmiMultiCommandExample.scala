@@ -26,7 +26,7 @@ import scala.util.{Failure, Success}
   * }
   * }}}
   */
-object IpmiAdvancedExample extends App {
+object IpmiMultiCommandExample extends App {
 
   val config = ConfigFactory.load()
 

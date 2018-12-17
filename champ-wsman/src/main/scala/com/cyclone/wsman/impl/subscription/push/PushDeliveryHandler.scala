@@ -10,7 +10,7 @@ import com.cyclone.wsman.subscription.{DeliveryExpiryParams, SubscriptionId}
 
 import scala.xml.{Elem, NodeSeq}
 
-case class PushDeliveryHandler(deliverTo: HttpUrl, expiryParams: DeliveryExpiryParams) extends DeliveryHandler {
+case class PushDeliveryHandler(deliverTo: HttpUrl, expiryParams: DeliveryExpiryParams = DeliveryExpiryParams.default) extends DeliveryHandler {
   type R = EventSubscriptionRegistration
 
   val deliveryModeString: String = EventMode.EVENT_MODE_PUSH_SINGLE
