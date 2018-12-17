@@ -2,23 +2,21 @@ package com.cyclone.wsman
 
 import com.cyclone.akka.{ActorMaterializerComponent, ActorSystemShutdown, TestKitSupport}
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
+import com.cyclone.util.PasswordCredentials
 import com.cyclone.util.kerberos.TestKerberosDeployment
 import com.cyclone.util.net.{AuthenticationMethod, HostAndPort, JavaNamingDnsLookupComponent, PasswordSecurityContext}
-import com.cyclone.util.PasswordCredentials
 import com.cyclone.wsman.WSMan.httpUrlFor
 import com.cyclone.wsman.command.{EnumerateBySelector, Identify}
 import com.cyclone.wsman.impl.subscription.push.GuavaKerberosTokenCacheComponent
-import org.junit.Test
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.junit.JUnitSuiteLike
-import org.scalatest.{Inside, Matchers}
+import org.scalatest.{Inside, Matchers, WordSpecLike}
 import scalaz.{-\/, \/-}
 
 import scala.concurrent.duration._
 
 class WSManTestBasicAuthTest
-  extends TestKitSupport
-    with JUnitSuiteLike
+    extends TestKitSupport
+    with WordSpecLike
     with Matchers
     with ScalaFutures
     with Inside
@@ -39,45 +37,56 @@ class WSManTestBasicAuthTest
   implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.reusableTimeout(10.seconds))
   val target = WSManTarget(httpUrl, securityContext)
 
+  "wsman" when {
+    "using basic auth" must {
 
-  @Test
-  def basicAuth_authExceptionThrownWhenBadcredentials(): Unit = {
-    val query = EnumerateBySelector.fromClassName("ANY")
+      "indicate when bad credentials" taggedAs RequiresRealWsman in {
+        val query = EnumerateBySelector.fromClassName("ANY")
 
-    inside(wsman.executeCommandOrError(
-      WSManTarget(httpUrl,
-        PasswordSecurityContext(
-          PasswordCredentials.fromStrings("someUser", "somePassword"),
-          AuthenticationMethod.Basic)),
-      query).futureValue) {
-      case -\/(e) => e shouldBe a[WSManAuthenticationError]
-    }
-  }
+        inside(
+          wsman
+            .executeCommandOrError(
+              WSManTarget(
+                httpUrl,
+                PasswordSecurityContext(
+                  PasswordCredentials.fromStrings("someUser", "somePassword"),
+                  AuthenticationMethod.Basic
+                )
+              ),
+              query
+            )
+            .futureValue
+        ) {
+          case -\/(e) => e shouldBe a[WSManAuthenticationError]
+        }
+      }
 
-  @Test
-  def identify(): Unit = {
-    inside(wsman.executeCommandOrError(target, Identify).futureValue) {
-      case \/-(result) => result.productVendor shouldBe Some("Openwsman Project")
-    }
-  }
+      "allow identify" taggedAs RequiresRealWsman in {
+        inside(wsman.executeCommandOrError(target, Identify).futureValue) {
+          case \/-(result) => result.productVendor shouldBe Some("Openwsman Project")
+        }
+      }
 
-  @Test
-  def authExceptionWhenIncorrectSecurityContextType(): Unit = {
-    inside(wsman.executeCommandOrError(
-      WSManTarget(httpUrl, kerberosSecurityContext), Identify)
-      .futureValue) {
-      case -\/(e) => e shouldBe a[WSManAuthenticationError]
-    }
-  }
+      "indicate when invalid authentication type" taggedAs RequiresRealWsman in {
+        inside(wsman.executeCommandOrError(WSManTarget(httpUrl, kerberosSecurityContext), Identify).futureValue) {
+          case -\/(e) => e shouldBe a[WSManAuthenticationError]
+        }
+      }
 
-  @Test
-  def wrappedWSManExceptionThrownWhenNotConnectable(): Unit = {
-    inside(wsman.executeCommandOrError(
-      WSManTarget(httpUrlFor(HostAndPort.fromString("npbuild"), ssl), securityContext),
-      Identify).futureValue) {
-      case -\/(e) =>
-        assert(e.message != null, "Null message")
-        assert(e.message != "", "No message")
+      "indicate when not connectable" taggedAs RequiresRealWsman in {
+        inside(
+          wsman
+            .executeCommandOrError(
+              WSManTarget(httpUrlFor(HostAndPort.fromString("npbuild"), ssl), securityContext),
+              Identify
+            )
+            .futureValue
+        ) {
+          case -\/(e) =>
+            assert(e.message != null, "Null message")
+            assert(e.message != "", "No message")
+        }
+      }
     }
   }
 }

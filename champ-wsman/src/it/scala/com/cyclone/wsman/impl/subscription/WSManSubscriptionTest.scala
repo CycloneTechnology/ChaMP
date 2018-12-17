@@ -124,7 +124,7 @@ trait WSManSubscriptionTest
   }
 
   "subscription handling" must {
-    "subscribe successfully" in {
+    "subscribe successfully" taggedAs RequiresRealWsman  in  {
       val (subscribed, source) = doSubscribe(continuousEventStreamSubscription)
 
       val events = source.take(1).runWith(Sink.seq)
@@ -154,7 +154,7 @@ trait WSManSubscriptionTest
       events.futureValue should not be empty
     }
 
-    "receive multiple events" in {
+    "receive multiple events" taggedAs RequiresRealWsman  in  {
       val numItems = 30
 
       val (subscribed, source) = doSubscribe(fileCreationSubsDefn)
@@ -166,7 +166,7 @@ trait WSManSubscriptionTest
       events.futureValue should have size numItems
     }
 
-    "receive events in the order they occur" in {
+    "receive events in the order they occur" taggedAs RequiresRealWsman  in  {
       val numItems = 10
 
       val (subscribed, source) = doSubscribe(fileCreationSubsDefn)

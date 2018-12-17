@@ -4,9 +4,9 @@ import akka.testkit.ImplicitSender
 import com.cyclone.akka.ActorSystemShutdown
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi._
-import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.command.chassis.GetChassisStatus
-import com.cyclone.ipmi.command.ipmiMessagingSupport.{GetChannelAuthenticationCapabilities, GetSessionChallenge}
+import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSessionChallenge
+import com.cyclone.ipmi.protocol.packet.IpmiCommandResult
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
 import org.scalatest.{Inside, Matchers, WordSpecLike}
 
@@ -16,7 +16,7 @@ import scala.concurrent.duration._
   * Integration test for Ipmi
   */
 class IpmiManagerIntegrationTest
-  extends BaseIntegrationTest
+    extends BaseIntegrationTest
     with WordSpecLike
     with Matchers
     with Inside
@@ -30,8 +30,11 @@ class IpmiManagerIntegrationTest
 
     val IpmiManager.SessionManagerCreated(sessionMgr) = expectMsgType[IpmiManager.SessionManagerCreated]
 
-    implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(10.seconds))
+    implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(2.seconds))
   }
+
+  // So we can ensure v15 and v20 give same command results
+  var v2CommandResult: IpmiCommandResult = _
 
   "an ipmi manager" when {
     "using version 2.0" must {
@@ -46,7 +49,8 @@ class IpmiManagerIntegrationTest
       "fail to create a session when use wrong user name" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(IpmiCredentials("ss", "ADMIN"), versionRequirement)
 
-        expectMsg(SessionManager.SessionNegotiationError(RmcpPlusAndRakpStatusCodeErrors.InvalidIntegrityCheckValue))
+        // This is what the tests IPMI implementation gives for ipmitool...
+        expectMsg(SessionManager.SessionNegotiationError(RmcpPlusAndRakpStatusCodeErrors.IllegalParameter))
       }
 
       "fail to create a session when use wrong password" in new Fixture {
@@ -57,17 +61,13 @@ class IpmiManagerIntegrationTest
 
       "execute a command" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(credentials, versionRequirement)
-
         expectMsg(SessionManager.SessionNegotiationSuccess)
 
         sessionMgr ! SessionManager.ExecuteCommand(GetChassisStatus.Command)
         inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
-          case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChassisStatus.CommandResult]
-        }
-
-        sessionMgr ! SessionManager.ExecuteCommand(GetChannelAuthenticationCapabilities.Command(PrivilegeLevel.User))
-        inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
-          case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChannelAuthenticationCapabilities.CommandResult]
+          case SessionManager.CommandExecutionSuccess(result) =>
+            result shouldBe a[GetChassisStatus.CommandResult]
+            v2CommandResult = result
         }
       }
     }
@@ -90,25 +90,19 @@ class IpmiManagerIntegrationTest
       "fail to create a session when use wrong password" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(IpmiCredentials("ADMIN", "wrong"), versionRequirement)
 
-        // This is what IPMI tool responds with...
-        expectMsg(SessionManager.SessionNegotiationError(GenericStatusCodeErrors.NoResponse))
+        // We get nothing back with ipmitool either...
+        expectMsg(SessionManager.SessionNegotiationError(DeadlineReached))
       }
 
-      "execute a command" in new Fixture {
+      "execute a command with same result" in new Fixture {
         sessionMgr ! SessionManager.NegotiateSession(credentials, versionRequirement)
         expectMsg(SessionManager.SessionNegotiationSuccess)
 
         sessionMgr ! SessionManager.ExecuteCommand(GetChassisStatus.Command)
         inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
-          case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChassisStatus.CommandResult]
-        }
-
-        sessionMgr ! SessionManager.ExecuteCommand(GetChannelAuthenticationCapabilities.Command(PrivilegeLevel.User))
-        inside(expectMsgType[SessionManager.CommandExecutionSuccess]) {
-          case SessionManager.CommandExecutionSuccess(result) => result shouldBe a[GetChannelAuthenticationCapabilities.CommandResult]
+          case SessionManager.CommandExecutionSuccess(result) => result shouldBe v2CommandResult
         }
       }
     }
   }
 }
-

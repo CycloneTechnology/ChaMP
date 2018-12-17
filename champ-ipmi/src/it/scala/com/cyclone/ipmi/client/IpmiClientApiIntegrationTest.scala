@@ -9,6 +9,7 @@ import com.cyclone.ipmi.command.chassis.GetChassisStatus
 import com.cyclone.ipmi.protocol._
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
 import org.scalatest.{Inside, Matchers, WordSpecLike}
+import scalaz.EitherT._
 import scalaz.Scalaz._
 import scalaz._
 
@@ -18,19 +19,16 @@ import scala.concurrent.duration._
   * Integration test for the [[IpmiClient]] API
   */
 class IpmiClientApiIntegrationTest
-  extends BaseIntegrationTest
+    extends BaseIntegrationTest
     with WordSpecLike
     with Matchers
     with Inside
     with ImplicitSender
     with ActorSystemShutdown {
 
-  val versionRequirement = IpmiVersionRequirement.V20Only
+  val versionRequirement = IpmiVersionRequirement.V20IfSupported
 
-  class Fixture
-    extends ActorIpmiClientComponent
-      with TestIpmiManagerComponent
-      with ActorSystemComponent {
+  class Fixture extends ActorIpmiClientComponent with TestIpmiManagerComponent with ActorSystemComponent {
     implicit val actorSystem: ActorSystem = system
 
     val connection = ipmiClient.connectionFor(host, port).futureValue
@@ -40,29 +38,28 @@ class IpmiClientApiIntegrationTest
 
   "an ipmi api" must {
     "allow creating a session" in new Fixture {
-      connection.negotiateSession(credentials, versionRequirement)
-        .futureValue shouldBe ().right
+      connection.negotiateSession(credentials, versionRequirement).futureValue shouldBe ().right
     }
 
-    "fail to create session e.g. when use wrong user name" in new Fixture {
-      connection.negotiateSession(IpmiCredentials("ss", "ADMIN"), versionRequirement)
+    "fail to create session e.g. when use wrong password" in new Fixture {
+      connection
+        .negotiateSession(IpmiCredentials("ADMIN", "ss"), versionRequirement)
         .futureValue shouldBe RmcpPlusAndRakpStatusCodeErrors.InvalidIntegrityCheckValue.left
     }
 
     "execute a command" in new Fixture {
       val r = for {
-        _ <- connection.negotiateSession(credentials, versionRequirement)
-        result <- connection.executeCommandOrError(GetChassisStatus.Command)
+        _      <- eitherT(connection.negotiateSession(credentials, versionRequirement))
+        result <- eitherT(connection.executeCommandOrError(GetChassisStatus.Command))
       } yield result
 
-      inside(r.futureValue) {
+      inside(r.run.futureValue) {
         case \/-(x) => x shouldBe a[GetChassisStatus.CommandResult]
       }
     }
   }
 
   "closes session" in new Fixture {
-    connection.closedown().futureValue shouldBe()
+    connection.closedown().futureValue shouldBe ()
   }
 }
-

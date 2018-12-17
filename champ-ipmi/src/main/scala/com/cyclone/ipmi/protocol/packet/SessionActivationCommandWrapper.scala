@@ -16,14 +16,14 @@ object SessionActivationCommandWrapper {
 
         b += seqNo.toByte
 
-        b ++= commandData
+        b ++= commandData.encode
 
         b.result()
       }
     }
   }
 
-  case class RequestPayload(payloadType: PayloadType, seqNo: SeqNo, commandData: ByteString) extends IpmiRequestPayload
+  case class RequestPayload(payloadType: PayloadType, seqNo: SeqNo, commandData: Codable) extends IpmiRequestPayload
 
   object ResponsePayload {
     implicit def decoder: Decoder[ResponsePayload] = new Decoder[ResponsePayload] {

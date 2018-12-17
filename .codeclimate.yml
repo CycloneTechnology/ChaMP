@@ -8,6 +8,7 @@ checks:
       threshold: 4
   file-lines:
     config:
+      # Some of out enums are large
       threshold: 600
   method-complexity:
     config:

@@ -37,7 +37,9 @@ object IpmiError {
 /**
   * An exception wrapping an error
   */
-case class IpmiErrorException(err: IpmiError) extends Exception with NoStackTrace
+case class IpmiErrorException(err: IpmiError) extends Exception with NoStackTrace{
+  override def toString: String = s"IpmiErrorException($err)"
+}
 
 /**
   * An error from an exception

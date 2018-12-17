@@ -28,7 +28,7 @@ object SetPowerCycleInterval {
 
         val b = new ByteStringBuilder
 
-        b += powerCycleInterval
+        b += powerCycleInterval.toByte
 
         b.result()
       }
@@ -39,7 +39,7 @@ object SetPowerCycleInterval {
 
   }
 
-  case class Command(powerCycleInterval: Byte = 0x00) extends IpmiStandardCommand {
+  case class Command(powerCycleInterval: Int) extends IpmiStandardCommand {
 
     val networkFunction: NetworkFunction = NetworkFunction.ChassisRequest
     val commandCode = CommandCode(0x0B)

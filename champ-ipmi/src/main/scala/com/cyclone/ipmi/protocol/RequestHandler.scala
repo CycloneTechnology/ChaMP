@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import akka.event.LoggingReceive
 import com.cyclone.command.{RequestTimeouts, TimeoutContext}
 import com.cyclone.ipmi.IpmiError.IpmiErrorOr
+import com.cyclone.ipmi.codec.{Codable, Coder}
 import com.cyclone.ipmi.command.global.DeviceAddress
 import com.cyclone.ipmi.protocol.RequestHandler._
 import com.cyclone.ipmi.protocol.packet._
@@ -68,6 +69,8 @@ class RequestHandler(
     case SessionHub.RequestHandlerRegistered =>
       implicit val codec: CommandResultCodec[Cmd, Res] = request.codec
 
+      implicit val coder: Coder[Cmd] = codec.coder
+
       val messageToSend = request.command match {
         case req: IpmiStandardCommand =>
           SessionHub.SendIpmi(
@@ -76,7 +79,7 @@ class RequestHandler(
               req.commandCode,
               request.seqNo,
               request.targetAddress,
-              commandData = codec.coder.encode(request.command)
+              commandData = Codable(request.command)
             ),
             version,
             sessionContext
@@ -87,7 +90,7 @@ class RequestHandler(
             SessionActivationCommandWrapper.RequestPayload(
               req.payloadType,
               request.seqNo,
-              commandData = codec.coder.encode(request.command)
+              commandData = Codable(request.command)
             ),
             version,
             sessionContext

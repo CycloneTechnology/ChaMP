@@ -3,6 +3,7 @@ package com.cyclone.ipmi.protocol.packet
 import akka.util.ByteString
 import com.cyclone.ipmi.IpmiError.IpmiErrorOr
 import com.cyclone.ipmi.UnsupportedPayloadType
+import com.cyclone.ipmi.codec.Codable
 import com.cyclone.ipmi.command.StatusCode
 import scalaz.Scalaz._
 
@@ -24,7 +25,7 @@ sealed trait IpmiPayload {
 }
 
 trait IpmiRequestPayload extends IpmiPayload {
-  def commandData: ByteString
+  def commandData: Codable
 
   def payloadType: PayloadType
 }

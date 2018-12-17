@@ -7,11 +7,11 @@ import com.cyclone.ipmi.command.ipmiMessagingSupport.GetChannelAuthenticationCap
 import com.cyclone.ipmi.protocol.packet.IpmiVersion
 import com.cyclone.ipmi.protocol.packet.SessionId.RemoteConsoleSessionId
 import com.cyclone.ipmi.protocol.security.AuthenticationTypes
+import scalaz.EitherT._
+import scalaz.Scalaz._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scalaz.EitherT._
-import scalaz.Scalaz._
 
 /**
   * Implements the logic to negotiate a session
@@ -59,16 +59,13 @@ object DefaultSessionNegotiator extends SessionNegotiator {
         case (IpmiVersionRequirement.V20IfSupported, true)  => IpmiVersion.V20.right
         case (IpmiVersionRequirement.V20IfSupported, false) => IpmiVersion.V15.right
         case (IpmiVersionRequirement.V20Only, true)         => IpmiVersion.V20.right
-        case (IpmiVersionRequirement.V20Only, false) =>
-          UnsupportedRequiredVersion(IpmiVersion.V20).left
+        case (IpmiVersionRequirement.V20Only, false)        => UnsupportedRequiredVersion(IpmiVersion.V20).left
       }
 
     def protocolFor(version: IpmiVersion, authenticationTypes: AuthenticationTypes) = {
       import SessionNegotiationProtocol._
       version match {
-        case IpmiVersion.V15 =>
-          V15(remoteConsoleSessionId, credentials, privilegeLevel, authenticationTypes, requester)
-
+        case IpmiVersion.V15 => V15(remoteConsoleSessionId, credentials, privilegeLevel, authenticationTypes, requester)
         case IpmiVersion.V20 => V20(remoteConsoleSessionId, credentials, privilegeLevel, requester)
       }
     }

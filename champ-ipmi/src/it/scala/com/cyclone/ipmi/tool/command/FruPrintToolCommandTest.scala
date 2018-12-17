@@ -1,6 +1,7 @@
 package com.cyclone.ipmi.tool.command
 
 import com.cyclone.akka.ActorSystemShutdown
+import com.cyclone.ipmi.RequiresRealIpmi
 import com.cyclone.ipmi.protocol.fru.StandardFru
 import com.cyclone.ipmi.tool.command.FruPrintTool.FruInfo
 import org.scalatest.{Inside, Matchers, WordSpecLike}
@@ -8,8 +9,8 @@ import org.scalatest.{Inside, Matchers, WordSpecLike}
 /**
   * Tests [[FruPrintTool]]
   */
-class FruPrintToolCommandTestEx
-  extends BaseToolCommandTest
+class FruPrintToolCommandTest
+    extends BaseToolCommandTest
     with WordSpecLike
     with Inside
     with Matchers
@@ -37,7 +38,7 @@ class FruPrintToolCommandTestEx
       }
     }
 
-    "work" in new Fixture {
+    "work" taggedAs RequiresRealIpmi in new Fixture {
       inside(executeCommand(FruPrintTool.Command).fruInfos.head) {
         case FruInfo(_, _, Some(fru: StandardFru), None) => fru.boardInfo.get.manufacturer shouldBe "Super Micro"
       }

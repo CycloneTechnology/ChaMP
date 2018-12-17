@@ -3,10 +3,10 @@ package com.cyclone.ipmi.codec
 import akka.util.ByteString
 import com.cyclone.ipmi.{IpmiError, IpmiExceptionError}
 import com.typesafe.scalalogging.LazyLogging
-
-import scala.util.{Failure, Success, Try}
 import scalaz.Scalaz._
 import scalaz.{Failure => _, Success => _, _}
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * Knows how to encode a type to bytes
@@ -15,6 +15,24 @@ import scalaz.{Failure => _, Success => _, _}
   */
 trait Coder[A] {
   def encode(a: A): ByteString
+}
+
+/** Convenience holder for an object and its [[Coder]] */
+trait Codable {
+  type A
+  def a: A
+  def encode: ByteString
+}
+
+object Codable {
+  type Aux[A0] = Codable { type A = A0 }
+
+  def apply[A](a: A)(implicit coder: Coder[A]): Codable.Aux[A] = CoderAnd(a)
+
+  case class CoderAnd[A0](a: A0)(implicit coder: Coder[A0]) extends Codable {
+    type A = A0
+    def encode: ByteString = coder.encode(a)
+  }
 }
 
 /**

@@ -9,8 +9,8 @@ import com.cyclone.ipmi.command.global.WarmReset
 import com.cyclone.ipmi.command.ipmiMessagingSupport.CloseSession
 import com.cyclone.ipmi.protocol.SessionHub.SessionHubFactory
 import com.cyclone.ipmi.protocol.Transport.Factory
-import com.cyclone.ipmi.protocol.packet.IpmiVersion
 import com.cyclone.ipmi.protocol.packet.SessionId.ManagedSystemSessionId
+import com.cyclone.ipmi.protocol.packet.{IpmiVersion, SessionSequenceNumber}
 import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors
 import com.cyclone.util.SynchronizedMockeryComponent
 import com.google.common.net.InetAddresses
@@ -70,7 +70,8 @@ class SessionManagerTest
     // WLOG
     val commandResult = WarmReset.CommandResult
 
-    val sessionContext = V15SessionContext(ManagedSystemSessionId(123))
+    val sessionContext =
+      V15SessionContext(ManagedSystemSessionId(123), initialSendSequenceNumber = SessionSequenceNumber(321))
 
     def willGetSeqNoManager(): Unit = {
       seqNoManagerFactory.expectMsg(SeqNoManagerFactory.GetSeqNoManagerFor((address, port), sessionManager))

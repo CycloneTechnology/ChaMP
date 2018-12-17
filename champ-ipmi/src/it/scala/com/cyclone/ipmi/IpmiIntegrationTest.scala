@@ -3,8 +3,8 @@ package com.cyclone.ipmi
 import com.cyclone.akka.ActorSystemShutdown
 import com.cyclone.command.{OperationDeadline, TimeoutContext}
 import com.cyclone.ipmi.client.ActorIpmiClientComponent
-import com.cyclone.ipmi.command.ipmiMessagingSupport.GetSessionChallenge.InvalidUserName
 import com.cyclone.ipmi.protocol.TestIpmiManagerComponent
+import com.cyclone.ipmi.protocol.rakp.RmcpPlusAndRakpStatusCodeErrors.InvalidIntegrityCheckValue
 import com.cyclone.ipmi.tool.command.ChassisStatusTool
 import com.google.common.net.InetAddresses
 import org.scalatest.{Inside, Matchers, WordSpecLike}
@@ -29,12 +29,9 @@ class IpmiIntegrationTest
     with TestIpmiManagerComponent
     with TestActorSystemComponent {
 
-    val vReq = IpmiVersionRequirement.V15Only
-    val priv = PrivilegeLevel.User
-
     val testSupportTimeout = 1.second
 
-    implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(2.seconds))
+    implicit val timeoutContext: TimeoutContext = TimeoutContext(OperationDeadline.fromNow(10.seconds))
   }
 
   "an Ipmi high level API" when {
@@ -69,17 +66,17 @@ class IpmiIntegrationTest
           .futureValue shouldBe ().right
       }
 
-      "return false for a system that supports IPMI when incorrect credentials are specified" in new Fixture {
-        ipmi.testNegotiateSession(target.copy(credentials = IpmiCredentials("noSuchUser", "password")), testSupportTimeout)
-          .futureValue shouldBe InvalidUserName.left
+      "return error for a system that supports IPMI when incorrect credentials are specified" in new Fixture {
+        ipmi.testNegotiateSession(target.copy(credentials = IpmiCredentials("ADMIN", "bad")), testSupportTimeout)
+          .futureValue shouldBe InvalidIntegrityCheckValue.left
       }
 
-      "return false for a system that does not support IPMI" in new Fixture {
+      "timeout for a system that does not support IPMI" in new Fixture {
         ipmi.testNegotiateSession(target.copy(inetAddress = InetAddresses.forString("10.0.0.1")), testSupportTimeout)
           .futureValue shouldBe DeadlineReached.left
       }
 
-      "return false for a system that does not exist" in new Fixture {
+      "timeout for a system that does not exist" in new Fixture {
         ipmi.testNegotiateSession(target.copy(inetAddress = InetAddresses.forString("10.0.0.254")), testSupportTimeout)
           .futureValue shouldBe DeadlineReached.left
       }

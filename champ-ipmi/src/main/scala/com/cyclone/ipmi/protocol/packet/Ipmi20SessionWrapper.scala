@@ -3,9 +3,9 @@ package com.cyclone.ipmi.protocol.packet
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.ipmi.IntegrityCheckError
 import com.cyclone.ipmi.codec._
-import com.cyclone.ipmi.protocol.{Oem, SessionContext}
 import com.cyclone.ipmi.protocol.packet.SessionId.ManagedSystemSessionId
 import com.cyclone.ipmi.protocol.security.AuthenticationType
+import com.cyclone.ipmi.protocol.{Oem, SessionContext}
 import scalaz.Scalaz._
 import scalaz.\/
 
@@ -34,7 +34,7 @@ object Ipmi20SessionWrapper {
         b ++= managedSystemSessionId.toBin
         b ++= sessionSequenceNumber.toBin
 
-        val encPayload = encryptor(payload)
+        val encPayload = encryptor(payload.encode)
 
         b ++= encPayload.length.toShort.toBin
         b ++= encPayload
@@ -62,7 +62,7 @@ object Ipmi20SessionWrapper {
       Request(
         managedSystemSessionId = sessionContext.managedSystemSessionId,
         sessionSequenceNumber = sessionSequenceNumber,
-        payload = coder.encode(payload),
+        payload = Codable(payload),
         payloadType = payload.payloadType,
         encryptor = sessionContext.encryptor,
         requestHashMaker = sessionContext.requestHashMaker,
@@ -76,7 +76,7 @@ object Ipmi20SessionWrapper {
   case class Request(
     managedSystemSessionId: ManagedSystemSessionId,
     sessionSequenceNumber: SessionSequenceNumber,
-    payload: ByteString,
+    payload: Codable,
     payloadType: PayloadType = PayloadType.Ipmi,
     encryptor: SessionContext.Encryptor,
     requestHashMaker: SessionContext.ReqHashMaker,

@@ -3,6 +3,7 @@ package com.cyclone.ipmi.protocol
 import akka.util.{ByteString, ByteStringBuilder}
 import com.cyclone.command.TimeoutContext
 import com.cyclone.ipmi.IpmiError.{IpmiErrorOr, StatusCodeErrorOr}
+import com.cyclone.ipmi._
 import com.cyclone.ipmi.codec._
 import com.cyclone.ipmi.command._
 import com.cyclone.ipmi.command.ipmiMessagingSupport.{
@@ -11,17 +12,16 @@ import com.cyclone.ipmi.command.ipmiMessagingSupport.{
   GetChannelCipherSuites,
   GetSessionChallenge
 }
-import com.cyclone.ipmi.protocol.packet.IpmiVersion
 import com.cyclone.ipmi.protocol.packet.SessionId.{ManagedSystemSessionId, RemoteConsoleSessionId}
+import com.cyclone.ipmi.protocol.packet.{IpmiVersion, SessionSequenceNumber}
 import com.cyclone.ipmi.protocol.rakp.{OpenSession, Rakp1_2, Rakp3_4, RmcpPlusAndRakpStatusCodeErrors}
 import com.cyclone.ipmi.protocol.security._
-import com.cyclone.ipmi._
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scalaz.EitherT._
 import scalaz.Scalaz._
 import scalaz._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Performs message exchanges for session activation for a specific version or protocol.
@@ -81,7 +81,7 @@ object SessionNegotiationProtocol {
             f.flatMap {
               case \/-((acc, done)) =>
                 if (!done)
-                  requester.makeRequest(GetChannelCipherSuites.Command(index), version).map {
+                  requester.makeRequest(GetChannelCipherSuites.Command(index), IpmiVersion.V15).map {
                     case \/-(res) =>
                       val (bytes, newDone) = cipherSuiteBytesFor(res)
                       (acc ++ bytes, newDone).right
@@ -287,7 +287,8 @@ object SessionNegotiationProtocol {
                   challenge.managedSystemSessionId,
                   Some(credentials),
                   authType,
-                  sessionEstablished = false
+                  sessionEstablished = false,
+                  SessionSequenceNumber(1)
                 )
               )
             )
@@ -296,7 +297,8 @@ object SessionNegotiationProtocol {
               activation.managedSystemSessionId,
               Some(credentials),
               authType,
-              sessionEstablished = true
+              sessionEstablished = true,
+              activation.initialSendSequenceNumber
             )
 
           result.run

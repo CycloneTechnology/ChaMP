@@ -27,10 +27,12 @@ object Ipmi15SessionWrapper {
         b ++= sessionSequenceNumber.toBin
         b ++= managedSystemSessionId.toBin
 
-        b ++= requestHashMaker(managedSystemSessionId, sessionSequenceNumber, payload)
+        val payloadBytes = payload.encode
+        b ++= requestHashMaker(managedSystemSessionId, sessionSequenceNumber, payloadBytes)
 
-        b += payload.length.toByte
-        b ++= payload
+        val payLoadBytes = payload.encode
+        b += payLoadBytes.length.toByte
+        b ++= payLoadBytes
 
         // PAD
         b += 0
@@ -51,7 +53,7 @@ object Ipmi15SessionWrapper {
         managedSystemSessionId = sessionContext.managedSystemSessionId,
         sessionSequenceNumber = sessionSequenceNumber,
         requestHashMaker = sessionContext.requestHashMaker,
-        payload = coder.encode(payload)
+        payload = Codable(payload)
       )
     }
   }
@@ -61,7 +63,7 @@ object Ipmi15SessionWrapper {
     managedSystemSessionId: ManagedSystemSessionId,
     sessionSequenceNumber: SessionSequenceNumber,
     requestHashMaker: SessionContext.ReqHashMaker,
-    payload: ByteString
+    payload: Codable
   ) extends IpmiSessionWrapperRequest {
     val payloadType: PayloadType = PayloadType.Ipmi
   }

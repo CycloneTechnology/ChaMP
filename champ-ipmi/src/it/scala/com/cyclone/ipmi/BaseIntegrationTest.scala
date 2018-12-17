@@ -27,8 +27,8 @@ abstract class BaseIntegrationTest
       config.getString("ipmi.username"),
       config.getString("ipmi.password"))
 
-  val vReq = IpmiVersionRequirement.V15Only
-  val priv = PrivilegeLevel.User
+  val vReq = IpmiVersionRequirement.V20IfSupported
+  val priv = PrivilegeLevel.Administrator
 
   val target = IpmiTarget.LAN(host, port, credentials, priv, vReq)
 

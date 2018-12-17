@@ -9,7 +9,7 @@ import scala.language.postfixOps
   * Knows how to lookup a [[StatusCode]] for a particular type of command result to get an error message
   */
 case class StatusCodeTranslator[-Res <: IpmiCommandResult](
-  nonGenericLookup: PartialFunction[StatusCode, StatusCodeError] = PartialFunction.empty
+  specificLookup: PartialFunction[StatusCode, StatusCodeError] = PartialFunction.empty
 ) {
 
   /**
@@ -18,11 +18,10 @@ case class StatusCodeTranslator[-Res <: IpmiCommandResult](
   final def lookupStatusCode(statusCode: StatusCode): Option[StatusCodeError] = {
     if (statusCode.code == 0.toByte) None
     else {
-      (GenericStatusCodeErrors.lookup
-      orElse [StatusCode, StatusCodeError] nonGenericLookup
-      orElse [StatusCode, StatusCodeError] { case x: StatusCode => UnknownStatusCodeError(x) } lift)(
-        statusCode
-      )
+      specificLookup
+        .orElse[StatusCode, StatusCodeError](GenericStatusCodeErrors.lookup)
+        .orElse[StatusCode, StatusCodeError] { case x: StatusCode => UnknownStatusCodeError(x) }
+        .lift(statusCode)
     }
   }
 }
