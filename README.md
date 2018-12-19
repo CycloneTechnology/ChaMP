@@ -1,4 +1,4 @@
-# ChaMP - Version 0.9.0
+# ChaMP
 [![Build Status](https://travis-ci.org/CycloneTechnology/ChaMP.svg?branch=master)](https://travis-ci.org/CycloneTechnology/ChaMP)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/ddf930e663192487d22c/test_coverage)](https://codeclimate.com/github/CycloneTechnology/ChaMP/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/ddf930e663192487d22c/maintainability)](https://codeclimate.com/github/CycloneTechnology/ChaMP/maintainability)
