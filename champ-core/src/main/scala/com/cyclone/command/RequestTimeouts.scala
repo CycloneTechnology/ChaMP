@@ -7,6 +7,8 @@ import scala.concurrent.duration._
   * (or other retry-able error code) retries.
   */
 trait RequestTimeouts {
+  def maxAttempts: Int
+  def hasNext: Boolean = maxAttempts > 1
   def next: (FiniteDuration, Option[RequestTimeouts])
 }
 

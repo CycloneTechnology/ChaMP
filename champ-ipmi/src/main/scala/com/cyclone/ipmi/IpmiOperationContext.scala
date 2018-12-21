@@ -8,4 +8,4 @@ import com.cyclone.ipmi.client.IpmiConnection
   *
   * @author Jeremy.Stone
   */
-case class IpmiOperationContext(connection: IpmiConnection, timeoutContext: TimeoutContext)
+private[ipmi] case class IpmiOperationContext(connection: IpmiConnection, timeoutContext: TimeoutContext)
